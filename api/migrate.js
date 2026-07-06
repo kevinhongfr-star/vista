@@ -4,101 +4,87 @@ const MIGRATION_SQL = "-- ======================================================
 const DB_PASS = process.env.SUPABASE_DB_PASSWORD;
 
 module.exports = async function handler(req, res) {
+  res.setHeader('Content-Type', 'text/html');
+
+  // Auth check
   const authKey = req.headers['x-migration-key'] || req.query.key;
   if (authKey !== 'vista-migrate-2026') {
-    res.setHeader('Content-Type', 'text/html');
-    return res.status(200).send('<html><body><h1>VISTA Migration Endpoint</h1><p>Auth required. Pass ?key=YOUR_KEY</p></body></html>');
+    return res.status(200).send('<h1>VISTA Migration</h1><p>Auth required. Add ?key=YOUR_KEY</p>');
   }
 
   if (!DB_PASS) {
-    res.setHeader('Content-Type', 'text/html');
-    return res.status(200).send('<html><body><h1>ERROR</h1><pre>SUPABASE_DB_PASSWORD not set in Vercel env</pre></body></html>');
+    return res.status(200).send('<h1>ERROR</h1><pre>SUPABASE_DB_PASSWORD not set</pre>');
   }
 
   const log = [];
   let client = null;
 
-  const targets = [
-    {
-      label: 'direct',
+  // Only try direct connection (pooler is not configured for this project)
+  try {
+    client = new Client({
       host: 'db.rnnlteyqmtxkzllbohuu.supabase.co',
       port: 5432,
       user: 'postgres',
       password: DB_PASS,
       database: 'postgres',
       ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 15000,
-    },
-    {
-      label: 'pooler-apse1',
-      host: 'aws-0-ap-southeast-1.pooler.supabase.com',
-      port: 6543,
-      user: 'postgres.rnnlteyqmtxkzllbohuu',
-      password: DB_PASS,
-      database: 'postgres',
-      ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 15000,
-    },
-    {
-      label: 'pooler-use1',
-      host: 'aws-0-us-east-1.pooler.supabase.com',
-      port: 6543,
-      user: 'postgres.rnnlteyqmtxkzllbohuu',
-      password: DB_PASS,
-      database: 'postgres',
-      ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 15000,
-    },
-  ];
-
-  for (const t of targets) {
+      connectionTimeoutMillis: 8000,
+    });
+    await client.connect();
+    log.push('CONNECTED to Supabase (direct)');
+  } catch (e) {
+    log.push('DIRECT CONNECT FAILED: ' + e.message.substring(0, 300));
+    
+    // Try pooler as fallback
     try {
-      client = new Client(t);
+      client = new Client({
+        host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+        port: 6543,
+        user: 'postgres.rnnlteyqmtxkzllbohuu',
+        password: DB_PASS,
+        database: 'postgres',
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 5000,
+      });
       await client.connect();
-      log.push('CONNECT OK via ' + t.label);
-      break;
-    } catch (e) {
-      log.push('CONNECT FAIL ' + t.label + ': ' + e.message.substring(0, 200));
-      client = null;
+      log.push('CONNECTED to Supabase (pooler)');
+    } catch (e2) {
+      log.push('POOLER ALSO FAILED: ' + e2.message.substring(0, 300));
+      return res.status(200).send('<h1>CONNECTION FAILED</h1><pre>' + log.join('\n') + '</pre>');
     }
   }
 
-  if (!client) {
-    res.setHeader('Content-Type', 'text/html');
-    return res.status(200).send('<html><body><h1>CONNECTION FAILED</h1><pre>' + log.join('\n') + '</pre></body></html>');
-  }
-
   try {
+    log.push('Executing migration SQL (' + MIGRATION_SQL.length + ' chars)...');
     await client.query(MIGRATION_SQL);
-    log.push('MIGRATION EXECUTED OK');
+    log.push('MIGRATION COMPLETE');
 
+    // Verify
     const cols = await client.query(
       "SELECT column_name FROM information_schema.columns WHERE table_name='vista_contacts' AND column_name IN ('score_delta','vista_v','vista_composite','density_cluster_id','decay_flag') ORDER BY column_name"
     );
-    log.push('NEW COLUMNS: ' + cols.rows.map(r => r.column_name).join(', '));
+    log.push('New columns found: ' + cols.rows.length + ' - ' + cols.rows.map(r => r.column_name).join(', '));
 
     const tables = await client.query(
       "SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename IN ('density_clusters','programs','program_assignments','strategic_notes') ORDER BY tablename"
     );
-    log.push('NEW TABLES: ' + tables.rows.map(r => r.tablename).join(', '));
+    log.push('New tables: ' + tables.rows.map(r => r.tablename).join(', '));
 
     const views = await client.query(
       "SELECT viewname FROM pg_views WHERE schemaname='public' AND viewname IN ('v_top_7','v_pipeline_summary','v_encirclement','v_outreach_activity') ORDER BY viewname"
     );
-    log.push('VIEWS: ' + views.rows.map(r => r.viewname).join(', '));
+    log.push('Views: ' + views.rows.map(r => r.viewname).join(', '));
 
     const count = await client.query("SELECT COUNT(*) as c FROM vista_contacts");
-    log.push('VISTA_CONTACTS COUNT: ' + count.rows[0].c);
+    log.push('vista_contacts: ' + count.rows[0].c + ' rows');
 
     const sample = await client.query("SELECT stain_score, engagement_tier, encirclement_level FROM vista_contacts LIMIT 3");
-    log.push('SAMPLE: ' + JSON.stringify(sample.rows));
+    log.push('Score sample: ' + JSON.stringify(sample.rows));
 
-    res.setHeader('Content-Type', 'text/html');
-    return res.status(200).send('<html><body><h1>MIGRATION COMPLETE</h1><pre>' + log.join('\n---\n') + '</pre></body></html>');
+    return res.status(200).send('<h1>SUCCESS - Migration Complete</h1><pre>' + log.join('\n---\n') + '</pre>');
   } catch (e) {
-    log.push('MIGRATION ERROR: ' + e.message.substring(0, 800));
-    res.setHeader('Content-Type', 'text/html');
-    return res.status(200).send('<html><body><h1>MIGRATION ERROR</h1><pre>' + log.join('\n---\n') + '</pre></body></html>');
+    log.push('ERROR: ' + e.message.substring(0, 500));
+    return res.status(200).send('<h1>MIGRATION ERROR</h1><pre>' + log.join('\n---\n') + '</pre>');
   } finally {
     if (client) await client.end();
   }
