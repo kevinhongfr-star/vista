@@ -1,0 +1,25 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "functions": {
+    "app/api/**/*.{js,ts,jsx,tsx}": {
+      "runtime": "@vercel/node@3.0.10",
+      "memory": 1024,
+      "maxDuration": 300
+    }
+  },
+  "env": {
+    "SUPABASE_URL": "@supabase-url",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
+    "NEXT_PUBLIC_SUPABASE_URL": "@next-public-supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next-public-supabase-anon-key",
+    "SUPABASE_DB_PASSWORD": "@supabase-db-password"
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
+}

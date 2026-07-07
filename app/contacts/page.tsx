@@ -63,9 +63,10 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
         data={data || []}
         pageCount={pageCount}
         currentPage={page}
-        onPageChange={(newPage) => {
-          // Client-side navigation would be handled by router
-          // This is server-side pagination for initial render
+        searchParams={{
+          tier: searchParams.tier,
+          level: searchParams.level,
+          search: searchParams.search,
         }}
       />
     </div>

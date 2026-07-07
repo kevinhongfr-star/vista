@@ -2,7 +2,8 @@
 
 import { useAppStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
-import { Bell, Search, Moon, Sun } from "lucide-react"
+import { signOut } from "@/lib/supabase/auth"
+import { Bell, Search, Moon, Sun, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +11,11 @@ import { Separator } from "@/components/ui/separator"
 
 export function Header() {
   const { theme, setTheme, searchQuery, setSearchQuery, notifications, sidebarCollapsed } = useAppStore()
+
+  const handleLogout = async () => {
+    await signOut()
+    window.location.href = '/login'
+  }
 
   return (
     <header
@@ -59,12 +65,15 @@ export function Header() {
 
           <Separator orientation="vertical" className="h-6" />
 
-          {/* User info placeholder */}
+          {/* User info + logout */}
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full bg-primary-navy flex items-center justify-center text-white text-sm font-medium">
               K
             </div>
             <span className="text-sm font-medium hidden sm:inline">Kevin</span>
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>

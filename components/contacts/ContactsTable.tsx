@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   useReactTable,
   getCoreRowModel,
@@ -42,20 +43,25 @@ interface ContactsTableProps {
   data: VistaContact[]
   pageCount: number
   currentPage: number
-  onPageChange: (page: number) => void
+  searchParams: {
+    tier?: string
+    level?: string
+    search?: string
+  }
 }
 
 export function ContactsTable({ 
   data, 
   pageCount, 
-  currentPage, 
-  onPageChange 
+  currentPage,
+  searchParams 
 }: ContactsTableProps) {
+  const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'priority_score', desc: true }
   ])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
+  const [globalFilter, setGlobalFilter] = useState(searchParams.search || '')
 
   const columns: ColumnDef<VistaContact>[] = useMemo(() => [
     {
@@ -136,8 +142,8 @@ export function ContactsTable({
         <EncirclementBadge level={row.original.encirclement_level} size="sm" />
       ),
       filterFn: (row, id, value) => {
-        const tierValue = row.getValue(id) as string | null | undefined
-        return value === 'all' || tierValue?.toLowerCase() === (value as string).toLowerCase()
+        const levelValue = row.getValue(id) as string | null | undefined
+        return value === 'all' || levelValue?.toLowerCase() === (value as string).toLowerCase()
       },
     },
     {
@@ -186,13 +192,51 @@ export function ContactsTable({
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: (value) => {
+      setGlobalFilter(value)
+      const params = new URLSearchParams(searchParams)
+      params.set('page', '0')
+      if (value) {
+        params.set('search', value)
+      } else {
+        params.delete('search')
+      }
+      router.push(`/contacts?${params.toString()}`)
+    },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
     enableGlobalFilter: true,
   })
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams)
+    params.set('page', newPage.toString())
+    router.push(`/contacts?${params.toString()}`)
+  }
+
+  const handleTierChange = (value: string) => {
+    const params = new URLSearchParams(searchParams)
+    params.set('page', '0')
+    if (value === 'all') {
+      params.delete('tier')
+    } else {
+      params.set('tier', value)
+    }
+    router.push(`/contacts?${params.toString()}`)
+  }
+
+  const handleLevelChange = (value: string) => {
+    const params = new URLSearchParams(searchParams)
+    params.set('page', '0')
+    if (value === 'all') {
+      params.delete('level')
+    } else {
+      params.set('level', value)
+    }
+    router.push(`/contacts?${params.toString()}`)
+  }
 
   return (
     <div className="space-y-4">
@@ -201,13 +245,23 @@ export function ContactsTable({
         <Input
           placeholder="Search contacts..."
           value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
+          onChange={(e) => {
+            setGlobalFilter(e.target.value)
+            const params = new URLSearchParams(searchParams)
+            params.set('page', '0')
+            if (e.target.value) {
+              params.set('search', e.target.value)
+            } else {
+              params.delete('search')
+            }
+            router.push(`/contacts?${params.toString()}`)
+          }}
           className="max-w-sm"
         />
         
         <Select
-          value={(table.getColumn('tier')?.getFilterValue() as string) || 'all'}
-          onValueChange={(value) => table.getColumn('tier')?.setFilterValue(value)}
+          value={searchParams.tier || 'all'}
+          onValueChange={handleTierChange}
         >
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Tier" />
@@ -223,8 +277,8 @@ export function ContactsTable({
         </Select>
 
         <Select
-          value={(table.getColumn('level')?.getFilterValue() as string) || 'all'}
-          onValueChange={(value) => table.getColumn('level')?.setFilterValue(value)}
+          value={searchParams.level || 'all'}
+          onValueChange={handleLevelChange}
         >
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Level" />
@@ -241,7 +295,7 @@ export function ContactsTable({
 
         <div className="flex items-center gap-2 ml-auto">
           <span className="text-sm text-muted-foreground">
-            {table.getFilteredRowModel().rows.length} contacts
+            {data.length} contacts
           </span>
         </div>
       </div>
@@ -312,7 +366,7 @@ export function ContactsTable({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => onPageChange(0)}
+            onClick={() => handlePageChange(0)}
             disabled={currentPage === 0}
           >
             <ChevronsLeft className="h-4 w-4" />
@@ -320,7 +374,7 @@ export function ContactsTable({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => onPageChange(currentPage - 1)}
+            onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 0}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -328,7 +382,7 @@ export function ContactsTable({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => onPageChange(currentPage + 1)}
+            onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= pageCount - 1}
           >
             <ChevronRight className="h-4 w-4" />
@@ -336,7 +390,7 @@ export function ContactsTable({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => onPageChange(pageCount - 1)}
+            onClick={() => handlePageChange(pageCount - 1)}
             disabled={currentPage >= pageCount - 1}
           >
             <ChevronsRight className="h-4 w-4" />
