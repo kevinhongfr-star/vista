@@ -10,13 +10,6 @@
       "maxDuration": 300
     }
   },
-  "env": {
-    "SUPABASE_URL": "@supabase-url",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
-    "NEXT_PUBLIC_SUPABASE_URL": "@next-public-supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next-public-supabase-anon-key",
-    "SUPABASE_DB_PASSWORD": "@supabase-db-password"
-  },
   "git": {
     "deploymentEnabled": {
       "main": true
