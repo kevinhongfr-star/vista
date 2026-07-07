@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/Header"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "VISTA - BD Intelligence",
+  title: "LYC Partners — VISTA BD Intelligence",
   description: "Business Development Intelligence Dashboard for LYC Partners",
 }
 

@@ -47,8 +47,9 @@ export function Sidebar() {
       {/* Header */}
       <div className="flex h-16 items-center justify-between px-4">
         {!sidebarCollapsed && (
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-accent-gold">VISTA</span>
+          <Link href="/dashboard" className="flex flex-col leading-tight">
+            <span className="text-[10px] font-medium tracking-widest text-white/50 uppercase">LYC Partners</span>
+            <span className="text-lg font-bold text-accent-gold tracking-wide">VISTA</span>
           </Link>
         )}
         <Button
