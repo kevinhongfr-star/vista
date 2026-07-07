@@ -36,7 +36,7 @@ export default function LoginPage() {
     <Card>
       <CardHeader className="text-center">
         <div className="mb-4">
-          <span className="text-4xl font-bold text-accent-gold">VISTA</span>
+          <span className="text-4xl font-bold text-accent-fuchsia">VISTA</span>
         </div>
         <CardTitle className="text-xl">BD Intelligence Dashboard</CardTitle>
         <p className="text-sm text-muted-foreground mt-2">

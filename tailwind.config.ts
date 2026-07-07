@@ -10,26 +10,28 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // LYC Brand Colors
+        // LYC Brand Colors (aligned 2026-07-07)
         primary: {
-          DEFAULT: '#1a2332',
-          navy: '#1a2332',
+          DEFAULT: '#1C1C1E',
+          navy: '#1C1C1E',
           foreground: '#e8e8e8',
         },
         accent: {
-          DEFAULT: '#c9a961',
-          gold: '#c9a961',
+          DEFAULT: '#C108AB',
+          gold: '#C108AB',  // legacy alias — now fuchsia
+          fuchsia: '#C108AB',
+          hover: '#A00790',
         },
         background: {
-          light: '#f8f9fa',
-          dark: '#0f1419',
+          light: '#FFFFFF',
+          dark: '#0F0F11',
         },
         surface: {
           light: '#ffffff',
-          dark: '#1a2332',
+          dark: '#1C1C1E',
         },
         text: {
-          light: '#333333',
+          light: '#1C1C1E',
           dark: '#e8e8e8',
         },
         // Engagement Tier Colors
@@ -81,7 +83,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-libre-baskerville)', 'Georgia', 'serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',

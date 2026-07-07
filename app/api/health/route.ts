@@ -10,11 +10,7 @@ export async function GET() {
   if (!supabaseUrl || !supabaseKey) {
     return NextResponse.json({
       status: 'error',
-      message: 'Missing env vars',
-      env: {
-        SUPABASE_URL: supabaseUrl ? `set (${supabaseUrl.substring(0, 20)}...)` : 'MISSING',
-        SUPABASE_SERVICE_ROLE_KEY: supabaseKey ? `set (${supabaseKey.substring(0, 15)}...)` : 'MISSING',
-      }
+      message: 'Missing Supabase environment variables',
     }, { status: 500 })
   }
 
@@ -23,7 +19,6 @@ export async function GET() {
       auth: { persistSession: false }
     })
 
-    // Test basic connectivity
     const { data, error, count } = await supabase
       .from('vista_contacts')
       .select('id', { count: 'exact', head: true })
@@ -32,15 +27,9 @@ export async function GET() {
       return NextResponse.json({
         status: 'error',
         message: error.message,
-        details: error,
-        env: {
-          SUPABASE_URL: supabaseUrl.substring(0, 30) + '...',
-          KEY_PREFIX: supabaseKey.substring(0, 15) + '...',
-        }
       }, { status: 500 })
     }
 
-    // Test pipeline view
     const { data: pipelineData, error: pipelineError } = await supabase
       .from('v_pipeline_summary')
       .select('*')
@@ -50,16 +39,11 @@ export async function GET() {
       contacts_count: count,
       pipeline: pipelineData,
       pipeline_error: pipelineError?.message || null,
-      env: {
-        SUPABASE_URL: supabaseUrl.substring(0, 30) + '...',
-        KEY_PREFIX: supabaseKey.substring(0, 15) + '...',
-      }
     })
   } catch (e: any) {
     return NextResponse.json({
       status: 'error',
       message: e.message,
-      stack: e.stack,
     }, { status: 500 })
   }
 }

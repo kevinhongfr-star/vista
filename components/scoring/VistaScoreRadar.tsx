@@ -75,7 +75,7 @@ export function VistaScoreRadar({
           fillOpacity="0.2"
           stroke="currentColor"
           strokeWidth="2"
-          className="text-accent-gold"
+          className="text-accent-fuchsia"
         />
         
         {/* Points */}
@@ -86,7 +86,7 @@ export function VistaScoreRadar({
             cy={p.y}
             r="4"
             fill="currentColor"
-            className="text-accent-gold"
+            className="text-accent-fuchsia"
           />
         ))}
         
@@ -110,7 +110,7 @@ export function VistaScoreRadar({
       
       {/* Composite score */}
       <div className="mt-2 text-center">
-        <span className="text-2xl font-bold text-accent-gold">{composite || 0}</span>
+        <span className="text-2xl font-bold text-accent-fuchsia">{composite || 0}</span>
         <span className="text-xs text-muted-foreground ml-1">/100</span>
       </div>
     </div>

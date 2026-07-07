@@ -45,7 +45,7 @@ export function StrategyPage({ notes, totalCount }: StrategyPageProps) {
   const typeColors: Record<string, string> = {
     Decision: "bg-info/10 text-info",
     Override: "bg-warning/10 text-warning",
-    "ICP Adjustment": "bg-accent-gold/10 text-accent-gold",
+    "ICP Adjustment": "bg-accent-fuchsia/10 text-accent-fuchsia",
     "Focus Shift": "bg-tier-warm/10 text-tier-warm",
     Review: "bg-muted",
   }

@@ -32,7 +32,7 @@ export function ProgramsPage({ programs, assignments, totalCount }: ProgramsPage
 
   const tierColors: Record<string, string> = {
     Free: "bg-info/10 text-info",
-    Paid: "bg-accent-gold/10 text-accent-gold",
+    Paid: "bg-accent-fuchsia/10 text-accent-fuchsia",
   }
 
   const activePrograms = programs.filter(p => p.status === 'Active').length
@@ -84,8 +84,8 @@ export function ProgramsPage({ programs, assignments, totalCount }: ProgramsPage
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-accent-gold/10">
-                <DollarSign className="h-6 w-6 text-accent-gold" />
+              <div className="p-2 rounded-lg bg-accent-fuchsia/10">
+                <DollarSign className="h-6 w-6 text-accent-fuchsia" />
               </div>
               <div>
                 <div className="text-2xl font-bold">$${totalRevenue.toLocaleString()}</div>

@@ -22,7 +22,7 @@ export function ScoreBreakdown({
     { label: "Stain", score: stainScore, max: 25, color: "bg-tier-warm" },
     { label: "Cluster", score: clusterScore, max: 25, color: "bg-tier-engaged" },
     { label: "Signal", score: signalScore, max: 25, color: "bg-warning" },
-    { label: "Engagement", score: engagementScore, max: 25, color: "bg-accent-gold" },
+    { label: "Engagement", score: engagementScore, max: 25, color: "bg-accent-fuchsia" },
   ]
 
   return (

@@ -47,7 +47,7 @@ export function Top7Ranking({ data }: Top7RankingProps) {
             key={contact.id}
             className={cn(
               "cursor-pointer hover:bg-muted/50",
-              index === 0 && "bg-accent-gold/5"
+              index === 0 && "bg-accent-fuchsia/5"
             )}
           >
             <TableCell>
