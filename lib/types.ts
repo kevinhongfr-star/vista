@@ -1,3 +1,94 @@
+// Pipeline Stage enum
+export const PIPELINE_STAGES = [
+  'Prospect',
+  'Contacted',
+  'Engaged',
+  'Meeting Booked',
+  'Proposal Sent',
+  'Negotiation',
+  'Closed Won',
+  'Closed Lost',
+] as const
+
+export type PipelineStage = typeof PIPELINE_STAGES[number]
+
+// Activity Type enum
+export const ACTIVITY_TYPES = [
+  'Email Sent',
+  'Email Opened',
+  'Email Replied',
+  'Call',
+  'Meeting',
+  'Note',
+  'Webinar Invite',
+  'Podcast Invite',
+  'Newsletter Invite',
+  'Event Invite',
+  'LinkedIn Message',
+] as const
+
+export type ActivityType = typeof ACTIVITY_TYPES[number]
+
+// Signal Type enum
+export const SIGNAL_TYPES = [
+  'funding',
+  'leadership_change',
+  'ma_activity',
+  'market_expansion',
+  'digital_transformation',
+  'partnership',
+  'product_launch',
+  'executive_departure',
+  'team_growth',
+  'crisis',
+  'market_event',
+] as const
+
+export type SignalType = typeof SIGNAL_TYPES[number]
+
+// Signal Strength enum
+export const SIGNAL_STRENGTHS = ['Low', 'Medium', 'Medium-High', 'High'] as const
+export type SignalStrength = typeof SIGNAL_STRENGTHS[number]
+
+// Signal Status enum
+export const SIGNAL_STATUSES = ['New', 'Analyzed', 'Acted On', 'Ignored'] as const
+export type SignalStatus = typeof SIGNAL_STATUSES[number]
+
+// Campaign Contact Status enum
+export const CAMPAIGN_CONTACT_STATUSES = [
+  'Invited',
+  'Email Sent',
+  'Email Opened',
+  'Email Replied',
+  'Meeting Booked',
+  'Converted',
+  'Declined',
+] as const
+
+export type CampaignContactStatus = typeof CAMPAIGN_CONTACT_STATUSES[number]
+
+// Email Template Type enum
+export const EMAIL_TEMPLATE_TYPES = [
+  'Executive Brief',
+  'Webinar Invite',
+  'Podcast Invite',
+  'Newsletter',
+  'Event Invite',
+  'Follow-up',
+  'Re-engagement',
+  'Custom',
+] as const
+
+export type EmailTemplateType = typeof EMAIL_TEMPLATE_TYPES[number]
+
+// Strategic Note Category enum
+export const NOTE_CATEGORIES = ['Priority', 'Insight', 'Action-Item', 'Observation'] as const
+export type NoteCategory = typeof NOTE_CATEGORIES[number]
+
+// Strategic Note Status enum
+export const NOTE_STATUSES = ['Active', 'Archived'] as const
+export type NoteStatus = typeof NOTE_STATUSES[number]
+
 // Vista Contacts - Main table
 export interface VistaContact {
   id: string
@@ -27,7 +118,7 @@ export interface VistaContact {
   advisory_tier: string | null
   bd_pathway: string | null
   bd_priority: string | null
-  pipeline_stage: string | null
+  pipeline_stage: PipelineStage | null
   funnel_stage: string | null
   status: string | null
   data_source: string | null
@@ -57,20 +148,44 @@ export interface VistaContact {
   vista_a: number | null
   vista_composite: number | null
   density_cluster_id: string | null
+  // Additional columns from new schema
+  last_contact_date: string | null
+  last_email_sent_date: string | null
+  last_email_opened_date: string | null
+  last_meeting_date: string | null
+  recommended_action: string | null
+  score_breakdown: ScoreBreakdown | null
+}
+
+// Score Breakdown interface
+export interface ScoreBreakdown {
+  value_score: number
+  function_score: number
+  engagement_score: number
+  decay_penalty: number
+  cluster_score: number
+  total: number
 }
 
 // Signals
 export interface Signal {
   id: string
   company: string | null
-  signal_type: string | null
-  signal_strength: string | null
+  signal_type: SignalType | null
+  signal_strength: SignalStrength | null
+  status: SignalStatus | null
   detected_date: string | null
   recency_weight: number | null
   score_impact: number | null
   description: string | null
   source: string | null
   source_url: string | null
+  source_credibility: 'High' | 'Medium' | 'Low' | 'Unknown' | null
+  impact_assessment: string | null
+  recommended_action: string | null
+  affected_contacts_count: number | null
+  historical_signals_count: number | null
+  contact_ids: string[] | null
   contact_id: string | null
   created_at: string | null
 }
@@ -91,6 +206,77 @@ export interface CampaignActivity {
   response_date: string | null
   activity_date: string | null
   created_at: string | null
+  // New columns from schema
+  target_cluster_id: string | null
+  email_template_id: string | null
+  message_subject: string | null
+  message_body: string | null
+  contacts_invited_count: number | null
+  emails_sent_count: number | null
+  emails_opened_count: number | null
+  emails_replied_count: number | null
+  meetings_booked_count: number | null
+  conversion_rate: number | null
+  approved_by: string | null
+  approved_at: string | null
+}
+
+// Activities (new table)
+export interface Activity {
+  id: string
+  contact_id: string | null
+  campaign_id: string | null
+  program_id: string | null
+  activity_type: ActivityType
+  activity_date: string
+  subject: string | null
+  content: string | null
+  outcome: string | null
+  duration_minutes: number | null
+  notes: string | null
+  created_by: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+// Email Templates
+export interface EmailTemplate {
+  id: string
+  template_name: string
+  template_type: EmailTemplateType
+  subject_template: string
+  body_template: string
+  variables: string[]
+  created_at: string | null
+  updated_at: string | null
+}
+
+// Campaign Contacts (individual contact status in campaigns)
+export interface CampaignContact {
+  id: string
+  campaign_id: string
+  contact_id: string
+  status: CampaignContactStatus
+  invitation_date: string | null
+  sent_date: string | null
+  opened_date: string | null
+  replied_date: string | null
+  meeting_date: string | null
+  notes: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+// Pipeline History
+export interface PipelineHistory {
+  id: string
+  contact_id: string
+  from_stage: PipelineStage
+  to_stage: PipelineStage
+  changed_at: string
+  changed_by: string | null
+  reason: string | null
+  created_at: string | null
 }
 
 // Density Clusters
@@ -107,6 +293,10 @@ export interface DensityCluster {
   last_calculated: string | null
   created_at: string | null
   updated_at: string | null
+  // New columns from schema
+  top_contact_ids: string[] | null
+  recommended_program_rationale: string | null
+  conversion_rate: number | null
 }
 
 // Programs
@@ -149,10 +339,20 @@ export interface StrategicNote {
   author: string | null
   contact_id: string | null
   cluster_id: string | null
-  category: string | null
-  status: string | null
+  category: NoteCategory | null
+  status: NoteStatus | null
   created_at: string | null
   updated_at: string | null
+  // New columns from schema
+  title: string | null
+  content: string | null
+  linked_contact_ids: string[] | null
+  linked_cluster_ids: string[] | null
+  linked_campaign_ids: string[] | null
+  linked_signal_ids: string[] | null
+  priority: number | null
+  due_date: string | null
+  created_by: string | null
 }
 
 // View types
@@ -280,4 +480,122 @@ export interface AutomationDashboardData {
   contacts_scored: number
   clusters_updated: number
   recent_runs: PipelineRunLog[]
+}
+
+// Dashboard Intelligence Types
+export interface PriorityAction {
+  type: 'call' | 'follow_up' | 'signal' | 'cold_alert'
+  icon: string
+  title: string
+  description: string
+  contact_id?: string
+  signal_id?: string
+  cluster_id?: string
+  score?: number
+  days_since?: number
+  priority: number
+}
+
+export interface PipelineFunnelStage {
+  stage: PipelineStage
+  count: number
+  percentage: number
+}
+
+export interface RecentActivity {
+  id: string
+  activity_type: ActivityType
+  activity_date: string
+  subject: string | null
+  contact_name: string | null
+  contact_company: string | null
+  outcome: string | null
+}
+
+export interface DashboardData {
+  priorityActions: PriorityAction[]
+  kpis: {
+    contacts: number
+    contacts_delta: number
+    signals: number
+    signals_delta: number
+    clusters: number
+    campaigns: number
+    campaigns_draft: number
+  }
+  pipelineFunnel: PipelineFunnelStage[]
+  recentActivity: RecentActivity[]
+  top7Contacts: VistaContact[]
+}
+
+// Intelligence API Types
+export interface ContactRecommendation {
+  contact_id: string
+  recommended_action: string
+  rationale: string[]
+  priority_score: number
+}
+
+export interface SignalImpactAnalysis {
+  signal_id: string
+  affected_contacts: VistaContact[]
+  top_3_priority: VistaContact[]
+  affected_count_by_function: Record<string, number>
+  recommended_campaign_type: string
+}
+
+export interface ClusterInsights {
+  cluster_id: string
+  why_this_cluster: string
+  top_functions: { function: string; count: number }[]
+  conversion_rate: number
+  avg_score: number
+  revenue_potential: number
+}
+
+export interface StuckContact {
+  contact_id: string
+  name: string | null
+  company: string | null
+  pipeline_stage: PipelineStage
+  days_in_stage: number
+  last_contact_date: string | null
+}
+
+// API Request/Response Types
+export interface CreateActivityRequest {
+  contact_id: string
+  activity_type: ActivityType
+  activity_date: string
+  subject?: string
+  content?: string
+  outcome?: string
+  duration_minutes?: number
+  notes?: string
+  campaign_id?: string
+  program_id?: string
+}
+
+export interface UpdatePipelineStageRequest {
+  contact_id: string
+  new_stage: PipelineStage
+  reason?: string
+}
+
+export interface CreateCampaignRequest {
+  campaign_name: string
+  campaign_type: string
+  target_cluster_id?: string
+  contact_ids?: string[]
+  email_template_id?: string
+  subject?: string
+  body?: string
+}
+
+export interface SendEmailRequest {
+  contact_ids: string[]
+  template_id?: string
+  subject: string
+  body: string
+  campaign_id?: string
 }
