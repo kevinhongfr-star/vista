@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -22,6 +23,8 @@ interface ClustersPageProps {
 }
 
 export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
+  const router = useRouter()
+
   const statusColors: Record<string, string> = {
     Active: "bg-success text-white",
     Emerging: "bg-warning text-white",
@@ -31,6 +34,10 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
   const activeClusters = clusters.filter(c => c.status === 'Active').length
   const emergingClusters = clusters.filter(c => c.status === 'Emerging').length
   const watchClusters = clusters.filter(c => c.status === 'Watch').length
+
+  const handleRowClick = (clusterId: string) => {
+    router.push(`/clusters/${clusterId}`)
+  }
 
   return (
     <div className="space-y-6">
@@ -107,7 +114,11 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
             <TableBody>
               {clusters.length > 0 ? (
                 clusters.map((cluster) => (
-                  <TableRow key={cluster.cluster_id} className="cursor-pointer hover:bg-muted/50">
+                  <TableRow 
+                    key={cluster.cluster_id} 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleRowClick(cluster.cluster_id)}
+                  >
                     <TableCell className="font-medium">{cluster.industry}</TableCell>
                     <TableCell>{cluster.geography}</TableCell>
                     <TableCell>

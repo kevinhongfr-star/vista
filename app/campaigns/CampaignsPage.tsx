@@ -14,8 +14,24 @@ import {
   TableRow 
 } from "@/components/ui/table"
 import { formatDate, truncateText } from "@/lib/utils"
-import { Mail, Check, X, Edit, Filter, Send, Eye, MessageSquare, Calendar } from "lucide-react"
+import { 
+  Mail, 
+  Check, 
+  X, 
+  Edit, 
+  Filter, 
+  Send, 
+  Eye, 
+  MessageSquare, 
+  Calendar,
+  Loader2,
+  CheckSquare,
+  Square
+} from "lucide-react"
 import type { CampaignActivity } from "@/lib/types"
+import { useState } from "react"
+import { useToasts, Toaster } from "@/components/ui/toast"
+import { useRouter } from "next/navigation"
 
 interface CampaignsPageProps {
   activities: CampaignActivity[]
@@ -24,7 +40,13 @@ interface CampaignsPageProps {
 }
 
 export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageProps) {
-  // Calculate funnel metrics
+  const router = useRouter()
+  const { toasts, addToast, dismissToast } = useToasts()
+  
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [bulkLoading, setBulkLoading] = useState(false)
+
   const sentCount = activities.filter(a => a.activity_status === 'Sent' || a.sent_date).length
   const openedCount = activities.filter(a => a.activity_status === 'Opened').length
   const repliedCount = activities.filter(a => a.activity_status === 'Replied').length
@@ -40,36 +62,162 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
 
   const maxCount = Math.max(...funnelSteps.map(s => s.count), 1)
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === drafts.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(drafts.map(d => d.id)))
+    }
+  }
+
+  const handleStatusUpdate = async (id: string, status: string) => {
+    setLoadingId(id)
+    try {
+      const response = await fetch(`/api/campaigns/${id}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ activity_status: status }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        addToast("success", `Campaign ${status.toLowerCase()} successfully`)
+        router.refresh()
+      } else {
+        addToast("error", data.error || "Failed to update status")
+      }
+    } catch (error) {
+      addToast("error", "Failed to update status")
+    } finally {
+      setLoadingId(null)
+    }
+  }
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.size === 0) return
+
+    setBulkLoading(true)
+    try {
+      const response = await fetch("/api/campaigns/bulk-approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        addToast("success", `Approved ${data.updated_count} campaigns successfully`)
+        setSelectedIds(new Set())
+        router.refresh()
+      } else {
+        addToast("error", data.error || "Failed to bulk approve")
+      }
+    } catch (error) {
+      addToast("error", "Failed to bulk approve")
+    } finally {
+      setBulkLoading(false)
+    }
+  }
+
+  const getStatusBadgeClass = (status: string | null | undefined) => {
+    switch (status) {
+      case "Drafted":
+        return "bg-tier-cold"
+      case "Approved":
+        return "bg-info"
+      case "Sent":
+        return "bg-muted"
+      case "Opened":
+        return "bg-warning text-white"
+      case "Replied":
+        return "bg-info text-white"
+      case "Meeting Booked":
+        return "bg-success text-white"
+      case "Rejected":
+        return "bg-error text-white"
+      default:
+        return "bg-muted"
+    }
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Campaigns</h1>
         <Badge variant="secondary">{totalCount} total activities</Badge>
       </div>
 
-      {/* Draft Queue */}
       {drafts.length > 0 && (
         <Card className="border-warning/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Edit className="h-5 w-5 text-warning" />
-              Draft Queue ({drafts.length} pending approval)
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Edit className="h-5 w-5 text-warning" />
+                Draft Queue ({drafts.length} pending approval)
+              </CardTitle>
+              {selectedIds.size > 0 && (
+                <Button 
+                  onClick={handleBulkApprove} 
+                  disabled={bulkLoading}
+                  className="gap-2"
+                >
+                  {bulkLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Bulk Approve ({selectedIds.size})
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[40px]">
+                    <button
+                      onClick={toggleSelectAll}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      {selectedIds.size === drafts.length && drafts.length > 0 ? (
+                        <CheckSquare className="h-4 w-4" />
+                      ) : (
+                        <Square className="h-4 w-4" />
+                      )}
+                    </button>
+                  </TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Angle</TableHead>
                   <TableHead>Message Preview</TableHead>
-                  <TableHead className="w-[120px]">Actions</TableHead>
+                  <TableHead className="w-[200px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {drafts.map((draft) => (
                   <TableRow key={draft.id}>
+                    <TableCell>
+                      <button
+                        onClick={() => toggleSelect(draft.id)}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        {selectedIds.has(draft.id) ? (
+                          <CheckSquare className="h-4 w-4" />
+                        ) : (
+                          <Square className="h-4 w-4" />
+                        )}
+                      </button>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">{draft.campaign_type || draft.activity_type}</Badge>
                     </TableCell>
@@ -79,14 +227,56 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-success" title="Approve">
-                          <Check className="h-4 w-4" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-success"
+                          title="Approve"
+                          onClick={() => handleStatusUpdate(draft.id, "Approved")}
+                          disabled={loadingId === draft.id}
+                        >
+                          {loadingId === draft.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-info" title="Edit">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-info"
+                          title="Edit"
+                          disabled={loadingId === draft.id}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-error" title="Reject">
-                          <X className="h-4 w-4" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-error"
+                          title="Reject"
+                          onClick={() => handleStatusUpdate(draft.id, "Rejected")}
+                          disabled={loadingId === draft.id}
+                        >
+                          {loadingId === draft.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-success"
+                          title="Send Now"
+                          onClick={() => handleStatusUpdate(draft.id, "Sent")}
+                          disabled={loadingId === draft.id}
+                        >
+                          {loadingId === draft.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     </TableCell>
@@ -98,7 +288,6 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
         </Card>
       )}
 
-      {/* Campaign Funnel */}
       <Card>
         <CardHeader>
           <CardTitle>Campaign Funnel</CardTitle>
@@ -128,7 +317,6 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
         </CardContent>
       </Card>
 
-      {/* Activity History */}
       <Card>
         <CardHeader>
           <CardTitle>Activity History</CardTitle>
@@ -154,13 +342,7 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
                     <TableCell>
                       <Badge
                         variant="secondary"
-                        className={cn(
-                          activity.activity_status === "Meeting Booked" && "bg-success text-white",
-                          activity.activity_status === "Replied" && "bg-info text-white",
-                          activity.activity_status === "Opened" && "bg-warning text-white",
-                          activity.activity_status === "Sent" && "bg-muted",
-                          activity.activity_status === "Drafted" && "bg-tier-cold"
-                        )}
+                        className={cn(getStatusBadgeClass(activity.activity_status))}
                       >
                         {activity.activity_status || activity.outcome || "Unknown"}
                       </Badge>
@@ -192,6 +374,8 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
           </Table>
         </CardContent>
       </Card>
+
+      <Toaster toasts={toasts} onDismiss={dismissToast} />
     </div>
   )
 }

@@ -69,6 +69,8 @@ export interface Signal {
   recency_weight: number | null
   score_impact: number | null
   description: string | null
+  source: string | null
+  source_url: string | null
   contact_id: string | null
   created_at: string | null
 }
@@ -146,6 +148,9 @@ export interface StrategicNote {
   description: string | null
   author: string | null
   contact_id: string | null
+  cluster_id: string | null
+  category: string | null
+  status: string | null
   created_at: string | null
   updated_at: string | null
 }
@@ -202,4 +207,77 @@ export interface DashboardKPIs {
   newSignals: number
   draftsPending: number
   staleContacts: number
+}
+
+export const PROGRAM_TYPES = [
+  'Executive Brief',
+  'Roundtable',
+  'Workshop',
+  'Webinar',
+  'Advisory',
+  'Podcast',
+  'Newsletter',
+  'Offsite',
+] as const
+
+export const PROGRAM_STATUSES = [
+  'Planned',
+  'Inviting',
+  'Active',
+  'Completed',
+  'Cancelled',
+] as const
+
+export type ProgramType = typeof PROGRAM_TYPES[number]
+export type ProgramStatus = typeof PROGRAM_STATUSES[number]
+
+export const ASSIGNMENT_STATUSES = [
+  'Invited',
+  'Opened',
+  'Replied',
+  'Meeting Booked',
+  'Completed',
+  'Cancelled',
+] as const
+
+export type AssignmentStatus = typeof ASSIGNMENT_STATUSES[number]
+
+export interface ProgramMetrics {
+  program_id: string
+  program_name: string
+  program_type: string
+  invited_count: number
+  opened_count: number
+  replied_count: number
+  meeting_booked_count: number
+  conversion_rate: number
+}
+
+export interface AutomationConfig {
+  frequency: 'daily' | 'weekly' | 'manual'
+  last_signal_detection: string | null
+  last_scoring: string | null
+  last_clustering: string | null
+  next_scheduled_run: string | null
+}
+
+export interface PipelineRunLog {
+  id: string
+  pipeline: string
+  status: 'success' | 'failed' | 'running'
+  started_at: string
+  completed_at: string | null
+  duration_seconds: number | null
+  records_processed: number | null
+  error_message: string | null
+}
+
+export interface AutomationDashboardData {
+  config: AutomationConfig
+  signals_24h: number
+  signals_7d: number
+  signals_30d: number
+  contacts_scored: number
+  clusters_updated: number
+  recent_runs: PipelineRunLog[]
 }

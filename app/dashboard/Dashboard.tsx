@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AgentStatusBar } from "@/components/layout/AgentStatusBar"
@@ -7,11 +8,19 @@ import { KPICard } from "@/components/dashboard/KPICard"
 import { PipelineSummary } from "@/components/dashboard/PipelineSummary"
 import { Top7Ranking } from "@/components/dashboard/Top7Ranking"
 import { AlertFeed } from "@/components/dashboard/AlertFeed"
-import { QuickActions } from "@/components/dashboard/QuickActions"
+import {
+  QuickActions,
+  type AgentAction,
+} from "@/components/dashboard/QuickActions"
+import { Toaster, useToasts } from "@/components/ui/toast"
 import { Users, Mail, Clock, Activity, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import type { DashboardKPIs, PipelineSummaryView, Top7View, VistaContact } from "@/lib/types"
+import type {
+  DashboardKPIs,
+  PipelineSummaryView,
+  Top7View,
+  VistaContact,
+} from "@/lib/types"
 
 interface DashboardProps {
   kpis: DashboardKPIs
@@ -22,6 +31,13 @@ interface DashboardProps {
   recentScores: VistaContact[]
 }
 
+const AGENT_LABELS: Record<AgentAction, string> = {
+  lens: "LENS",
+  maria: "MARIA",
+  probe: "PROBE",
+  carl: "CARL",
+}
+
 export function Dashboard({
   kpis,
   pipelineData,
@@ -30,25 +46,54 @@ export function Dashboard({
   thresholdCrossings,
   recentScores,
 }: DashboardProps) {
-  const handleTriggerLens = async () => {
-    // TODO: Implement LENS scoring trigger
-    console.log('Triggering LENS scoring...')
-  }
+  const [loadingAgent, setLoadingAgent] = useState<AgentAction | null>(null)
+  const [agentStatuses, setAgentStatuses] = useState<
+    Record<AgentAction, string>
+  >({
+    lens: "Never run",
+    maria: "Never run",
+    probe: "Never run",
+    carl: "Never run",
+  })
+  const { toasts, addToast, dismissToast } = useToasts()
 
-  const handleTriggerMaria = async () => {
-    // TODO: Implement MARIA draft generation
-    console.log('Triggering MARIA drafts...')
-  }
+  const handleTrigger = async (agent: AgentAction) => {
+    setLoadingAgent(agent)
 
-  const handleTriggerProbe = async () => {
-    // TODO: Implement PROBE refresh
-    console.log('Triggering PROBE refresh...')
+    try {
+      const res = await fetch(`/api/trigger/${agent}`, { method: "POST" })
+      const data = await res.json()
+
+      if (data.success) {
+        const timestamp = new Date().toLocaleTimeString()
+        setAgentStatuses((prev) => ({
+          ...prev,
+          [agent]: `Sent at ${timestamp}`,
+        }))
+        addToast(
+          "success",
+          `Message sent to ${AGENT_LABELS[agent]} group chat`
+        )
+      } else {
+        addToast(
+          "error",
+          `${AGENT_LABELS[agent]} trigger failed: ${data.error}`
+        )
+      }
+    } catch (error: any) {
+      addToast(
+        "error",
+        `${AGENT_LABELS[agent]} trigger failed: ${error.message}`
+      )
+    } finally {
+      setLoadingAgent(null)
+    }
   }
 
   return (
     <div className="space-y-6">
       {/* Agent Status */}
-      <AgentStatusBar />
+      <AgentStatusBar statuses={agentStatuses} activeAgent={loadingAgent} />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -112,7 +157,9 @@ export function Dashboard({
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Top 7 Contacts This Week</span>
-                <span className="text-xs text-muted-foreground">Priority Score ≥ 40</span>
+                <span className="text-xs text-muted-foreground">
+                  Priority Score ≥ 40
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -129,27 +176,37 @@ export function Dashboard({
               {recentScores.length > 0 ? (
                 <div className="space-y-3">
                   {recentScores.map((contact) => (
-                    <div 
+                    <div
                       key={contact.id}
                       className="flex items-center justify-between text-sm"
                     >
                       <div>
-                        <span className="font-medium">{contact.name || "Unknown"}</span>
-                        <span className="text-muted-foreground ml-2">• {contact.company || "-"}</span>
+                        <span className="font-medium">
+                          {contact.name || "Unknown"}
+                        </span>
+                        <span className="text-muted-foreground ml-2">
+                          • {contact.company || "-"}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={cn(
-                          "text-xs",
-                          contact.score_delta?.includes('+') ? 'text-success' : 
-                          contact.score_delta?.includes('-') ? 'text-error' : 
-                          'text-muted-foreground'
-                        )}>
-                          {contact.score_delta || '—'}
+                        <span
+                          className={cn(
+                            "text-xs",
+                            contact.score_delta?.includes("+")
+                              ? "text-success"
+                              : contact.score_delta?.includes("-")
+                                ? "text-error"
+                                : "text-muted-foreground"
+                          )}
+                        >
+                          {contact.score_delta || "—"}
                         </span>
                         <span className="text-muted-foreground text-xs">
-                          {contact.last_score_update ? 
-                            new Date(contact.last_score_update).toLocaleDateString() : 
-                            '—'}
+                          {contact.last_score_update
+                            ? new Date(
+                                contact.last_score_update
+                              ).toLocaleDateString()
+                            : "—"}
                         </span>
                       </div>
                     </div>
@@ -173,9 +230,8 @@ export function Dashboard({
             </CardHeader>
             <CardContent>
               <QuickActions
-                onTriggerLens={handleTriggerLens}
-                onTriggerMaria={handleTriggerMaria}
-                onTriggerProbe={handleTriggerProbe}
+                onTrigger={handleTrigger}
+                loadingAgent={loadingAgent}
               />
             </CardContent>
           </Card>
@@ -195,6 +251,9 @@ export function Dashboard({
           </Card>
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      <Toaster toasts={toasts} onDismiss={dismissToast} />
     </div>
   )
 }

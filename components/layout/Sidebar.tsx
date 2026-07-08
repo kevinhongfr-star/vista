@@ -15,6 +15,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  TrendingUp,
+  Cpu,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -26,6 +28,8 @@ const navItems = [
   { href: "/campaigns", label: "Campaigns", icon: Mail },
   { href: "/clusters", label: "Clusters", icon: Map },
   { href: "/programs", label: "Programs", icon: Calendar },
+  { href: "/conversions", label: "Conversions", icon: TrendingUp },
+  { href: "/automation", label: "Automation", icon: Cpu },
   { href: "/strategy", label: "Strategy", icon: Lightbulb },
 ]
 

@@ -1,82 +1,72 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import { Activity, Mail, BarChart3, Brain, RefreshCw } from "lucide-react"
+import { Activity, Mail, BarChart3, Brain } from "lucide-react"
+import type { AgentAction } from "@/components/dashboard/QuickActions"
 
-interface AgentStatus {
-  name: string
-  icon: React.ReactNode
-  status: 'idle' | 'running' | 'error' | 'never-run'
-  lastRun?: string
+interface AgentStatusBarProps {
+  statuses: Record<AgentAction, string>
+  activeAgent: AgentAction | null
 }
 
-export function AgentStatusBar() {
-  const [agents, setAgents] = useState<AgentStatus[]>([
-    { name: 'LENS', icon: <Activity className="h-4 w-4" />, status: 'never-run', lastRun: 'Never' },
-    { name: 'MARIA', icon: <Mail className="h-4 w-4" />, status: 'never-run', lastRun: 'Never' },
-    { name: 'PROBE', icon: <BarChart3 className="h-4 w-4" />, status: 'never-run', lastRun: 'Never' },
-    { name: 'CARL', icon: <Brain className="h-4 w-4" />, status: 'never-run', lastRun: 'Never' },
-  ])
-  const [loading, setLoading] = useState(true)
+const AGENT_ICONS: Record<AgentAction, React.ReactNode> = {
+  lens: <Activity className="h-4 w-4" />,
+  maria: <Mail className="h-4 w-4" />,
+  probe: <BarChart3 className="h-4 w-4" />,
+  carl: <Brain className="h-4 w-4" />,
+}
 
-  useEffect(() => {
-    const fetchAgentStatus = async () => {
-      try {
-        const response = await fetch('/api/health')
-        const data = await response.json()
+const AGENT_NAMES: Record<AgentAction, string> = {
+  lens: "LENS",
+  maria: "MARIA",
+  probe: "PROBE",
+  carl: "CARL",
+}
 
-        if (data.status === 'ok') {
-          // Check if scores have been calculated (post-migration state)
-          if (data.pipeline && data.pipeline.length > 0) {
-            setAgents(prev => prev.map(a => ({
-              ...a,
-              status: 'idle',
-              lastRun: 'Recently'
-            })))
-          }
-        }
-      } catch (e) {
-        console.log('Could not fetch agent status')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchAgentStatus()
-  }, [])
-
-  const statusColors = {
-    idle: 'text-muted-foreground',
-    running: 'text-success animate-pulse',
-    error: 'text-error',
-    'never-run': 'text-warning',
-  }
-
-  const statusLabels = {
-    idle: 'Ready',
-    running: 'Running',
-    error: 'Error',
-    'never-run': 'Never Run',
-  }
+export function AgentStatusBar({
+  statuses,
+  activeAgent,
+}: AgentStatusBarProps) {
+  const agents = Object.keys(AGENT_NAMES) as AgentAction[]
 
   return (
-    <div className="flex items-center gap-4 px-4 py-2 bg-muted/50 rounded-lg">
-      <span className="text-xs font-medium text-muted-foreground">Agents:</span>
-      {agents.map((agent) => (
-        <div key={agent.name} className="flex items-center gap-1.5">
-          <span className={cn(statusColors[agent.status])}>
-            {agent.icon}
-          </span>
-          <span className="text-xs font-medium">{agent.name}</span>
-          <span className={cn("text-xs", statusColors[agent.status])}>
-            {statusLabels[agent.status]}
-          </span>
-        </div>
-      ))}
-      {loading && (
-        <RefreshCw className="h-4 w-4 text-muted-foreground animate-spin ml-auto" />
-      )}
+    <div className="flex items-center gap-4 px-4 py-2 bg-muted/50 rounded-lg flex-wrap">
+      <span className="text-xs font-medium text-muted-foreground">
+        Agents:
+      </span>
+      {agents.map((agent) => {
+        const isActive = activeAgent === agent
+        const isDispatched = statuses[agent] !== "Never run"
+
+        return (
+          <div key={agent} className="flex items-center gap-1.5">
+            <span
+              className={cn(
+                isActive
+                  ? "text-success animate-pulse"
+                  : isDispatched
+                    ? "text-success"
+                    : "text-muted-foreground"
+              )}
+            >
+              {AGENT_ICONS[agent]}
+            </span>
+            <span className="text-xs font-medium">{AGENT_NAMES[agent]}</span>
+            <span
+              className={cn(
+                "text-xs",
+                isActive
+                  ? "text-success"
+                  : isDispatched
+                    ? "text-muted-foreground"
+                    : "text-warning"
+              )}
+            >
+              {isActive ? `Sending...` : statuses[agent]}
+            </span>
+          </div>
+        )
+      })}
     </div>
   )
 }

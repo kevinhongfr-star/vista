@@ -1,41 +1,38 @@
 import { createServerClient } from "@/lib/supabase/server"
-import { ProgramsPage } from "./ProgramsPage"
+import { ConversionsPage } from "./ConversionsPage"
 
 export const dynamic = 'force-dynamic'
 
-export default async function ProgramsPageWrapper() {
+export default async function ConversionsPageWrapper() {
   const supabase = createServerClient()
 
-  const { data: programs, count } = await supabase
+  const { data: programs } = await supabase
     .from('programs')
-    .select('*', { count: 'exact' })
+    .select('*')
     .order('created_at', { ascending: false })
 
   const { data: assignments } = await supabase
     .from('program_assignments')
     .select('*')
     .order('assigned_date', { ascending: false })
-    .limit(50)
+
+  const { data: campaignActivities } = await supabase
+    .from('campaign_activities')
+    .select('*')
+    .order('activity_date', { ascending: false })
+    .limit(500)
 
   const { data: clusters } = await supabase
     .from('density_clusters')
     .select('cluster_id, industry, geography')
     .order('industry', { ascending: true })
-    .limit(50)
-
-  const { data: contacts } = await supabase
-    .from('vista_contacts')
-    .select('id, name, company')
-    .order('name', { ascending: true, nullsFirst: false })
-    .limit(100)
 
   return (
-    <ProgramsPage 
-      programs={programs || []} 
+    <ConversionsPage 
+      programs={programs || []}
       assignments={assignments || []}
-      totalCount={count || 0}
+      campaignActivities={campaignActivities || []}
       clusters={clusters || []}
-      contacts={contacts || []}
     />
   )
 }
