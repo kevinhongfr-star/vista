@@ -1,12 +1,12 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { CheckCircle2, XCircle, X } from "lucide-react"
+import { CheckCircle2, XCircle, Info, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
 export interface ToastItem {
   id: string
-  type: "success" | "error"
+  type: "success" | "error" | "info"
   message: string
 }
 
@@ -17,7 +17,7 @@ interface ToastProps {
 
 export function Toaster({ toasts, onDismiss }: ToastProps) {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+    <div className="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm">
       {toasts.map((toast) => (
         <Toast key={toast.id} toast={toast} onDismiss={onDismiss} />
       ))}
@@ -51,13 +51,16 @@ function Toast({
           ? "opacity-100 translate-y-0"
           : "opacity-0 translate-y-2",
         toast.type === "success" && "border-success/30",
-        toast.type === "error" && "border-error/30"
+        toast.type === "error" && "border-error/30",
+        toast.type === "info" && "border-blue-300"
       )}
     >
       {toast.type === "success" ? (
         <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
-      ) : (
+      ) : toast.type === "error" ? (
         <XCircle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" />
+      ) : (
+        <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
       )}
       <p className="text-sm flex-1">{toast.message}</p>
       <button
@@ -73,7 +76,7 @@ function Toast({
 export function useToasts() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
-  const addToast = (type: "success" | "error", message: string) => {
+  const addToast = (type: "success" | "error" | "info", message: string) => {
     const id = `${Date.now()}-${Math.random()}`
     setToasts((prev) => [...prev, { id, type, message }])
   }

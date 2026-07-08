@@ -1,10 +1,9 @@
 import { createServerClient } from "@/lib/supabase/server"
 import { ContactsTable } from "@/components/contacts/ContactsTable"
 
-// Force dynamic rendering since this page fetches data from Supabase
 export const dynamic = 'force-dynamic'
 
-const PAGE_SIZE = 50
+const PAGE_SIZE = 20
 
 interface ContactsPageProps {
   searchParams: {
@@ -12,6 +11,8 @@ interface ContactsPageProps {
     tier?: string
     level?: string
     search?: string
+    stage?: string
+    function?: string
   }
 }
 
@@ -21,15 +22,15 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
   const tier = searchParams.tier
   const level = searchParams.level
   const search = searchParams.search
+  const stage = searchParams.stage
+  const func = searchParams.function
 
-  // Build query
   let query = supabase
     .from('vista_contacts')
     .select('*', { count: 'exact' })
     .order('priority_score', { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
-  // Apply filters
   if (tier && tier !== 'all') {
     query = query.eq('engagement_tier', tier.charAt(0).toUpperCase() + tier.slice(1))
   }
@@ -39,7 +40,15 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
   }
 
   if (search) {
-    query = query.or(`name.ilike.%${search}%,company.ilike.%${search}%,role.ilike.%${search}%`)
+    query = query.or(`name.ilike.%${search}%,company.ilike.%${search}%,email.ilike.%${search}%`)
+  }
+
+  if (stage && stage !== 'all') {
+    query = query.eq('pipeline_stage', stage)
+  }
+
+  if (func && func !== 'all') {
+    query = query.eq('function', func)
   }
 
   const { data, count, error } = await query
@@ -53,10 +62,27 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Contacts</h1>
-        <div className="text-sm text-muted-foreground">
-          {count || 0} total contacts
+        <div>
+          <h1 className="text-2xl font-bold">Contacts</h1>
+          <p className="text-sm text-muted-foreground">{count || 0} total contacts</p>
         </div>
+        <button
+          onClick={() => {
+            fetch('/api/contacts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: 'New Contact',
+                company: 'New Company',
+              }),
+            }).then(res => res.json()).then(() => {
+              window.location.reload()
+            })
+          }}
+          className="px-4 py-2 bg-accent-fuchsia text-white rounded-lg hover:bg-accent-fuchsia/90 font-medium"
+        >
+          + Create Contact
+        </button>
       </div>
 
       <ContactsTable
@@ -67,6 +93,8 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
           tier: searchParams.tier,
           level: searchParams.level,
           search: searchParams.search,
+          stage: searchParams.stage,
+          function: searchParams.function,
         }}
       />
     </div>

@@ -3,13 +3,17 @@
 import { useAppStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import { signOut } from "@/lib/supabase/auth"
-import { Bell, Search, Moon, Sun, LogOut } from "lucide-react"
+import { Bell, Search, Moon, Sun, LogOut, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
-export function Header() {
+interface HeaderProps {
+  onQuickActions?: () => void
+}
+
+export function Header({ onQuickActions }: HeaderProps) {
   const { theme, setTheme, searchQuery, setSearchQuery, notifications, sidebarCollapsed } = useAppStore()
 
   const handleLogout = async () => {
@@ -41,6 +45,14 @@ export function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
+          {/* Quick Actions */}
+          {onQuickActions && (
+            <Button onClick={onQuickActions} className="bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white">
+              <Zap className="h-4 w-4 mr-2" />
+              Quick Actions
+            </Button>
+          )}
+
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />

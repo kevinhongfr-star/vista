@@ -403,10 +403,13 @@ export interface OutreachActivityView {
 
 // Dashboard KPI types
 export interface DashboardKPIs {
-  totalHot: number
-  newSignals: number
-  draftsPending: number
-  staleContacts: number
+  contacts: number
+  contacts_delta: number
+  signals: number
+  signals_delta: number
+  clusters: number
+  campaigns: number
+  campaigns_draft: number
 }
 
 export const PROGRAM_TYPES = [

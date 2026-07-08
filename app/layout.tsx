@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { DM_Sans, Libre_Baskerville } from "next/font/google"
 import "./globals.css"
 import { Sidebar } from "@/components/layout/Sidebar"
-import { Header } from "@/components/layout/Header"
+import { ClientLayout } from "./client-layout"
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -30,12 +30,9 @@ export default function RootLayout({
       <body className={`${dmSans.variable} ${libreBaskerville.variable} font-sans`}>
         <div className="relative min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
           <Sidebar />
-          <Header />
-          <main className="ml-64 pt-16 min-h-screen transition-all duration-300">
-            <div className="p-6">
-              {children}
-            </div>
-          </main>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
         </div>
       </body>
     </html>

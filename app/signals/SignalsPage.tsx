@@ -23,7 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { formatDate, truncateText } from "@/lib/utils"
-import { Plus, Activity, Filter, Calendar, Loader2 } from "lucide-react"
+import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight } from "lucide-react"
+import Link from "next/link"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import type { Signal } from "@/lib/types"
 
@@ -375,10 +376,11 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
                     <TableCell className="text-muted-foreground">
                       {truncateText(signal.description, 60)}
                     </TableCell>
-                    <TableCell className="text-center">
-                      <span className="text-sm font-medium">
-                        {signal.score_impact || 0}
-                      </span>
+                    <TableCell>
+                      <Link href={`/signals/${signal.id}`} className="flex items-center gap-1 hover:text-primary">
+                        View
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))

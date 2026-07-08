@@ -17,8 +17,6 @@ import {
 import { cn } from "@/lib/utils"
 import { ScoreGauge } from "@/components/scoring/ScoreGauge"
 import { TierBadge } from "@/components/scoring/TierBadge"
-import { EncirclementBadge } from "@/components/scoring/EncirclementBadge"
-import { DeltaIndicator } from "@/components/scoring/DeltaIndicator"
 import { 
   Table, 
   TableBody, 
@@ -36,8 +34,17 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Activity } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Activity, Edit, Trash2, MoreHorizontal, ArrowRight } from "lucide-react"
 import type { VistaContact } from "@/lib/types"
+import { EmailComposer } from "@/components/modals/EmailComposer"
+import { ActivityLog } from "@/components/modals/ActivityLog"
+import { Toaster, useToasts } from "@/components/ui/toast"
 
 interface ContactsTableProps {
   data: VistaContact[]
@@ -47,6 +54,10 @@ interface ContactsTableProps {
     tier?: string
     level?: string
     search?: string
+    stage?: string
+    function?: string
+    minScore?: string
+    maxScore?: string
   }
 }
 
@@ -57,11 +68,15 @@ export function ContactsTable({
   searchParams 
 }: ContactsTableProps) {
   const router = useRouter()
+  const { toasts, addToast, dismissToast } = useToasts()
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'priority_score', desc: true }
   ])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState(searchParams.search || '')
+  const [emailComposerOpen, setEmailComposerOpen] = useState(false)
+  const [activityLogOpen, setActivityLogOpen] = useState(false)
+  const [selectedContact, setSelectedContact] = useState<VistaContact | undefined>()
 
   const columns: ColumnDef<VistaContact>[] = useMemo(() => [
     {
@@ -75,15 +90,20 @@ export function ContactsTable({
     },
     {
       id: 'name',
-      header: 'Contact',
+      header: 'Name',
       accessorKey: 'name',
       cell: ({ row }) => (
-        <Link 
-          href={`/contacts/${row.original.id}`}
-          className="font-medium hover:underline"
-        >
-          {row.original.name || "Unknown"}
-        </Link>
+        <div>
+          <Link 
+            href={`/contacts/${row.original.id}`}
+            className="font-medium hover:underline"
+          >
+            {row.original.name || "Unknown"}
+          </Link>
+          {row.original.email && (
+            <div className="text-xs text-muted-foreground">{row.original.email}</div>
+          )}
+        </div>
       ),
       enableGlobalFilter: true,
     },
@@ -102,82 +122,89 @@ export function ContactsTable({
       enableGlobalFilter: true,
     },
     {
-      id: 'role',
-      header: 'Role',
-      accessorKey: 'role',
-      cell: ({ row }) => (
-        <div>
-          <div className="font-medium">{row.original.role || "-"}</div>
-          {row.original.seniority && (
-            <div className="text-xs text-muted-foreground">{row.original.seniority}</div>
-          )}
-        </div>
-      ),
-      enableGlobalFilter: true,
+      id: 'function',
+      header: 'Function',
+      accessorKey: 'function',
+      cell: ({ row }) => row.original.function || "-",
     },
     {
-      id: 'region',
-      header: 'Region',
-      accessorKey: 'region',
-      cell: ({ row }) => row.original.region || "-",
-      enableGlobalFilter: true,
-    },
-    {
-      id: 'tier',
-      header: 'Tier',
-      accessorKey: 'engagement_tier',
+      id: 'stage',
+      header: 'Stage',
+      accessorKey: 'pipeline_stage',
       cell: ({ row }) => (
-        <TierBadge tier={row.original.engagement_tier} size="sm" />
-      ),
-      filterFn: (row, id, value) => {
-        const tierValue = row.getValue(id) as string | null | undefined
-        return value === 'all' || tierValue?.toLowerCase() === (value as string).toLowerCase()
-      },
-    },
-    {
-      id: 'level',
-      header: 'Level',
-      accessorKey: 'encirclement_level',
-      cell: ({ row }) => (
-        <EncirclementBadge level={row.original.encirclement_level} size="sm" />
-      ),
-      filterFn: (row, id, value) => {
-        const levelValue = row.getValue(id) as string | null | undefined
-        return value === 'all' || levelValue?.toLowerCase() === (value as string).toLowerCase()
-      },
-    },
-    {
-      id: 'delta',
-      header: 'Delta',
-      accessorKey: 'score_delta',
-      cell: ({ row }) => (
-        <DeltaIndicator delta={row.original.score_delta} />
+        <span className="px-2 py-1 rounded text-xs font-medium bg-muted">
+          {row.original.pipeline_stage || "Prospect"}
+        </span>
       ),
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: '',
       cell: ({ row }) => (
-        <div className="flex gap-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-            title="Draft Outreach"
-          >
-            <Mail className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-            title="Add Signal"
-          >
-            <Activity className="h-4 w-4" />
-          </Button>
-        </div>
+        <>
+          <Link href={`/contacts/${row.original.id}`}>
+            <Button variant="ghost" size="sm" className="h-8">
+              View <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem 
+                onClick={() => {
+                  setSelectedContact(row.original)
+                  setEmailComposerOpen(true)
+                }}
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Send Email
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => {
+                  setSelectedContact(row.original)
+                  setActivityLogOpen(true)
+                }}
+              >
+                <Activity className="h-4 w-4 mr-2" />
+                Log Activity
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => router.push(`/contacts/${row.original.id}`)}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/contacts/${row.original.id}`, {
+                      method: 'DELETE',
+                    })
+                    const data = await res.json()
+                    if (data.success) {
+                      addToast('success', 'Contact deleted')
+                      router.refresh()
+                    } else {
+                      addToast('error', 'Failed to delete contact')
+                    }
+                  } catch (error) {
+                    addToast('error', 'Failed to delete contact')
+                  }
+                }}
+                className="text-red-600"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
       ),
-      size: 80,
+      size: 120,
     },
   ], [])
 
@@ -216,24 +243,24 @@ export function ContactsTable({
     router.push(`/contacts?${params.toString()}`)
   }
 
-  const handleTierChange = (value: string) => {
+  const handleStageChange = (value: string) => {
     const params = new URLSearchParams(searchParams)
     params.set('page', '0')
     if (value === 'all') {
-      params.delete('tier')
+      params.delete('stage')
     } else {
-      params.set('tier', value)
+      params.set('stage', value)
     }
     router.push(`/contacts?${params.toString()}`)
   }
 
-  const handleLevelChange = (value: string) => {
+  const handleFunctionChange = (value: string) => {
     const params = new URLSearchParams(searchParams)
     params.set('page', '0')
     if (value === 'all') {
-      params.delete('level')
+      params.delete('function')
     } else {
-      params.set('level', value)
+      params.set('function', value)
     }
     router.push(`/contacts?${params.toString()}`)
   }
@@ -241,7 +268,7 @@ export function ContactsTable({
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <Input
           placeholder="Search contacts..."
           value={globalFilter}
@@ -256,12 +283,60 @@ export function ContactsTable({
             }
             router.push(`/contacts?${params.toString()}`)
           }}
-          className="max-w-sm"
+          className="max-w-xs"
         />
         
         <Select
+          value={searchParams.stage || 'all'}
+          onValueChange={handleStageChange}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Pipeline Stage" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Stages</SelectItem>
+            <SelectItem value="Prospect">Prospect</SelectItem>
+            <SelectItem value="Contacted">Contacted</SelectItem>
+            <SelectItem value="Engaged">Engaged</SelectItem>
+            <SelectItem value="Meeting Booked">Meeting Booked</SelectItem>
+            <SelectItem value="Proposal Sent">Proposal Sent</SelectItem>
+            <SelectItem value="Negotiation">Negotiation</SelectItem>
+            <SelectItem value="Closed Won">Closed Won</SelectItem>
+            <SelectItem value="Closed Lost">Closed Lost</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={searchParams.function || 'all'}
+          onValueChange={handleFunctionChange}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Function" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Functions</SelectItem>
+            <SelectItem value="Executive">Executive</SelectItem>
+            <SelectItem value="Technology">Technology</SelectItem>
+            <SelectItem value="Finance">Finance</SelectItem>
+            <SelectItem value="Sales">Sales</SelectItem>
+            <SelectItem value="Marketing">Marketing</SelectItem>
+            <SelectItem value="Operations">Operations</SelectItem>
+            <SelectItem value="Product">Product</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
           value={searchParams.tier || 'all'}
-          onValueChange={handleTierChange}
+          onValueChange={(value) => {
+            const params = new URLSearchParams(searchParams)
+            params.set('page', '0')
+            if (value === 'all') {
+              params.delete('tier')
+            } else {
+              params.set('tier', value)
+            }
+            router.push(`/contacts?${params.toString()}`)
+          }}
         >
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Tier" />
@@ -276,26 +351,9 @@ export function ContactsTable({
           </SelectContent>
         </Select>
 
-        <Select
-          value={searchParams.level || 'all'}
-          onValueChange={handleLevelChange}
-        >
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Level" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Levels</SelectItem>
-            <SelectItem value="scout">Scout</SelectItem>
-            <SelectItem value="patrol">Patrol</SelectItem>
-            <SelectItem value="encirclement">Encirclement</SelectItem>
-            <SelectItem value="siege">Siege</SelectItem>
-            <SelectItem value="occupation">Occupation</SelectItem>
-          </SelectContent>
-        </Select>
-
         <div className="flex items-center gap-2 ml-auto">
           <span className="text-sm text-muted-foreground">
-            {data.length} contacts
+            Showing {data.length} contacts
           </span>
         </div>
       </div>
@@ -312,7 +370,7 @@ export function ContactsTable({
                     style={{ width: header.getSize() }}
                     className={cn(
                       header.column.getCanSort() && "cursor-pointer select-none",
-                      header.id === 'actions' && "text-center"
+                      header.id === 'actions' && "text-right"
                     )}
                     onClick={header.column.getToggleSortingHandler()}
                   >
@@ -334,10 +392,7 @@ export function ContactsTable({
               table.getRowModel().rows.map((row) => (
                 <TableRow 
                   key={row.id}
-                  className={cn(
-                    "cursor-pointer hover:bg-muted/50",
-                    (row.original.priority_score ?? 0) >= 60 && "bg-success/5"
-                  )}
+                  className="hover:bg-muted/50"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -397,6 +452,22 @@ export function ContactsTable({
           </Button>
         </div>
       </div>
+
+      {/* Email Composer Modal */}
+      <EmailComposer
+        isOpen={emailComposerOpen}
+        onClose={() => setEmailComposerOpen(false)}
+        prefilledContact={selectedContact}
+      />
+
+      {/* Activity Log Modal */}
+      <ActivityLog
+        isOpen={activityLogOpen}
+        onClose={() => setActivityLogOpen(false)}
+        prefilledContact={selectedContact}
+      />
+
+      <Toaster toasts={toasts} onDismiss={dismissToast} />
     </div>
   )
 }

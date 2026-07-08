@@ -17,6 +17,8 @@ import {
   ChevronRight,
   TrendingUp,
   Cpu,
+  GitBranch,
+  ClipboardList,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -25,6 +27,8 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/contacts", label: "Contacts", icon: Users },
   { href: "/signals", label: "Signals", icon: Activity },
+  { href: "/pipeline", label: "Pipeline", icon: GitBranch },
+  { href: "/activities", label: "Activities", icon: ClipboardList },
   { href: "/campaigns", label: "Campaigns", icon: Mail },
   { href: "/clusters", label: "Clusters", icon: Map },
   { href: "/programs", label: "Programs", icon: Calendar },
