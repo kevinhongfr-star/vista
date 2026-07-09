@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { Toaster, useToasts } from "@/components/ui/toast"
 import { CountUp } from "@/components/ui/count-up"
 import { ProgressBar } from "@/components/ui/progress-bar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { subscribeToVistaChanges } from "@/lib/supabase/realtime"
 import type { PriorityAction, DashboardKPIs, PipelineFunnelStage, RecentActivity, VistaContact, ActivityType } from "@/lib/types"
 
 export function Dashboard() {
@@ -27,11 +28,31 @@ export function Dashboard() {
   const [activityLogOpen, setActivityLogOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<VistaContact | undefined>()
   const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | undefined>()
+  const realtimeUnsubscribeRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     fetchDashboardData()
     const interval = setInterval(fetchDashboardData, 5 * 60 * 1000)
-    return () => clearInterval(interval)
+
+    let debounceTimer: NodeJS.Timeout | null = null
+    const handleRealtimeChange = () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        fetchDashboardData()
+      }, 1000)
+    }
+
+    realtimeUnsubscribeRef.current = subscribeToVistaChanges(
+      handleRealtimeChange,
+      handleRealtimeChange,
+      handleRealtimeChange
+    )
+
+    return () => {
+      clearInterval(interval)
+      if (debounceTimer) clearTimeout(debounceTimer)
+      realtimeUnsubscribeRef.current?.()
+    }
   }, [])
 
   const fetchDashboardData = async () => {

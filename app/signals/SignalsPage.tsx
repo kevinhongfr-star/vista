@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +33,7 @@ import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight, CheckSquare, Squ
 import Link from "next/link"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { subscribeToVistaChanges } from "@/lib/supabase/realtime"
 import type { Signal } from "@/lib/types"
 
 const SIGNAL_TYPES = [
@@ -104,6 +106,7 @@ interface SignalsPageProps {
 }
 
 export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
+  const router = useRouter()
   const [isAddingSignal, setIsAddingSignal] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [filterType, setFilterType] = useState<string>("all")
@@ -112,6 +115,28 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
   const [selectedSignalIds, setSelectedSignalIds] = useState<Set<string>>(new Set())
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { toasts, addToast, dismissToast } = useToasts()
+  const realtimeUnsubscribeRef = useRef<(() => void) | null>(null)
+
+  useEffect(() => {
+    let debounceTimer: NodeJS.Timeout | null = null
+    const handleSignalChange = () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        router.refresh()
+      }, 1000)
+    }
+
+    realtimeUnsubscribeRef.current = subscribeToVistaChanges(
+      undefined,
+      handleSignalChange,
+      undefined
+    )
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      realtimeUnsubscribeRef.current?.()
+    }
+  }, [router])
 
   const toggleSignalSelection = (signalId: string) => {
     const newSelection = new Set(selectedSignalIds)

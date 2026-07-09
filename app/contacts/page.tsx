@@ -1,5 +1,6 @@
 import { createServerClient } from "@/lib/supabase/server"
 import { ContactsTable } from "@/components/contacts/ContactsTable"
+import { RealtimeRefresher } from "@/components/realtime-refresher"
 
 export const dynamic = 'force-dynamic'
 
@@ -64,6 +65,7 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
 
   return (
     <div className="space-y-6">
+      <RealtimeRefresher refreshContacts />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Contacts</h1>
