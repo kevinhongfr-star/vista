@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useMemo, useState, Fragment } from "react"
+import { useMemo, useState, Fragment, useRef, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
   useReactTable,
@@ -92,6 +92,20 @@ export function ContactsTable({
   const [selectedContact, setSelectedContact] = useState<VistaContact | undefined>()
   const [selectedContacts, setSelectedContacts] = useState<VistaContact[]>([])
   const [bulkLoading, setBulkLoading] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable
+      if (e.key === "/" && !isInput) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
   const columns: ColumnDef<VistaContact>[] = useMemo(() => [
     {
@@ -471,22 +485,28 @@ export function ContactsTable({
 
       {/* Filters */}
       <div className="flex items-center gap-4 flex-wrap">
-        <Input
-          placeholder="Search contacts..."
-          value={globalFilter}
-          onChange={(e) => {
-            setGlobalFilter(e.target.value)
-            const params = new URLSearchParams(searchParams)
-            params.set('page', '0')
-            if (e.target.value) {
-              params.set('search', e.target.value)
-            } else {
-              params.delete('search')
-            }
-            router.push(`/contacts?${params.toString()}`)
-          }}
-          className="max-w-xs"
-        />
+        <div className="relative">
+          <Input
+            ref={searchInputRef}
+            placeholder="Search contacts... (Press / to focus)"
+            value={globalFilter}
+            onChange={(e) => {
+              setGlobalFilter(e.target.value)
+              const params = new URLSearchParams(searchParams)
+              params.set('page', '0')
+              if (e.target.value) {
+                params.set('search', e.target.value)
+              } else {
+                params.delete('search')
+              }
+              router.push(`/contacts?${params.toString()}`)
+            }}
+            className="max-w-xs pr-8"
+          />
+          <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none inline-flex h-5 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">
+            /
+          </kbd>
+        </div>
         
         <Select
           value={searchParams.stage || 'all'}

@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { Header } from "@/components/layout/Header"
 import { GlobalModals } from "@/components/layout/GlobalModals"
+import { CommandPalette } from "@/components/CommandPalette"
+import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal"
 import { useAppStore } from "@/lib/store"
 
 interface ClientLayoutProps {
@@ -16,7 +18,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <>
       <Header onQuickActions={() => setEmailComposerOpen(true)} />
-      <main 
+      <main
         className={`pt-16 min-h-screen transition-all duration-300 ${
           sidebarCollapsed ? "ml-16" : "ml-64"
         }`}
@@ -26,6 +28,8 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         </div>
       </main>
       <GlobalModals />
+      <CommandPalette />
+      <KeyboardShortcutsModal />
     </>
   )
 }

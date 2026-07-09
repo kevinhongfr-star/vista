@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Activity, TrendingUp, Phone, Mail, Zap, Bell, ArrowRight, Users, Target, Trophy } from "lucide-react"
-import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
+import { CardSkeleton, TableSkeleton, Skeleton } from "@/components/ui/skeleton"
 import { EmailComposer } from "@/components/modals/EmailComposer"
 import { ActivityLog } from "@/components/modals/ActivityLog"
 import { Toaster, useToasts } from "@/components/ui/toast"
+import { CountUp } from "@/components/ui/count-up"
+import { ProgressBar } from "@/components/ui/progress-bar"
 import type { PriorityAction, DashboardKPIs, PipelineFunnelStage, RecentActivity, VistaContact, ActivityType } from "@/lib/types"
 
 export function Dashboard() {
@@ -117,7 +119,9 @@ export function Dashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Total Contacts</p>
-                    <p className="text-3xl font-bold">{kpis?.contacts?.toLocaleString() || 0}</p>
+                    <p className="text-3xl font-bold">
+                      <CountUp end={kpis?.contacts || 0} />
+                    </p>
                     <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.contacts || 0, kpis?.contacts_delta || 0)}`}>
                       {getKPIChange(kpis?.contacts || 0, kpis?.contacts_delta || 0)}
                     </p>
@@ -134,7 +138,9 @@ export function Dashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Active Deals</p>
-                    <p className="text-3xl font-bold">{kpis?.active_deals?.toLocaleString() || 0}</p>
+                    <p className="text-3xl font-bold">
+                      <CountUp end={kpis?.active_deals || 0} />
+                    </p>
                     <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}`}>
                       {getKPIChange(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}
                     </p>
@@ -151,7 +157,9 @@ export function Dashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Closed Won</p>
-                    <p className="text-3xl font-bold">{kpis?.closed_won?.toLocaleString() || 0}</p>
+                    <p className="text-3xl font-bold">
+                      <CountUp end={kpis?.closed_won || 0} />
+                    </p>
                     <p className={`text-xs mt-2 text-success`}>
                       This Month
                     </p>
@@ -168,7 +176,9 @@ export function Dashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">New Signals</p>
-                    <p className="text-3xl font-bold">{kpis?.signals || 0}</p>
+                    <p className="text-3xl font-bold">
+                      <CountUp end={kpis?.signals || 0} />
+                    </p>
                     <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.signals || 0, kpis?.signals_delta || 0)}`}>
                       {getKPIChange(kpis?.signals || 0, kpis?.signals_delta || 0)}
                     </p>
@@ -285,20 +295,18 @@ export function Dashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {pipelineFunnel.map((stage) => (
+                {pipelineFunnel.map((stage, i) => (
                   <div
                     key={stage.stage}
                     className="flex items-center gap-4 cursor-pointer hover:bg-muted/30 p-2 rounded-lg transition-colors"
                     onClick={() => router.push(`/pipeline?stage=${stage.stage}`)}
+                    style={{ animationDelay: `${i * 80}ms` }}
                   >
                     <span className="w-28 text-sm font-medium">{stage.stage}</span>
-                    <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-accent-fuchsia to-purple-500 rounded-full transition-all duration-500"
-                        style={{ width: `${stage.percentage}%` }}
-                      />
+                    <div className="flex-1">
+                      <ProgressBar value={stage.percentage} animated={false} barClassName="bg-gradient-to-r from-accent-fuchsia to-purple-500" />
                     </div>
-                    <span className="w-16 text-right font-bold">{stage.count}</span>
+                    <span className="w-16 text-right font-bold"><CountUp end={stage.count} /></span>
                   </div>
                 ))}
               </div>
