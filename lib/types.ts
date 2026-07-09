@@ -405,11 +405,10 @@ export interface OutreachActivityView {
 export interface DashboardKPIs {
   contacts: number
   contacts_delta: number
+  active_deals: number
+  closed_won: number
   signals: number
   signals_delta: number
-  clusters: number
-  campaigns: number
-  campaigns_draft: number
 }
 
 export const PROGRAM_TYPES = [

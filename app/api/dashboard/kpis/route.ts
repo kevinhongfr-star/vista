@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase/server"
+import { PIPELINE_STAGES } from "@/lib/types"
 
 export async function GET() {
   try {
@@ -16,6 +17,21 @@ export async function GET() {
       .select("*", { count: "exact", head: true })
       .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
 
+    // Active Deals: contacts in pipeline stages excluding Prospect and Closed Won/Lost
+    const activeStages = PIPELINE_STAGES.filter(
+      (s) => s !== "Prospect" && s !== "Closed Won" && s !== "Closed Lost"
+    )
+    const { count: activeDealsCount } = await supabase
+      .from("vista_contacts")
+      .select("*", { count: "exact", head: true })
+      .in("pipeline_stage", activeStages)
+
+    // Closed Won this month
+    const { count: closedWonCount } = await supabase
+      .from("vista_contacts")
+      .select("*", { count: "exact", head: true })
+      .eq("pipeline_stage", "Closed Won")
+
     // Get signals count
     const { count: signalsCount } = await supabase
       .from("signals")
@@ -27,34 +43,17 @@ export async function GET() {
       .select("*", { count: "exact", head: true })
       .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
 
-    // Get clusters count
-    const { count: clustersCount } = await supabase
-      .from("density_clusters")
-      .select("*", { count: "exact", head: true })
-
-    // Get campaigns count
-    const { count: campaignsCount } = await supabase
-      .from("campaign_activities")
-      .select("*", { count: "exact", head: true })
-
-    // Get campaigns in Draft status
-    const { count: campaignsDraft } = await supabase
-      .from("campaign_activities")
-      .select("*", { count: "exact", head: true })
-      .eq("activity_status", "Drafted")
-
     return NextResponse.json({
       contacts: contactsCount || 0,
       contacts_delta: contactsWeek || 0,
+      active_deals: activeDealsCount || 0,
+      closed_won: closedWonCount || 0,
       signals: signalsCount || 0,
       signals_delta: signalsWeek || 0,
-      clusters: clustersCount || 0,
-      campaigns: campaignsCount || 0,
-      campaigns_draft: campaignsDraft || 0,
     })
   } catch (error) {
     return NextResponse.json(
-      { contacts: 0, signals: 0, clusters: 0, campaigns: 0, campaigns_draft: 0, error: String(error) },
+      { contacts: 0, active_deals: 0, closed_won: 0, signals: 0, signals_delta: 0, error: String(error) },
       { status: 500 }
     )
   }

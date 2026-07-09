@@ -56,7 +56,7 @@ export function Sidebar() {
       <div className="flex h-16 items-center justify-between px-4">
         {!sidebarCollapsed && (
           <Link href="/dashboard" className="flex flex-col leading-tight">
-            <span className="text-[10px] font-medium tracking-widest text-white/50 uppercase">LYC Partners</span>
+            <span className="text-[10px] font-semibold tracking-widest text-white/70 uppercase">LYC Partners</span>
             <span className="text-lg font-bold text-accent-fuchsia tracking-wide">VISTA</span>
           </Link>
         )}
@@ -84,8 +84,8 @@ export function Sidebar() {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-accent-fuchsia text-primary-navy"
-                      : "text-white/80 hover:bg-white/10 hover:text-white",
+                      ? "bg-accent-fuchsia text-white font-semibold"
+                      : "text-white/70 hover:bg-white/10 hover:text-white",
                     sidebarCollapsed && "justify-center px-2"
                   )}
                 >
@@ -112,8 +112,8 @@ export function Sidebar() {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-accent-fuchsia text-primary-navy"
-                      : "text-white/80 hover:bg-white/10 hover:text-white",
+                      ? "bg-accent-fuchsia text-white font-semibold"
+                      : "text-white/70 hover:bg-white/10 hover:text-white",
                     sidebarCollapsed && "justify-center px-2"
                   )}
                 >

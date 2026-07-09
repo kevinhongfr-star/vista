@@ -142,7 +142,7 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
       </div>
 
       {viewMode === "kanban" && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 overflow-x-auto">
           {PIPELINE_STAGES.map((stage) => {
             const stageContacts = stageGroups[stage] || []
             return (

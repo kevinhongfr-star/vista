@@ -300,13 +300,13 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
                   <span className="font-medium">{step.label}</span>
                   <span className="text-muted-foreground">{step.count}</span>
                 </div>
-                <div className="relative h-8 bg-muted rounded">
+                <div className="relative h-8 bg-muted rounded overflow-hidden">
                   <div 
-                    className={cn("absolute top-0 left-0 h-full rounded", step.color)}
+                    className={cn("absolute top-0 left-0 h-full rounded-r", step.color)}
                     style={{ width: `${(step.count / maxCount) * 100}%` }}
                   />
                   {index > 0 && funnelSteps[index - 1].count > 0 && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-white z-10">
                       {((step.count / funnelSteps[index - 1].count) * 100).toFixed(0)}%
                     </span>
                   )}

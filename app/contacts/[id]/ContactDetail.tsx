@@ -71,7 +71,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
 
   const fetchSignals = async () => {
     try {
-      const res = await fetch(`/api/signals`)
+      const res = await fetch(`/api/signals?contact_id=${contact.id}`)
       const data = await res.json()
       setSignals(data.signals || [])
     } catch (error) {
@@ -91,7 +91,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
 
   const fetchNotes = async () => {
     try {
-      const res = await fetch(`/api/strategy/notes`)
+      const res = await fetch(`/api/strategic-notes?contact_id=${contact.id}`)
       const data = await res.json()
       setNotes(data.notes || [])
     } catch (error) {
@@ -287,15 +287,19 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Value Score</span>
-                    <span>{Math.round((contact.vista_v || 0) * 30 / 100)}/30</span>
+                    <span>{Math.round((contact.vista_v || 0) * 30 / 100)}/30 (High-value target)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Function Score</span>
-                    <span>{Math.round((contact.vista_i || 0) * 20 / 100)}/20</span>
+                    <span>{Math.round((contact.vista_i || 0) * 20 / 100)}/20 ({contact.function || "Unknown"} = decision maker)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Engagement Score</span>
-                    <span>{Math.round((contact.vista_s || 0) * 30 / 100)}/30</span>
+                    <span>{Math.round((contact.vista_s || 0) * 30 / 100)}/30 (Moderate engagement)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Cluster Fit Score</span>
+                    <span>{Math.round((contact.vista_t || 0) * 20 / 100)}/20</span>
                   </div>
                   {daysSinceLastContact && daysSinceLastContact > 30 && (
                     <div className="flex justify-between text-red-600">

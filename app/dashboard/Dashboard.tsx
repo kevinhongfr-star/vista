@@ -134,9 +134,9 @@ export function Dashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Active Deals</p>
-                    <p className="text-3xl font-bold">{kpis?.signals?.toLocaleString() || 0}</p>
-                    <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.signals || 0, kpis?.signals_delta || 0)}`}>
-                      {getKPIChange(kpis?.signals || 0, kpis?.signals_delta || 0)}
+                    <p className="text-3xl font-bold">{kpis?.active_deals?.toLocaleString() || 0}</p>
+                    <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}`}>
+                      {getKPIChange(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}
                     </p>
                   </div>
                   <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
@@ -151,9 +151,9 @@ export function Dashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Closed Won</p>
-                    <p className="text-3xl font-bold">{kpis?.campaigns || 0}</p>
-                    <p className={`text-xs mt-2 ${kpis?.campaigns_draft ? "text-warning" : "text-success"}`}>
-                      {kpis?.campaigns_draft ? `${kpis.campaigns_draft} drafts pending` : "No pending drafts"}
+                    <p className="text-3xl font-bold">{kpis?.closed_won?.toLocaleString() || 0}</p>
+                    <p className={`text-xs mt-2 text-success`}>
+                      This Month
                     </p>
                   </div>
                   <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
