@@ -79,7 +79,7 @@ export function ActivitiesPage({ activities }: ActivitiesPageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Activities</h1>
         <Button onClick={() => setActivityLogOpen(true)}>

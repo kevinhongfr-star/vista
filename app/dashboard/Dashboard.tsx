@@ -12,6 +12,7 @@ import { ActivityLog } from "@/components/modals/ActivityLog"
 import { Toaster, useToasts } from "@/components/ui/toast"
 import { CountUp } from "@/components/ui/count-up"
 import { ProgressBar } from "@/components/ui/progress-bar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import type { PriorityAction, DashboardKPIs, PipelineFunnelStage, RecentActivity, VistaContact, ActivityType } from "@/lib/types"
 
 export function Dashboard() {
@@ -102,10 +103,17 @@ export function Dashboard() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Welcome back, Kevin. Here&#39;s your daily BD intelligence overview.</p>
         </div>
-        <Button onClick={fetchDashboardData} className="bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white">
-          <Zap className="h-4 w-4 mr-2" />
-          Refresh Data
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={fetchDashboardData} className="bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white">
+              <Zap className="h-4 w-4 mr-2" />
+              Refresh Data
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Refresh dashboard data from the server</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* KPI Cards */}
@@ -114,81 +122,109 @@ export function Dashboard() {
           <CardSkeleton count={4} />
         ) : (
           <>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow card-hover" onClick={() => router.push("/contacts")}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Total Contacts</p>
-                    <p className="text-3xl font-bold">
-                      <CountUp end={kpis?.contacts || 0} />
-                    </p>
-                    <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.contacts || 0, kpis?.contacts_delta || 0)}`}>
-                      {getKPIChange(kpis?.contacts || 0, kpis?.contacts_delta || 0)}
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow card-hover" onClick={() => router.push("/contacts")}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Total Contacts</p>
+                        <p className="text-3xl font-bold">
+                          <CountUp end={kpis?.contacts || 0} />
+                        </p>
+                        <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.contacts || 0, kpis?.contacts_delta || 0)}`}>
+                          {getKPIChange(kpis?.contacts || 0, kpis?.contacts_delta || 0)}
+                        </p>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <Users className="h-6 w-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View all contacts in your database</p>
+              </TooltipContent>
+            </Tooltip>
 
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/pipeline")}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Active Deals</p>
-                    <p className="text-3xl font-bold">
-                      <CountUp end={kpis?.active_deals || 0} />
-                    </p>
-                    <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}`}>
-                      {getKPIChange(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                    <Target className="h-6 w-6 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/pipeline")}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Active Deals</p>
+                        <p className="text-3xl font-bold">
+                          <CountUp end={kpis?.active_deals || 0} />
+                        </p>
+                        <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}`}>
+                          {getKPIChange(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}
+                        </p>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <Target className="h-6 w-6 text-green-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View your active pipeline deals</p>
+              </TooltipContent>
+            </Tooltip>
 
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/pipeline")}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Closed Won</p>
-                    <p className="text-3xl font-bold">
-                      <CountUp end={kpis?.closed_won || 0} />
-                    </p>
-                    <p className={`text-xs mt-2 text-success`}>
-                      This Month
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-                    <Trophy className="h-6 w-6 text-amber-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/pipeline")}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Closed Won</p>
+                        <p className="text-3xl font-bold">
+                          <CountUp end={kpis?.closed_won || 0} />
+                        </p>
+                        <p className={`text-xs mt-2 text-success`}>
+                          This Month
+                        </p>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                        <Trophy className="h-6 w-6 text-amber-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Closed deals this month</p>
+              </TooltipContent>
+            </Tooltip>
 
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/signals")}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">New Signals</p>
-                    <p className="text-3xl font-bold">
-                      <CountUp end={kpis?.signals || 0} />
-                    </p>
-                    <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.signals || 0, kpis?.signals_delta || 0)}`}>
-                      {getKPIChange(kpis?.signals || 0, kpis?.signals_delta || 0)}
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                    <Activity className="h-6 w-6 text-purple-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/signals")}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">New Signals</p>
+                        <p className="text-3xl font-bold">
+                          <CountUp end={kpis?.signals || 0} />
+                        </p>
+                        <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.signals || 0, kpis?.signals_delta || 0)}`}>
+                          {getKPIChange(kpis?.signals || 0, kpis?.signals_delta || 0)}
+                        </p>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                        <Activity className="h-6 w-6 text-purple-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>New company signals this week</p>
+              </TooltipContent>
+            </Tooltip>
           </>
         )}
       </div>

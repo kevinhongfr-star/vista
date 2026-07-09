@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { formatDate, truncateText } from "@/lib/utils"
-import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight } from "lucide-react"
+import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight, CheckSquare, Square, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import type { Signal } from "@/lib/types"
@@ -82,7 +82,50 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
   const [filterType, setFilterType] = useState<string>("all")
   const [filterStrength, setFilterStrength] = useState<string>("all")
   const [signalList, setSignalList] = useState<Signal[]>(signals)
+  const [selectedSignalIds, setSelectedSignalIds] = useState<Set<string>>(new Set())
   const { toasts, addToast, dismissToast } = useToasts()
+
+  const toggleSignalSelection = (signalId: string) => {
+    const newSelection = new Set(selectedSignalIds)
+    if (newSelection.has(signalId)) {
+      newSelection.delete(signalId)
+    } else {
+      newSelection.add(signalId)
+    }
+    setSelectedSignalIds(newSelection)
+  }
+
+  const toggleAllSelection = () => {
+    if (selectedSignalIds.size === filteredSignals.length) {
+      setSelectedSignalIds(new Set())
+    } else {
+      setSelectedSignalIds(new Set(filteredSignals.map(s => s.id)))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedSignalIds.size === 0) return
+    setIsSaving(true)
+    try {
+      const response = await fetch("/api/signals/bulk-delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signalIds: Array.from(selectedSignalIds) }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        setSignalList(prev => prev.filter(s => !selectedSignalIds.has(s.id)))
+        setSelectedSignalIds(new Set())
+        addToast("success", `Deleted ${selectedSignalIds.size} signal(s)`)
+      } else {
+        addToast("error", `Failed to delete signals: ${data.error}`)
+      }
+    } catch (error) {
+      addToast("error", "Failed to delete signals")
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const [formCompany, setFormCompany] = useState("")
   const [formSignalType, setFormSignalType] = useState("")
@@ -152,7 +195,7 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Signals</h1>
@@ -317,12 +360,37 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
         </CardContent>
       </Card>
 
+      {selectedSignalIds.size > 0 && (
+        <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+          <span className="text-sm font-medium">{selectedSignalIds.size} selected</span>
+          <Button variant="outline" size="sm" onClick={() => setSelectedSignalIds(new Set())}>
+            Clear Selection
+          </Button>
+          <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={isSaving}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            {isSaving ? "Deleting..." : "Delete Selected"}
+          </Button>
+        </div>
+      )}
+
       {/* Signals Table */}
       <Card>
         <CardContent className="pt-6">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[48px]">
+                  <button
+                    onClick={toggleAllSelection}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {selectedSignalIds.size === filteredSignals.length && filteredSignals.length > 0 ? (
+                      <CheckSquare className="h-4 w-4" />
+                    ) : (
+                      <Square className="h-4 w-4" />
+                    )}
+                  </button>
+                </TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Strength</TableHead>
@@ -337,8 +405,26 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
                 filteredSignals.map((signal) => (
                   <TableRow
                     key={signal.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className={cn(
+                      "cursor-pointer hover:bg-muted/50",
+                      selectedSignalIds.has(signal.id) && "bg-muted/50"
+                    )}
                   >
+                    <TableCell>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleSignalSelection(signal.id)
+                        }}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        {selectedSignalIds.has(signal.id) ? (
+                          <CheckSquare className="h-4 w-4" />
+                        ) : (
+                          <Square className="h-4 w-4" />
+                        )}
+                      </button>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">
                         {SIGNAL_TYPE_LABELS[signal.signal_type || ""] ||
@@ -387,7 +473,7 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="h-24 text-center text-muted-foreground"
                   >
                     No signals found. Click Add Signal to create one.

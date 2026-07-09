@@ -65,7 +65,7 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Activity className="h-8 w-8 text-muted-foreground" />

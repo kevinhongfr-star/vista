@@ -6,6 +6,7 @@ import { GlobalModals } from "@/components/layout/GlobalModals"
 import { CommandPalette } from "@/components/CommandPalette"
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal"
 import { useAppStore } from "@/lib/store"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 interface ClientLayoutProps {
   children: React.ReactNode
@@ -16,7 +17,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   const { sidebarCollapsed } = useAppStore()
 
   return (
-    <>
+    <TooltipProvider>
       <Header onQuickActions={() => setEmailComposerOpen(true)} />
       <main
         className={`pt-16 min-h-screen transition-all duration-300 ${
@@ -30,6 +31,6 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       <GlobalModals />
       <CommandPalette />
       <KeyboardShortcutsModal />
-    </>
+    </TooltipProvider>
   )
 }

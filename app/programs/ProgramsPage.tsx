@@ -168,7 +168,7 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <Toaster toasts={toasts} onDismiss={dismissToast} />
 
       {/* Header */}

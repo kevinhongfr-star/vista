@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { X, Send, Mail } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -43,6 +44,7 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
   const [subject, setSubject] = useState("")
   const [body, setBody] = useState("")
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Pre-fill with contact info
   const contacts = prefilledContacts || (prefilledContact ? [prefilledContact] : [])
@@ -95,13 +97,15 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
 
   const handleSend = async () => {
     // Validation
-    const errors: string[] = []
-    if (contacts.length === 0) errors.push("No recipients selected")
-    if (!subject.trim()) errors.push("Subject is required")
-    if (!body.trim()) errors.push("Email body is required")
+    const newErrors: Record<string, string> = {}
+    if (contacts.length === 0) newErrors.recipients = "No recipients selected"
+    if (!subject.trim()) newErrors.subject = "Subject is required"
+    if (!body.trim()) newErrors.body = "Email body is required"
     
-    if (errors.length > 0) {
-      addToast("error", errors.join(", "))
+    setErrors(newErrors)
+    
+    if (Object.keys(newErrors).length > 0) {
+      addToast("error", "Please fix the highlighted fields")
       return
     }
 
@@ -205,9 +209,16 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
             <Input
               id="subject"
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={(e) => {
+                setSubject(e.target.value)
+                if (errors.subject) setErrors(prev => ({ ...prev, subject: "" }))
+              }}
               placeholder="Enter subject line"
+              className={cn(errors.subject && "border-error focus-visible:ring-error")}
             />
+            {errors.subject && (
+              <p className="text-xs text-error">{errors.subject}</p>
+            )}
           </div>
 
           {/* Body */}
@@ -216,10 +227,16 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
             <Textarea
               id="body"
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={(e) => {
+                setBody(e.target.value)
+                if (errors.body) setErrors(prev => ({ ...prev, body: "" }))
+              }}
               placeholder="Enter email body..."
-              className="min-h-[200px]"
+              className={cn("min-h-[200px]", errors.body && "border-error focus-visible:ring-error")}
             />
+            {errors.body && (
+              <p className="text-xs text-error">{errors.body}</p>
+            )}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>Available variables:</span>
               <span className="px-2 py-1 bg-muted rounded">{`{contact_name}`}</span>

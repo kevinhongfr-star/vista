@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { X, Clock, Phone, Mail, FileText, Calendar } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -48,6 +49,7 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
   const [notes, setNotes] = useState("")
   const [durationMinutes, setDurationMinutes] = useState("")
   const [contacts, setContacts] = useState<VistaContact[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (!isOpen) {
@@ -74,21 +76,23 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
 
   const handleLog = async () => {
     // Validation
-    const errors: string[] = []
-    if (!activityType) errors.push("Activity type is required")
-    if (!prefilledContact?.id) errors.push("Contact is required")
+    const newErrors: Record<string, string> = {}
+    if (!activityType) newErrors.activityType = "Activity type is required"
+    if (!prefilledContact?.id) newErrors.contact = "Contact is required"
     if ((activityType === "Call" || activityType === "Meeting") && !durationMinutes) {
-      errors.push("Duration is required for calls and meetings")
+      newErrors.duration = "Duration is required for calls and meetings"
     }
     if ((activityType === "Call" || activityType === "Meeting") && durationMinutes) {
       const duration = parseInt(durationMinutes)
       if (isNaN(duration) || duration <= 0) {
-        errors.push("Duration must be a positive number")
+        newErrors.duration = "Duration must be a positive number"
       }
     }
     
-    if (errors.length > 0) {
-      addToast("error", errors.join(", "))
+    setErrors(newErrors)
+    
+    if (Object.keys(newErrors).length > 0) {
+      addToast("error", "Please fix the highlighted fields")
       return
     }
 
@@ -158,8 +162,11 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
           {/* Activity Type */}
           <div className="space-y-2">
             <Label htmlFor="activityType">Activity Type</Label>
-            <Select value={activityType} onValueChange={setActivityType}>
-              <SelectTrigger>
+            <Select value={activityType} onValueChange={(value) => {
+              setActivityType(value)
+              if (errors.activityType) setErrors(prev => ({ ...prev, activityType: "" }))
+            }}>
+              <SelectTrigger className={cn(errors.activityType && "border-error")}>
                 <SelectValue placeholder="Select activity type" />
               </SelectTrigger>
               <SelectContent>
@@ -171,6 +178,9 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
                 ))}
               </SelectContent>
             </Select>
+            {errors.activityType && (
+              <p className="text-xs text-error">{errors.activityType}</p>
+            )}
           </div>
 
           {/* Date */}
@@ -219,11 +229,18 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
                 id="duration"
                 type="number"
                 value={durationMinutes}
-                onChange={(e) => setDurationMinutes(e.target.value)}
+                onChange={(e) => {
+                  setDurationMinutes(e.target.value)
+                  if (errors.duration) setErrors(prev => ({ ...prev, duration: "" }))
+                }}
                 placeholder="30"
                 min="1"
                 max="480"
+                className={cn(errors.duration && "border-error focus-visible:ring-error")}
               />
+              {errors.duration && (
+                <p className="text-xs text-error">{errors.duration}</p>
+              )}
             </div>
           )}
         </div>

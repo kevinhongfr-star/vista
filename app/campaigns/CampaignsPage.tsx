@@ -155,7 +155,7 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Campaigns</h1>
         <Badge variant="secondary">{totalCount} total activities</Badge>

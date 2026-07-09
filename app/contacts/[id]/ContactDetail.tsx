@@ -222,7 +222,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
     : null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

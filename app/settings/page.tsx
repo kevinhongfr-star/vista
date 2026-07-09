@@ -276,7 +276,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <div className="flex items-center gap-4">
         <Settings className="h-8 w-8 text-muted-foreground" />
         <h1 className="text-3xl font-bold">Settings</h1>

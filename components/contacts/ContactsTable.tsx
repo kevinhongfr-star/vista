@@ -41,10 +41,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Activity, Edit, Trash2, MoreHorizontal, ArrowRight, Send, Trash, CheckSquare, Square, ArrowUp, ArrowDown, ArrowUpDown, X, Filter
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Activity, Edit, Trash2, MoreHorizontal, ArrowRight, Send, Trash, CheckSquare, Square, ArrowUp, ArrowDown, ArrowUpDown, X, Filter, Save, FolderOpen, Trash as TrashIcon
 } from "lucide-react"
 import type { VistaContact } from "@/lib/types"
 import { EmailComposer } from "@/components/modals/EmailComposer"
@@ -102,7 +103,59 @@ export function ContactsTable({
   const [selectedContact, setSelectedContact] = useState<VistaContact | undefined>()
   const [selectedContacts, setSelectedContacts] = useState<VistaContact[]>([])
   const [bulkLoading, setBulkLoading] = useState(false)
+  const [filterPresets, setFilterPresets] = useState<{ name: string; filters: typeof searchParams }[]>([])
+  const [showPresetMenu, setShowPresetMenu] = useState(false)
+  const [presetName, setPresetName] = useState("")
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('contactFilterPresets')
+    if (saved) {
+      setFilterPresets(JSON.parse(saved))
+    } else {
+      const defaults = [
+        { name: "Hot Contacts", filters: { tier: "hot", stage: "all", search: "", function: "all", level: "all" } },
+        { name: "Active Pipeline", filters: { tier: "all", stage: "Engaged", search: "", function: "all", level: "all" } },
+        { name: "Executives", filters: { tier: "all", stage: "all", search: "", function: "Executive", level: "all" } },
+      ]
+      setFilterPresets(defaults)
+      localStorage.setItem('contactFilterPresets', JSON.stringify(defaults))
+    }
+  }, [])
+
+  const savePreset = () => {
+    if (!presetName.trim()) return
+    const newPreset = {
+      name: presetName.trim(),
+      filters: { ...searchParams },
+    }
+    const updated = [...filterPresets, newPreset]
+    setFilterPresets(updated)
+    localStorage.setItem('contactFilterPresets', JSON.stringify(updated))
+    setPresetName("")
+    setShowPresetMenu(false)
+    addToast("success", `Filter preset "${presetName}" saved`)
+  }
+
+  const loadPreset = (preset: typeof filterPresets[0]) => {
+    const params = new URLSearchParams()
+    params.set('page', '0')
+    if (preset.filters.search) params.set('search', preset.filters.search)
+    if (preset.filters.stage && preset.filters.stage !== 'all') params.set('stage', preset.filters.stage)
+    if (preset.filters.function && preset.filters.function !== 'all') params.set('function', preset.filters.function)
+    if (preset.filters.tier && preset.filters.tier !== 'all') params.set('tier', preset.filters.tier)
+    if (preset.filters.level && preset.filters.level !== 'all') params.set('level', preset.filters.level)
+    if (searchParams.pageSize) params.set('pageSize', searchParams.pageSize)
+    router.push(`/contacts?${params.toString()}`)
+    setShowPresetMenu(false)
+  }
+
+  const deletePreset = (index: number) => {
+    const updated = filterPresets.filter((_, i) => i !== index)
+    setFilterPresets(updated)
+    localStorage.setItem('contactFilterPresets', JSON.stringify(updated))
+    addToast("success", "Preset deleted")
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -598,6 +651,69 @@ export function ContactsTable({
             Clear filters
           </Button>
         )}
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <FolderOpen className="h-3 w-3 mr-2" />
+              Presets
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {filterPresets.length > 0 && (
+              <>
+                <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                  Saved Presets
+                </div>
+                {filterPresets.map((preset, index) => (
+                  <DropdownMenuItem
+                    key={preset.name}
+                    onClick={() => loadPreset(preset)}
+                    className="flex justify-between items-center"
+                  >
+                    <span>{preset.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 ml-2"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deletePreset(index)
+                      }}
+                    >
+                      <TrashIcon className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+              Save Current Filter
+            </div>
+            <div className="px-2 pb-2">
+              <Input
+                placeholder="Preset name"
+                value={presetName}
+                onChange={(e) => setPresetName(e.target.value)}
+                className="h-8 text-sm mb-2"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') savePreset()
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={savePreset}
+                disabled={!presetName.trim()}
+              >
+                <Save className="h-3 w-3 mr-2" />
+                Save
+              </Button>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <div className="flex items-center gap-2 ml-auto">
           <span className="text-sm text-muted-foreground">
             {totalCount > 0 ? `Showing ${startItem}-${endItem} of ${totalCount}` : 'No contacts'}

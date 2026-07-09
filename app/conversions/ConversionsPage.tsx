@@ -26,7 +26,7 @@ export function ConversionsPage({ programs, assignments, campaignActivities, clu
   const totalRevenue = assignments.reduce((sum, a) => sum + (a.revenue_attributed || 0), 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Conversions</h1>
         <Badge variant="secondary">{assignments.length} total assignments</Badge>
