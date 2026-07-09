@@ -70,6 +70,16 @@ interface ContactsTableProps {
   }
 }
 
+const stageStyles: Record<string, string> = {
+  'Prospect': 'bg-slate-100 text-slate-700 border-slate-200',
+  'Engaged': 'bg-blue-100 text-blue-700 border-blue-200',
+  'Meeting Booked': 'bg-indigo-100 text-indigo-700 border-indigo-200',
+  'Proposal': 'bg-amber-100 text-amber-700 border-amber-200',
+  'Negotiation': 'bg-purple-100 text-purple-700 border-purple-200',
+  'Closed Won': 'bg-green-100 text-green-800 border-green-200',
+  'Closed Lost': 'bg-red-100 text-red-700 border-red-200',
+};
+
 export function ContactsTable({
   data,
   pageCount,
@@ -233,11 +243,15 @@ export function ContactsTable({
       id: 'stage',
       header: 'Stage',
       accessorKey: 'pipeline_stage',
-      cell: ({ row }) => (
-        <span className="px-2 py-1 rounded text-xs font-medium bg-muted">
-          {row.original.pipeline_stage || "Prospect"}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const stage = row.original.pipeline_stage || 'Prospect';
+        const stageClass = stageStyles[stage] || 'bg-slate-100 text-slate-700 border-slate-200';
+        return (
+          <span className={`px-2 py-1 rounded text-xs font-medium border ${stageClass}`}>
+            {stage}
+          </span>
+        );
+      },
     },
     {
       id: 'actions',

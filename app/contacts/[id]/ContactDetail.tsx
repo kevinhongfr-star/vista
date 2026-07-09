@@ -28,6 +28,8 @@ import {
   MapPin,
   ExternalLink,
   Edit3,
+  Target,
+  Lightbulb,
 } from "lucide-react"
 import type { VistaContact, Signal, CampaignContact, StrategicNote } from "@/lib/types"
 import type { Activity as ActivityType } from "@/lib/types"
@@ -40,6 +42,78 @@ interface ContactDetailProps {
 }
 
 type TabType = "overview" | "engagement" | "signals" | "campaigns" | "notes"
+
+function getNextBestAction(contact: VistaContact) {
+  const score = contact.priority_score || contact.vista_composite || 0;
+  const stage = contact.pipeline_stage || 'Prospect';
+  const daysSinceActivity = contact.last_engagement_date || contact.last_contact_date || contact.last_touch_date
+    ? Math.floor((Date.now() - new Date(contact.last_engagement_date || contact.last_contact_date || contact.last_touch_date || Date.now()).getTime()) / (1000 * 60 * 60 * 24))
+    : 999;
+
+  if (score >= 70 && ['Prospect', 'Engaged', 'Contacted'].includes(stage)) {
+    return {
+      title: 'Schedule Discovery Call',
+      description: `This contact has a high priority score (${score}) and is in early stage. Recent signal activity indicates strong timing.`,
+      action: 'call',
+      reason: 'High score + early stage + recent signals',
+      icon: Phone,
+      color: 'bg-blue-50 border-blue-200 text-blue-900',
+    };
+  }
+
+  if (stage === 'Meeting Booked' && daysSinceActivity > 14) {
+    return {
+      title: 'Send Follow-Up Email',
+      description: `Last activity was ${daysSinceActivity} days ago. Re-engage to keep momentum before the meeting.`,
+      action: 'email',
+      reason: 'Stale meeting — needs re-engagement',
+      icon: Mail,
+      color: 'bg-amber-50 border-amber-200 text-amber-900',
+    };
+  }
+
+  if (stage === 'Proposal Sent') {
+    return {
+      title: 'Schedule Follow-Up on Proposal',
+      description: `Proposal sent. Follow up within 3-5 days to address questions and move toward close.`,
+      action: 'call',
+      reason: 'Proposal stage — needs follow-up',
+      icon: Phone,
+      color: 'bg-purple-50 border-purple-200 text-purple-900',
+    };
+  }
+
+  if (score < 50 && daysSinceActivity > 30) {
+    return {
+      title: 'Add to Nurture Campaign',
+      description: `Low engagement score (${score}) and no activity in ${daysSinceActivity} days. Move to automated nurture track.`,
+      action: 'campaign',
+      reason: 'Low score + stale — needs nurturing',
+      icon: Mail,
+      color: 'bg-gray-50 border-gray-200 text-gray-900',
+    };
+  }
+
+  if (stage === 'Negotiation') {
+    return {
+      title: 'Confirm Closing Steps',
+      description: `In negotiation phase. Confirm next steps and identify any remaining obstacles to close.`,
+      action: 'call',
+      reason: 'Negotiation stage — needs confirmation',
+      icon: Phone,
+      color: 'bg-indigo-50 border-indigo-200 text-indigo-900',
+    };
+  }
+
+  return {
+    title: 'Log Recent Activity',
+    description: `No clear next action identified. Log any recent interactions to keep the record current.`,
+    action: 'log',
+    reason: 'No clear signal — manual review needed',
+    icon: Calendar,
+    color: 'bg-slate-50 border-slate-200 text-slate-900',
+  };
+}
 
 export function ContactDetail({ contact }: ContactDetailProps) {
   const router = useRouter()
@@ -133,6 +207,8 @@ export function ContactDetail({ contact }: ContactDetailProps) {
   const nextStage = stages[currentStageIndex + 1]
 
   const score = contact.priority_score || contact.vista_composite || 0
+  const nextAction = getNextBestAction(contact)
+  const ActionIcon = nextAction.icon
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-red-500"
@@ -236,6 +312,49 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                 </Select>
               )}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Next Best Action */}
+      <Card className={`border-2 ${nextAction.color} mb-6`}>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Target className="h-5 w-5" />
+            Next Best Action
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="font-semibold text-base mb-1">{nextAction.title}</h3>
+              <p className="text-sm opacity-90">{nextAction.description}</p>
+              <div className="flex items-center gap-2 mt-2 text-xs opacity-75">
+                <Lightbulb className="h-3 w-3" />
+                <span>Why: {nextAction.reason}</span>
+              </div>
+            </div>
+            <ActionIcon className="h-8 w-8 opacity-20" />
+          </div>
+          
+          <div className="flex gap-2 pt-2">
+            <Button 
+              size="sm" 
+              className="flex items-center gap-2"
+              onClick={() => {
+                if (nextAction.action === 'email') {
+                  setEmailComposerOpen(true)
+                } else if (nextAction.action === 'log') {
+                  setActivityLogOpen(true)
+                }
+              }}
+            >
+              <ActionIcon className="h-4 w-4" />
+              Execute Action
+            </Button>
+            <Button size="sm" variant="outline">
+              Dismiss
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -13,6 +13,8 @@ import {
   Users,
   Building2,
   Edit3,
+  Lightbulb,
+  Target,
 } from "lucide-react"
 import type { Signal, VistaContact } from "@/lib/types"
 import { EmailComposer } from "@/components/modals/EmailComposer"
@@ -24,12 +26,58 @@ interface SignalDetailProps {
   affectedContacts: VistaContact[]
 }
 
+function getSignalInterpretation(signal: Signal) {
+  const type = signal.signal_type || '';
+  const score = signal.score_impact || 0;
+  const interpretations: Record<string, { meaning: string; action: string }> = {
+    'funding': {
+      meaning: 'Their company just raised capital. This is an optimal time to reach out — they have budget and are likely evaluating new solutions.',
+      action: 'Send personalized email referencing the funding round and how your solution can help them capitalize on it.',
+    },
+    'hiring': {
+      meaning: 'They\'re actively hiring, indicating growth and expansion. They may need solutions to support scaling operations.',
+      action: 'Reach out with a message about how your solution can help them scale efficiently.',
+    },
+    'product_launch': {
+      meaning: 'They just launched a new product or feature. This signals innovation and openness to partnerships.',
+      action: 'Congratulate them on the launch and explore synergies or integration opportunities.',
+    },
+    'leadership_change': {
+      meaning: 'New leadership often means new priorities and budget allocation. Good time to establish relationships.',
+      action: 'Send a brief intro message and schedule a discovery call to understand their new direction.',
+    },
+    'partnership': {
+      meaning: 'They announced a new partnership or integration. This indicates they\'re open to collaborating.',
+      action: 'Explore how your solution complements their new partnership.',
+    },
+    'expansion': {
+      meaning: 'The company is expanding into new markets or geographies. This indicates growth and increased resource needs.',
+      action: 'Reach out to discuss how your solution can support their expansion plans.',
+    },
+    'acquisition': {
+      meaning: 'They acquired or were acquired by another company. Integration and strategic shifts are likely.',
+      action: 'Monitor the situation closely and reach out once integration plans are clearer.',
+    },
+    'award': {
+      meaning: 'They received recognition or an award, indicating industry respect and positive momentum.',
+      action: 'Send a congratulatory note and use it as a conversation starter.',
+    },
+  };
+  const interpretation = interpretations[type] || {
+    meaning: `This signal indicates ${type} activity. Based on the score of ${score}, this is a ${score >= 70 ? 'strong' : score >= 50 ? 'moderate' : 'weak'} indicator of engagement potential.`,
+    action: 'Review the signal details and determine if outreach is appropriate based on timing and relevance.',
+  };
+  return interpretation;
+}
+
 export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
   const router = useRouter()
   const { toasts, addToast, dismissToast } = useToasts()
   const [emailComposerOpen, setEmailComposerOpen] = useState(false)
   const [activityLogOpen, setActivityLogOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  const interpretation = getSignalInterpretation(signal)
 
   const top3Contacts = [...affectedContacts]
     .sort((a, b) => (b.vista_composite || 0) - (a.vista_composite || 0))
@@ -89,6 +137,30 @@ export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
           </Badge>
         </div>
       </div>
+
+      {/* What This Means */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg text-blue-900">
+            <Lightbulb className="h-5 w-5 text-yellow-500" />
+            What This Means
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-sm text-blue-900 font-medium mb-2">Interpretation:</p>
+            <p className="text-sm text-blue-800">{interpretation.meaning}</p>
+          </div>
+          
+          <div>
+            <p className="text-sm text-blue-900 font-medium mb-2 flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Recommended Action:
+            </p>
+            <p className="text-sm text-blue-800">{interpretation.action}</p>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
