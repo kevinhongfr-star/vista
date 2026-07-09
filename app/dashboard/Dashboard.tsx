@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Activity, TrendingUp, Phone, Mail, Zap, Bell, ArrowRight, Users, Target, Trophy } from "lucide-react"
+import { Activity, TrendingUp, Phone, Mail, Zap, Bell, ArrowRight, Users, Target, Trophy, Play } from "lucide-react"
 import { CardSkeleton, TableSkeleton, Skeleton } from "@/components/ui/skeleton"
 import { EmailComposer } from "@/components/modals/EmailComposer"
 import { ActivityLog } from "@/components/modals/ActivityLog"
+import { CampaignWizard } from "@/components/modals/CampaignWizard"
 import { Toaster, useToasts } from "@/components/ui/toast"
 import { CountUp } from "@/components/ui/count-up"
 import { ProgressBar } from "@/components/ui/progress-bar"
@@ -27,6 +28,7 @@ export function Dashboard() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [emailComposerOpen, setEmailComposerOpen] = useState(false)
   const [activityLogOpen, setActivityLogOpen] = useState(false)
+  const [campaignWizardOpen, setCampaignWizardOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<VistaContact | undefined>()
   const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | undefined>()
   const realtimeUnsubscribeRef = useRef<(() => void) | null>(null)
@@ -84,12 +86,49 @@ export function Dashboard() {
     }
   }
 
+  const resolveContact = async (contactId: string): Promise<VistaContact | undefined> => {
+    try {
+      const res = await fetch(`/api/contacts/${contactId}`)
+      const data = await res.json()
+      return data.contact || data
+    } catch {
+      return undefined
+    }
+  }
+
+  const handleExecute = async (action: PriorityAction) => {
+    if (action.contact_id) {
+      const contact = await resolveContact(action.contact_id)
+      setSelectedContact(contact)
+    }
+
+    switch (action.type) {
+      case "call":
+        setSelectedActivityType("Call")
+        setActivityLogOpen(true)
+        break
+      case "follow_up":
+      case "cold_alert":
+        setEmailComposerOpen(true)
+        break
+      case "signal":
+        if (action.signal_id) {
+          router.push(`/signals/${action.signal_id}`)
+        }
+        break
+    }
+  }
+
   const handleCallNow = (action: PriorityAction) => {
     setSelectedActivityType("Call")
     setActivityLogOpen(true)
   }
 
-  const handleSendEmail = (action: PriorityAction, template?: string) => {
+  const handleSendEmail = async (action: PriorityAction) => {
+    if (action.contact_id) {
+      const contact = await resolveContact(action.contact_id)
+      setSelectedContact(contact)
+    }
     setEmailComposerOpen(true)
   }
 
@@ -99,7 +138,11 @@ export function Dashboard() {
     }
   }
 
-  const handleReEngage = (action: PriorityAction) => {
+  const handleReEngage = async (action: PriorityAction) => {
+    if (action.contact_id) {
+      const contact = await resolveContact(action.contact_id)
+      setSelectedContact(contact)
+    }
     setEmailComposerOpen(true)
   }
 
@@ -283,6 +326,14 @@ export function Dashboard() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleExecute(action)}
+                      className="bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white"
+                    >
+                      <Play className="h-3 w-3 mr-1" />
+                      Execute
+                    </Button>
                     {action.type === "call" && (
                       <Button 
                         size="sm" 
@@ -431,6 +482,13 @@ export function Dashboard() {
         isOpen={emailComposerOpen}
         onClose={() => setEmailComposerOpen(false)}
         prefilledContact={selectedContact}
+      />
+
+      {/* Campaign Wizard Modal */}
+      <CampaignWizard
+        isOpen={campaignWizardOpen}
+        onClose={() => setCampaignWizardOpen(false)}
+        contactIds={selectedContact ? [selectedContact.id] : undefined}
       />
 
       {/* Activity Log Modal */}

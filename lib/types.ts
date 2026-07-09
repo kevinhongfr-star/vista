@@ -608,3 +608,47 @@ export interface SendEmailRequest {
   body: string
   campaign_id?: string
 }
+
+// ─── Wave 3: Action Engine Types ───
+
+export interface GenerateEmailRequest {
+  contact_ids: string[]
+  template_type?: EmailTemplateType
+  context?: string
+  tone?: "formal" | "warm" | "direct"
+}
+
+export interface GeneratedEmail {
+  contact_id: string
+  subject: string
+  body: string
+  personalization: { contact_name: string; company_name: string }
+}
+
+export type CampaignChannel = "email" | "linkedin" | "phone" | "event"
+
+export interface CampaignTouch {
+  day_offset: number
+  channel: CampaignChannel
+  action: string
+  subject?: string
+  body?: string
+  success_criteria: string
+}
+
+export interface GenerateCampaignRequest {
+  scope: "cluster" | "contacts"
+  cluster_id?: string
+  contact_ids?: string[]
+  objective: string
+  touches?: number
+  channel_mix?: CampaignChannel[]
+}
+
+export interface GeneratedCampaign {
+  campaign_name: string
+  objective: string
+  duration_days: number
+  touches: CampaignTouch[]
+  target_contacts: number
+}

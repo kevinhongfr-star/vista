@@ -31,11 +31,13 @@ import {
   Edit3,
   Target,
   Lightbulb,
+  Play,
 } from "lucide-react"
 import type { VistaContact, Signal, CampaignContact, StrategicNote } from "@/lib/types"
 import type { Activity as ActivityType } from "@/lib/types"
 import { EmailComposer } from "@/components/modals/EmailComposer"
 import { ActivityLog } from "@/components/modals/ActivityLog"
+import { CampaignWizard } from "@/components/modals/CampaignWizard"
 import { Toaster, useToasts } from "@/components/ui/toast"
 
 interface ContactDetailProps {
@@ -122,6 +124,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview")
   const [emailComposerOpen, setEmailComposerOpen] = useState(false)
   const [activityLogOpen, setActivityLogOpen] = useState(false)
+  const [campaignWizardOpen, setCampaignWizardOpen] = useState(false)
   const [activities, setActivities] = useState<ActivityType[]>([])
   const [signals, setSignals] = useState<Signal[]>([])
   const [campaigns, setCampaigns] = useState<CampaignContact[]>([])
@@ -378,16 +381,20 @@ export function ContactDetail({ contact }: ContactDetailProps) {
               <TooltipTrigger asChild>
                 <Button
                   size="sm"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white"
                   onClick={() => {
                     if (nextAction.action === 'email') {
                       setEmailComposerOpen(true)
+                    } else if (nextAction.action === 'campaign') {
+                      setCampaignWizardOpen(true)
+                    } else if (nextAction.action === 'call') {
+                      setActivityLogOpen(true)
                     } else if (nextAction.action === 'log') {
                       setActivityLogOpen(true)
                     }
                   }}
                 >
-                  <ActionIcon className="h-4 w-4" />
+                  <Play className="h-4 w-4" />
                   Execute Action
                 </Button>
               </TooltipTrigger>
@@ -760,6 +767,13 @@ export function ContactDetail({ contact }: ContactDetailProps) {
         isOpen={emailComposerOpen}
         onClose={() => setEmailComposerOpen(false)}
         prefilledContact={contact}
+      />
+
+      {/* Campaign Wizard Modal */}
+      <CampaignWizard
+        isOpen={campaignWizardOpen}
+        onClose={() => setCampaignWizardOpen(false)}
+        contactIds={[contact.id]}
       />
 
       {/* Activity Log Modal */}

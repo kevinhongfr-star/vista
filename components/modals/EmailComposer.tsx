@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { X, Send, Mail } from "lucide-react"
+import { X, Send, Mail, Sparkles, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -40,6 +40,7 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
   const router = useRouter()
   const { toasts, addToast, dismissToast } = useToasts()
   const [isSending, setIsSending] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
   const [templateType, setTemplateType] = useState("")
   const [subject, setSubject] = useState("")
   const [body, setBody] = useState("")
@@ -78,6 +79,7 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
     setSubject("")
     setBody("")
     setIsSending(false)
+    setIsGenerating(false)
   }
 
   const replaceVariables = (text: string): string => {
@@ -93,6 +95,37 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
       .replace(/{webinar_date}/gi, "")
       .replace(/{podcast_name}/gi, "")
       .replace(/{newsletter_name}/gi, "")
+  }
+
+  const handleGenerateAIDraft = async () => {
+    if (contacts.length === 0) {
+      addToast("error", "No recipients selected")
+      return
+    }
+    setIsGenerating(true)
+    try {
+      const res = await fetch("/api/intelligence/generate-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contact_ids: contacts.map(c => c.id),
+          template_type: templateType || undefined,
+          tone: "warm",
+        }),
+      })
+      const data = await res.json()
+      if (data.success && data.emails && data.emails[0]) {
+        setSubject(data.emails[0].subject)
+        setBody(data.emails[0].body)
+        addToast("success", "AI draft generated — review and edit before sending")
+      } else {
+        addToast("error", `AI draft failed: ${data.error || "Unknown error"}`)
+      }
+    } catch (error) {
+      addToast("error", `AI draft failed: ${String(error)}`)
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const handleSend = async () => {
@@ -201,6 +234,32 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
                 )}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* AI Draft Button */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateAIDraft}
+              disabled={isGenerating || contacts.length === 0}
+              className="border-accent-fuchsia/30 text-accent-fuchsia hover:bg-accent-fuchsia/10"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Draft
+                </>
+              )}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Let AI write a personalized draft based on contact data & signals
+            </span>
           </div>
 
           {/* Subject */}
