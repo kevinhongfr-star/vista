@@ -3,7 +3,7 @@ import { ContactsTable } from "@/components/contacts/ContactsTable"
 
 export const dynamic = 'force-dynamic'
 
-const PAGE_SIZE = 20
+const DEFAULT_PAGE_SIZE = 20
 
 interface ContactsPageProps {
   searchParams: {
@@ -13,12 +13,14 @@ interface ContactsPageProps {
     search?: string
     stage?: string
     function?: string
+    pageSize?: string
   }
 }
 
 export default async function ContactsPage({ searchParams }: ContactsPageProps) {
   const supabase = createServerClient()
   const page = parseInt(searchParams.page || '0', 10)
+  const pageSize = parseInt(searchParams.pageSize || String(DEFAULT_PAGE_SIZE), 10)
   const tier = searchParams.tier
   const level = searchParams.level
   const search = searchParams.search
@@ -29,7 +31,7 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
     .from('vista_contacts')
     .select('*', { count: 'exact' })
     .order('priority_score', { ascending: false })
-    .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
+    .range(page * pageSize, (page + 1) * pageSize - 1)
 
   if (tier && tier !== 'all') {
     query = query.eq('engagement_tier', tier.charAt(0).toUpperCase() + tier.slice(1))
@@ -57,7 +59,8 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
     console.error('Error fetching contacts:', error)
   }
 
-  const pageCount = Math.ceil((count || 0) / PAGE_SIZE)
+  const pageCount = Math.ceil((count || 0) / pageSize)
+  const totalCount = count || 0
 
   return (
     <div className="space-y-6">
@@ -89,12 +92,15 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
         data={data || []}
         pageCount={pageCount}
         currentPage={page}
+        pageSize={pageSize}
+        totalCount={totalCount}
         searchParams={{
           tier: searchParams.tier,
           level: searchParams.level,
           search: searchParams.search,
           stage: searchParams.stage,
           function: searchParams.function,
+          pageSize: searchParams.pageSize,
         }}
       />
     </div>
