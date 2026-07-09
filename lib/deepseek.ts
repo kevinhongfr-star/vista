@@ -32,13 +32,25 @@ function extractJsonFromText(text: string): string {
 
   const firstBrace = trimmed.indexOf('{')
   const lastBrace = trimmed.lastIndexOf('}')
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+  const firstBracket = trimmed.indexOf('[')
+  const lastBracket = trimmed.lastIndexOf(']')
+
+  const hasBrace = firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace
+  const hasBracket = firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket
+
+  if (hasBrace && hasBracket) {
+    if (firstBracket < firstBrace) {
+      return trimmed.slice(firstBracket, lastBracket + 1)
+    } else {
+      return trimmed.slice(firstBrace, lastBrace + 1)
+    }
+  }
+
+  if (hasBrace) {
     return trimmed.slice(firstBrace, lastBrace + 1)
   }
 
-  const firstBracket = trimmed.indexOf('[')
-  const lastBracket = trimmed.lastIndexOf(']')
-  if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+  if (hasBracket) {
     return trimmed.slice(firstBracket, lastBracket + 1)
   }
 

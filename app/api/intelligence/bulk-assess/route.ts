@@ -98,6 +98,7 @@ export async function POST(request: Request) {
         success: true,
         assessed: 0,
         updated: 0,
+        total: 0,
         errors: 0,
         duration_ms: Date.now() - startTime,
       })
@@ -183,15 +184,27 @@ Output ONLY a valid JSON array with this exact structure:
 Score ALL contacts in the input. Return exactly ${batch.length} items.`
 
       try {
-        const results = await callDeepSeekJSON<ScoredContact[]>(prompt, {
+        const rawResults = await callDeepSeekJSON<ScoredContact[] | { scores: ScoredContact[] } | Record<string, unknown>>(prompt, {
           model: "flash",
           temperature: 0.3,
           maxTokens: 2048,
         })
 
+        let results: ScoredContact[] = []
+        if (Array.isArray(rawResults)) {
+          results = rawResults
+        } else if (rawResults && typeof rawResults === 'object') {
+          const obj = rawResults as Record<string, unknown>
+          if (Array.isArray(obj.scores)) results = obj.scores as ScoredContact[]
+          else if (Array.isArray(obj.results)) results = obj.results as ScoredContact[]
+          else if (Array.isArray(obj.contacts)) results = obj.contacts as ScoredContact[]
+        }
+
         const resultsMap = new Map<string, ScoredContact>()
         for (const r of results) {
-          resultsMap.set(r.id, r)
+          if (r && r.id) {
+            resultsMap.set(r.id, r)
+          }
         }
 
         for (const contact of batch) {

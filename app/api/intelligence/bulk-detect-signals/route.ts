@@ -97,6 +97,7 @@ export async function POST(request: Request) {
         success: true,
         signals_detected: 0,
         contacts_scanned: 0,
+        total: 0,
         errors: 0,
         duration_ms: Date.now() - startTime,
       })
@@ -191,13 +192,26 @@ Output ONLY a valid JSON array (only include contacts where a signal IS detected
 If no signals are detected, output an empty array: []`
 
       try {
-        const results = await callDeepSeekJSON<DetectedSignal[]>(prompt, {
+        const rawResults = await callDeepSeekJSON<DetectedSignal[] | { signals: DetectedSignal[] } | Record<string, unknown>>(prompt, {
           model: "flash",
           temperature: 0.2,
           maxTokens: 2048,
         })
 
+        let results: DetectedSignal[] = []
+        if (Array.isArray(rawResults)) {
+          results = rawResults
+        } else if (rawResults && typeof rawResults === 'object') {
+          const obj = rawResults as Record<string, unknown>
+          if (Array.isArray(obj.signals)) results = obj.signals as DetectedSignal[]
+          else if (Array.isArray(obj.results)) results = obj.results as DetectedSignal[]
+          else if (Array.isArray(obj.detected)) results = obj.detected as DetectedSignal[]
+        }
+
         for (const signal of results) {
+          if (!signal || !signal.contact_id || !signal.signal_type) {
+            continue
+          }
           const signalKey = `${signal.contact_id}-${signal.signal_type}`
           if (existingSignalKeys.has(signalKey)) {
             continue
@@ -233,11 +247,11 @@ If no signals are detected, output an empty array: []`
             errors++
           }
         }
-
-        contactsScanned += batch.length
       } catch (batchError) {
         console.error("Batch signal detection error:", batchError)
         errors += batch.length
+      } finally {
+        contactsScanned += batch.length
       }
     }
 
