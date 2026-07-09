@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,7 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { formatDate } from "@/lib/utils"
-import { Map, Plus, TrendingUp, Users, DollarSign } from "lucide-react"
+import { Map, Plus, TrendingUp, Users, DollarSign, CheckSquare, Square, Tag } from "lucide-react"
 import type { DensityCluster } from "@/lib/types"
 
 interface ClustersPageProps {
@@ -29,6 +30,7 @@ interface ClustersPageProps {
 
 export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
   const router = useRouter()
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const statusColors: Record<string, string> = {
     Active: "bg-success text-white",
@@ -42,6 +44,31 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
 
   const handleRowClick = (clusterId: string) => {
     router.push(`/clusters/${clusterId}`)
+  }
+
+  const toggleSelect = (clusterId: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(clusterId)) {
+        next.delete(clusterId)
+      } else {
+        next.add(clusterId)
+      }
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === clusters.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(clusters.map(c => c.cluster_id)))
+    }
+  }
+
+  const handleBulkAssignProgram = () => {
+    const ids = Array.from(selectedIds).join(',')
+    router.push(`/programs?assign_clusters=${ids}`)
   }
 
   return (
@@ -129,12 +156,45 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
         </Tooltip>
       </div>
 
+      {/* Bulk Action Toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+          <span className="text-sm font-medium">{selectedIds.size} selected</span>
+          <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
+            Clear Selection
+          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" onClick={handleBulkAssignProgram}>
+                <Tag className="h-4 w-4 mr-2" />
+                Assign to Program
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Assign selected clusters to a BD program</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+
       {/* Clusters Table */}
       <Card>
         <CardContent className="pt-6">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[40px]">
+                  <button
+                    onClick={toggleSelectAll}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {selectedIds.size === clusters.length && clusters.length > 0 ? (
+                      <CheckSquare className="h-4 w-4" />
+                    ) : (
+                      <Square className="h-4 w-4" />
+                    )}
+                  </button>
+                </TableHead>
                 <TableHead>Industry</TableHead>
                 <TableHead>Geography</TableHead>
                 <TableHead>Status</TableHead>
@@ -147,13 +207,27 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
             <TableBody>
               {clusters.length > 0 ? (
                 clusters.map((cluster) => (
-                  <Tooltip key={cluster.cluster_id}>
-                    <TooltipTrigger asChild>
-                      <TableRow
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleRowClick(cluster.cluster_id)}
+                  <TableRow
+                    key={cluster.cluster_id}
+                    className={cn(
+                      "cursor-pointer hover:bg-muted/50",
+                      selectedIds.has(cluster.cluster_id) && "bg-muted/50"
+                    )}
+                    onClick={() => handleRowClick(cluster.cluster_id)}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => toggleSelect(cluster.cluster_id)}
+                        className="text-muted-foreground hover:text-foreground"
                       >
-                        <TableCell className="font-medium">{cluster.industry}</TableCell>
+                        {selectedIds.has(cluster.cluster_id) ? (
+                          <CheckSquare className="h-4 w-4" />
+                        ) : (
+                          <Square className="h-4 w-4" />
+                        )}
+                      </button>
+                    </TableCell>
+                    <TableCell className="font-medium">{cluster.industry}</TableCell>
                     <TableCell>{cluster.geography}</TableCell>
                     <TableCell>
                       <Badge className={statusColors[cluster.status || 'Watch']}>
@@ -194,16 +268,11 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
                     <TableCell className="text-muted-foreground">
                       {formatDate(cluster.last_calculated)}
                     </TableCell>
-                      </TableRow>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>View cluster details</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     No density clusters found. Run PROBE to generate.
                   </TableCell>
                 </TableRow>
