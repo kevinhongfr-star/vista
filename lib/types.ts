@@ -536,6 +536,13 @@ export interface ContactRecommendation {
   recommended_action: string
   rationale: string[]
   priority_score: number
+  ai_recommendations?: Array<{
+    action: string
+    why: string
+    impact: string
+    urgency: string
+    channels: string[]
+  }>
 }
 
 export interface SignalImpactAnalysis {
