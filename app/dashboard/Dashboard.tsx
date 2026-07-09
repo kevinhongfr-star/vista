@@ -14,6 +14,7 @@ import { CountUp } from "@/components/ui/count-up"
 import { ProgressBar } from "@/components/ui/progress-bar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { subscribeToVistaChanges } from "@/lib/supabase/realtime"
+import { BulkAssessButton } from "@/components/intelligence/bulk-assess-button"
 import type { PriorityAction, DashboardKPIs, PipelineFunnelStage, RecentActivity, VistaContact, ActivityType } from "@/lib/types"
 
 export function Dashboard() {
@@ -124,17 +125,20 @@ export function Dashboard() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Welcome back, Kevin. Here&#39;s your daily BD intelligence overview.</p>
         </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button onClick={fetchDashboardData} className="bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white">
-              <Zap className="h-4 w-4 mr-2" />
-              Refresh Data
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Refresh dashboard data from the server</p>
-          </TooltipContent>
-        </Tooltip>
+        <div className="flex items-center gap-2">
+          <BulkAssessButton onComplete={fetchDashboardData} />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={fetchDashboardData} variant="outline">
+                <Zap className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Refresh dashboard data from the server</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
       {/* KPI Cards */}
