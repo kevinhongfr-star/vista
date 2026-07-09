@@ -13,6 +13,7 @@ import {
 import { formatDate } from "@/lib/utils"
 import { TrendingUp, Calendar, Users } from "lucide-react"
 import type { Program, ProgramAssignment, CampaignActivity } from "@/lib/types"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface ConversionsPageProps {
   programs: Program[]
@@ -38,7 +39,14 @@ export function ConversionsPage({ programs, assignments, campaignActivities, clu
             <CardTitle className="text-sm font-medium">
               Total Programs
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Total number of programs tracked</p>
+              </TooltipContent>
+            </Tooltip>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{programs.length}</div>
@@ -49,7 +57,14 @@ export function ConversionsPage({ programs, assignments, campaignActivities, clu
             <CardTitle className="text-sm font-medium">
               Conversions
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Number of assignments that converted</p>
+              </TooltipContent>
+            </Tooltip>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{convertedCount}</div>
@@ -60,7 +75,14 @@ export function ConversionsPage({ programs, assignments, campaignActivities, clu
             <CardTitle className="text-sm font-medium">
               Revenue
             </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Total revenue attributed to conversions</p>
+              </TooltipContent>
+            </Tooltip>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
@@ -91,9 +113,16 @@ export function ConversionsPage({ programs, assignments, campaignActivities, clu
                       {programs.find(p => p.program_id === assignment.program_id)?.name || "-"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
-                        {assignment.status || "Unknown"}
-                      </Badge>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary">
+                            {assignment.status || "Unknown"}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Current status of this program assignment</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell>{formatDate(assignment.assigned_date)}</TableCell>
                     <TableCell>{formatDate(assignment.conversion_date)}</TableCell>

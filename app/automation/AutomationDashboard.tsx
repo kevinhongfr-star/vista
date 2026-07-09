@@ -24,6 +24,7 @@ import { formatDate } from "@/lib/utils"
 import { useState } from "react"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import type { AutomationDashboardData } from "@/lib/types"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface AutomationDashboardProps {
   initialData: AutomationDashboardData
@@ -47,14 +48,31 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
   }
 
   const getStatusIcon = (status: string) => {
+    let icon: React.ReactNode
+    let label: string
     switch (status) {
       case "success":
-        return <CheckCircle className="h-4 w-4 text-success" />
+        icon = <CheckCircle className="h-4 w-4 text-success" />
+        label = "Pipeline run succeeded"
+        break
       case "failed":
-        return <XCircle className="h-4 w-4 text-error" />
+        icon = <XCircle className="h-4 w-4 text-error" />
+        label = "Pipeline run failed"
+        break
       default:
-        return <Clock className="h-4 w-4 text-muted-foreground" />
+        icon = <Clock className="h-4 w-4 text-muted-foreground" />
+        label = "Pipeline run pending"
     }
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>{icon}</span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{label}</p>
+        </TooltipContent>
+      </Tooltip>
+    )
   }
 
   const formatDuration = (seconds: number | null | undefined) => {
@@ -71,10 +89,17 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
           <Activity className="h-8 w-8 text-muted-foreground" />
           <h1 className="text-3xl font-bold">Automation</h1>
         </div>
-        <Button disabled={isRunning} onClick={() => handleRunPipeline("All")}>
-          <Play className="h-4 w-4 mr-2" />
-          Run All Pipelines
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button disabled={isRunning} onClick={() => handleRunPipeline("All")}>
+              <Play className="h-4 w-4 mr-2" />
+              Run All Pipelines
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Trigger all automation pipelines</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -83,7 +108,14 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
             <CardTitle className="text-sm font-medium">
               Signals (24h)
             </CardTitle>
-            <Zap className="h-4 w-4 text-warning" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Zap className="h-4 w-4 text-warning" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Trigger signals detected in the last 24 hours</p>
+              </TooltipContent>
+            </Tooltip>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.signals_24h}</div>
@@ -97,7 +129,14 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
             <CardTitle className="text-sm font-medium">
               Contacts Scored
             </CardTitle>
-            <RefreshCw className="h-4 w-4 text-info" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <RefreshCw className="h-4 w-4 text-info" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Total contacts scored by automation</p>
+              </TooltipContent>
+            </Tooltip>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.contacts_scored}</div>
@@ -111,7 +150,14 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
             <CardTitle className="text-sm font-medium">
               Clusters
             </CardTitle>
-            <Activity className="h-4 w-4 text-success" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Activity className="h-4 w-4 text-success" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Density clusters tracked and updated</p>
+              </TooltipContent>
+            </Tooltip>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.clusters_updated}</div>
@@ -141,7 +187,14 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
               {data.recent_runs.map((run) => (
                 <TableRow key={run.id}>
                   <TableCell>
-                    <Badge variant="secondary">{run.pipeline}</Badge>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="secondary">{run.pipeline}</Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Automation pipeline name</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

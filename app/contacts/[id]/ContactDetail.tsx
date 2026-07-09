@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   ArrowLeft,
   Mail,
@@ -226,11 +227,18 @@ export function ContactDetail({ contact }: ContactDetailProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/contacts">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/contacts">
+                  <ArrowLeft className="h-5 w-5" />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Back to contacts</p>
+            </TooltipContent>
+          </Tooltip>
           <div>
             <h1 className="text-2xl font-bold">{contact.name || "Unknown Contact"}</h1>
             <p className="text-sm text-muted-foreground">
@@ -238,10 +246,17 @@ export function ContactDetail({ contact }: ContactDetailProps) {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm">
-          <Edit3 className="h-4 w-4 mr-2" />
-          Edit
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Edit3 className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Edit contact details</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Contact Info */}
@@ -288,28 +303,49 @@ export function ContactDetail({ contact }: ContactDetailProps) {
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={() => setEmailComposerOpen(true)} className="bg-accent-fuchsia hover:bg-accent-fuchsia/90">
-                <Mail className="h-4 w-4 mr-2" />
-                Send Email
-              </Button>
-              <Button onClick={() => setActivityLogOpen(true)} variant="outline">
-                <Activity className="h-4 w-4 mr-2" />
-                Log Activity
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={() => setEmailComposerOpen(true)} className="bg-accent-fuchsia hover:bg-accent-fuchsia/90">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Email
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Compose and send an email</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={() => setActivityLogOpen(true)} variant="outline">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Log Activity
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Log a new activity for this contact</p>
+                </TooltipContent>
+              </Tooltip>
               {nextStage && (
-                <Select value="" onValueChange={handleAdvanceStage}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Advance Stage →" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={nextStage}>→ {nextStage}</SelectItem>
-                    {stages.slice(currentStageIndex + 2).map((stage) => (
-                      <SelectItem key={stage} value={stage}>
-                        → {stage}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Select value="" onValueChange={handleAdvanceStage}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Advance Stage →" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={nextStage}>→ {nextStage}</SelectItem>
+                        {stages.slice(currentStageIndex + 2).map((stage) => (
+                          <SelectItem key={stage} value={stage}>
+                            → {stage}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Advance the pipeline stage</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           </div>
@@ -338,23 +374,37 @@ export function ContactDetail({ contact }: ContactDetailProps) {
           </div>
           
           <div className="flex gap-2 pt-2">
-            <Button 
-              size="sm" 
-              className="flex items-center gap-2"
-              onClick={() => {
-                if (nextAction.action === 'email') {
-                  setEmailComposerOpen(true)
-                } else if (nextAction.action === 'log') {
-                  setActivityLogOpen(true)
-                }
-              }}
-            >
-              <ActionIcon className="h-4 w-4" />
-              Execute Action
-            </Button>
-            <Button size="sm" variant="outline">
-              Dismiss
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    if (nextAction.action === 'email') {
+                      setEmailComposerOpen(true)
+                    } else if (nextAction.action === 'log') {
+                      setActivityLogOpen(true)
+                    }
+                  }}
+                >
+                  <ActionIcon className="h-4 w-4" />
+                  Execute Action
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Execute the recommended next action</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant="outline">
+                  Dismiss
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Dismiss this recommendation</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CardContent>
       </Card>
@@ -404,22 +454,50 @@ export function ContactDetail({ contact }: ContactDetailProps) {
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <h4 className="font-medium text-amber-800 mb-2">Score Breakdown</h4>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Value Score</span>
-                    <span>{Math.round((contact.vista_v || 0) * 30 / 100)}/30 (High-value target)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Function Score</span>
-                    <span>{Math.round((contact.vista_i || 0) * 20 / 100)}/20 ({contact.function || "Unknown"} = decision maker)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Engagement Score</span>
-                    <span>{Math.round((contact.vista_s || 0) * 30 / 100)}/30 (Moderate engagement)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Cluster Fit Score</span>
-                    <span>{Math.round((contact.vista_t || 0) * 20 / 100)}/20</span>
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex justify-between cursor-help">
+                        <span className="text-muted-foreground">Value Score</span>
+                        <span>{Math.round((contact.vista_v || 0) * 30 / 100)}/30 (High-value target)</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>V — Value component: how valuable this contact is as a target</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex justify-between cursor-help">
+                        <span className="text-muted-foreground">Function Score</span>
+                        <span>{Math.round((contact.vista_i || 0) * 20 / 100)}/20 ({contact.function || "Unknown"} = decision maker)</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>I — Identity/Function component: decision-making authority</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex justify-between cursor-help">
+                        <span className="text-muted-foreground">Engagement Score</span>
+                        <span>{Math.round((contact.vista_s || 0) * 30 / 100)}/30 (Moderate engagement)</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>S — Signal/Engagement component: level of recent engagement</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex justify-between cursor-help">
+                        <span className="text-muted-foreground">Cluster Fit Score</span>
+                        <span>{Math.round((contact.vista_t || 0) * 20 / 100)}/20</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>T — Timing/Tier component: cluster fit and timing alignment</p>
+                    </TooltipContent>
+                  </Tooltip>
                   {daysSinceLastContact && daysSinceLastContact > 30 && (
                     <div className="flex justify-between text-red-600">
                       <span>Decay Penalty</span>
@@ -452,9 +530,16 @@ export function ContactDetail({ contact }: ContactDetailProps) {
           <Card>
             <CardHeader className="flex items-center justify-between">
               <CardTitle>Engagement Timeline</CardTitle>
-              <Button onClick={() => setActivityLogOpen(true)} variant="outline" size="sm">
-                Log Activity
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={() => setActivityLogOpen(true)} variant="outline" size="sm">
+                    Log Activity
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Log a new activity for this contact</p>
+                </TooltipContent>
+              </Tooltip>
             </CardHeader>
             <CardContent>
               {activities.length > 0 ? (
@@ -464,9 +549,16 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                       key={activity.id}
                       className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg"
                     >
-                      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <Activity className="h-4 w-4 text-green-600" />
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <Activity className="h-4 w-4 text-green-600" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{activity.activity_type}</p>
+                        </TooltipContent>
+                      </Tooltip>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{activity.activity_type}</span>
@@ -493,9 +585,16 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                 <div className="text-center py-8 text-muted-foreground">
                   <Activity className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>No engagement activity recorded.</p>
-                  <Button onClick={() => setActivityLogOpen(true)} variant="outline" size="sm" className="mt-4">
-                    Log Activity
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={() => setActivityLogOpen(true)} variant="outline" size="sm" className="mt-4">
+                        Log Activity
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Log a new activity for this contact</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               )}
             </CardContent>
@@ -570,9 +669,16 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                       key={campaign.id}
                       className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg"
                     >
-                      <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                        <Building2 className="h-4 w-4 text-purple-600" />
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                            <Building2 className="h-4 w-4 text-purple-600" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Campaign #{campaign.campaign_id}</p>
+                        </TooltipContent>
+                      </Tooltip>
                       <div className="flex-1">
                         <span className="font-medium">Campaign #{campaign.campaign_id}</span>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -611,9 +717,16 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                       key={note.note_id}
                       className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg"
                     >
-                      <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                        <MessageSquare className="h-4 w-4 text-amber-600" />
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <MessageSquare className="h-4 w-4 text-amber-600" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{note.note_type} note</p>
+                        </TooltipContent>
+                      </Tooltip>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">{note.note_type}</Badge>

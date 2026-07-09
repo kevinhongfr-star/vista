@@ -22,6 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { formatDate, truncateText } from "@/lib/utils"
 import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight, CheckSquare, Square, Trash2 } from "lucide-react"
 import Link from "next/link"
@@ -54,6 +59,27 @@ const SIGNAL_TYPE_LABELS: Record<string, string> = {
   team_growth: "Team Growth / Restructure",
   crisis: "Crisis / Turnaround",
   market_event: "Market Event",
+}
+
+const SIGNAL_TYPE_DESCRIPTIONS: Record<string, string> = {
+  funding: "Company raised capital or received investment",
+  leadership_change: "Key leadership was added, replaced, or exited",
+  ma_activity: "Merger, acquisition, or divestiture activity",
+  market_expansion: "Company is entering new markets or geographies",
+  digital_transformation: "Company is undergoing digital transformation initiatives",
+  partnership: "New strategic partnership or alliance formed",
+  product_launch: "Company launched a new product or service",
+  executive_departure: "A notable executive has departed the company",
+  team_growth: "Team growth, hiring push, or restructuring underway",
+  crisis: "Company is facing a crisis or turnaround situation",
+  market_event: "Broader market event affecting the company",
+}
+
+const SIGNAL_STRENGTH_DESCRIPTIONS: Record<string, string> = {
+  Low: "Minor signal — low confidence or limited impact",
+  Medium: "Moderate signal — worth monitoring",
+  "Medium-High": "Notable signal — likely actionable",
+  High: "Strong signal — prioritize action",
 }
 
 const SIGNAL_STRENGTHS = ["Low", "Medium", "Medium-High", "High"]
@@ -201,10 +227,17 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
         <h1 className="text-3xl font-bold">Signals</h1>
         <div className="flex gap-2">
           <Badge variant="secondary">{signalList.length || totalCount} total</Badge>
-          <Button onClick={() => setIsAddingSignal(!isAddingSignal)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Signal
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={() => setIsAddingSignal(!isAddingSignal)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Signal
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Create a new signal</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -330,9 +363,16 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
           <div className="flex items-center gap-4 flex-wrap">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Filter by signal type</p>
+                </TooltipContent>
+              </Tooltip>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 {SIGNAL_TYPES.map((type) => (
@@ -343,9 +383,16 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
               </SelectContent>
             </Select>
             <Select value={filterStrength} onValueChange={setFilterStrength}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Strength" />
-              </SelectTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Strength" />
+                  </SelectTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Filter by signal strength</p>
+                </TooltipContent>
+              </Tooltip>
               <SelectContent>
                 <SelectItem value="all">All Strengths</SelectItem>
                 {SIGNAL_STRENGTHS.map((strength) => (
@@ -366,10 +413,17 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
           <Button variant="outline" size="sm" onClick={() => setSelectedSignalIds(new Set())}>
             Clear Selection
           </Button>
-          <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={isSaving}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            {isSaving ? "Deleting..." : "Delete Selected"}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={isSaving}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isSaving ? "Deleting..." : "Delete Selected"}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete all selected signals</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       )}
 
@@ -426,29 +480,50 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
                       </button>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {SIGNAL_TYPE_LABELS[signal.signal_type || ""] ||
-                          signal.signal_type ||
-                          "Unknown"}
-                      </Badge>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="outline" className="cursor-help">
+                            {SIGNAL_TYPE_LABELS[signal.signal_type || ""] ||
+                              signal.signal_type ||
+                              "Unknown"}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {SIGNAL_TYPE_DESCRIPTIONS[signal.signal_type || ""] ||
+                              "Signal type description unavailable"}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell className="font-medium">
                       {signal.company || "-"}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={cn(
-                          signal.signal_strength === "High" &&
-                            "bg-error text-white",
-                          signal.signal_strength === "Medium-High" &&
-                            "bg-warning text-white",
-                          signal.signal_strength === "Medium" &&
-                            "bg-info text-white"
-                        )}
-                      >
-                        {signal.signal_strength || "Low"}
-                      </Badge>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge
+                            variant="secondary"
+                            className={cn(
+                              "cursor-help",
+                              signal.signal_strength === "High" &&
+                                "bg-error text-white",
+                              signal.signal_strength === "Medium-High" &&
+                                "bg-warning text-white",
+                              signal.signal_strength === "Medium" &&
+                                "bg-info text-white"
+                            )}
+                          >
+                            {signal.signal_strength || "Low"}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {SIGNAL_STRENGTH_DESCRIPTIONS[signal.signal_strength || "Low"] ||
+                              "Signal strength description unavailable"}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground capitalize">
                       {signal.source?.toString() || "-"}
@@ -463,10 +538,17 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
                       {truncateText(signal.description, 60)}
                     </TableCell>
                     <TableCell>
-                      <Link href={`/signals/${signal.id}`} className="flex items-center gap-1 hover:text-primary">
-                        View
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Link href={`/signals/${signal.id}`} className="flex items-center gap-1 hover:text-primary">
+                            View
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>View signal details</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))

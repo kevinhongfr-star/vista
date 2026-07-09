@@ -27,6 +27,7 @@ import { useState } from "react"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import { PROGRAM_TYPES, PROGRAM_STATUSES } from "@/lib/types"
 import type { Program, ProgramAssignment, ProgramType, ProgramStatus } from "@/lib/types"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface ProgramsPageProps {
   programs: Program[]
@@ -176,14 +177,28 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
         <h1 className="text-3xl font-bold">Programs</h1>
         <div className="flex gap-2">
           <Badge variant="secondary">{totalCount} programs</Badge>
-          <Button onClick={() => setShowAssignModal(true)} variant="outline">
-            <Users className="h-4 w-4 mr-2" />
-            Assign Contact
-          </Button>
-          <Button onClick={() => setShowCreateModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Program
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={() => setShowAssignModal(true)} variant="outline">
+                <Users className="h-4 w-4 mr-2" />
+                Assign Contact
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Assign a contact to a program</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={() => setShowCreateModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Program
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Create a new BD program</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -192,9 +207,16 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-success/10">
-                <CheckCircle className="h-6 w-6 text-success" />
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="p-2 rounded-lg bg-success/10">
+                    <CheckCircle className="h-6 w-6 text-success" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Number of programs currently active</p>
+                </TooltipContent>
+              </Tooltip>
               <div>
                 <div className="text-2xl font-bold">{activePrograms}</div>
                 <div className="text-sm text-muted-foreground">Active Programs</div>
@@ -205,9 +227,16 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-info/10">
-                <Users className="h-6 w-6 text-info" />
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="p-2 rounded-lg bg-info/10">
+                    <Users className="h-6 w-6 text-info" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Total contacts enrolled across all programs</p>
+                </TooltipContent>
+              </Tooltip>
               <div>
                 <div className="text-2xl font-bold">{totalEnrolled}</div>
                 <div className="text-sm text-muted-foreground">Total Enrolled</div>
@@ -218,9 +247,16 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-accent-fuchsia/10">
-                <DollarSign className="h-6 w-6 text-accent-fuchsia" />
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="p-2 rounded-lg bg-accent-fuchsia/10">
+                    <DollarSign className="h-6 w-6 text-accent-fuchsia" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Actual revenue earned from programs</p>
+                </TooltipContent>
+              </Tooltip>
               <div>
                 <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
                 <div className="text-sm text-muted-foreground">Revenue Actual</div>
@@ -231,9 +267,16 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-warning/10">
-                <Target className="h-6 w-6 text-warning" />
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="p-2 rounded-lg bg-warning/10">
+                    <Target className="h-6 w-6 text-warning" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Total number of contact-to-program assignments</p>
+                </TooltipContent>
+              </Tooltip>
               <div>
                 <div className="text-2xl font-bold">{assignments.length}</div>
                 <div className="text-sm text-muted-foreground">Total Assignments</div>
@@ -287,21 +330,37 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
                       <span className="font-medium">{getAssignedCount(program.program_id)}</span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-success"
-                            style={{ width: `${getCompletionRate(program.program_id)}%` }}
-                          />
-                        </div>
-                        <span className="text-sm">{getCompletionRate(program.program_id)}%</span>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2">
+                            <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-success"
+                                style={{ width: `${getCompletionRate(program.program_id)}%` }}
+                              />
+                            </div>
+                            <span className="text-sm">{getCompletionRate(program.program_id)}%</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Percentage of assignments completed or meeting booked</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell>
-                      <span className="font-medium">{program.enrolled_count || 0}</span>
-                      {program.capacity && (
-                        <span className="text-muted-foreground">/{program.capacity}</span>
-                      )}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>
+                            <span className="font-medium">{program.enrolled_count || 0}</span>
+                            {program.capacity && (
+                              <span className="text-muted-foreground">/{program.capacity}</span>
+                            )}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{program.capacity ? `Enrolled ${program.enrolled_count || 0} of ${program.capacity} capacity` : `Enrolled: ${program.enrolled_count || 0} (no capacity set)`}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell>
                       {program.revenue_actual ? `$${program.revenue_actual.toLocaleString()}` : '-'}
@@ -369,9 +428,16 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
           <Card className="w-full max-w-lg">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Create Program</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => setShowCreateModal(false)}>
-                <X className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={() => setShowCreateModal(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Close</p>
+                </TooltipContent>
+              </Tooltip>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -459,9 +525,16 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
           <Card className="w-full max-w-lg">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Assign Contact to Program</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => setShowAssignModal(false)}>
-                <X className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={() => setShowAssignModal(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Close</p>
+                </TooltipContent>
+              </Tooltip>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">

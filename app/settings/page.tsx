@@ -7,19 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
-import { 
-  Settings, 
-  Bell, 
-  Activity, 
-  Shield, 
-  Database, 
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Settings,
+  Bell,
+  Activity,
+  Shield,
+  Database,
   RefreshCw,
   Loader2,
   Download,
@@ -295,50 +296,78 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
               <div className="space-y-2">
                 <Label htmlFor="stain-weight" className="text-sm">Stain Score Weight</Label>
-                <Input
-                  id="stain-weight"
-                  type="number"
-                  value={settings.stain_weight}
-                  onChange={(e) => handleWeightChange("stain_weight", e.target.value)}
-                  min={0}
-                  max={100}
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      id="stain-weight"
+                      type="number"
+                      value={settings.stain_weight}
+                      onChange={(e) => handleWeightChange("stain_weight", e.target.value)}
+                      min={0}
+                      max={100}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Weight for stain/degradation scoring</p>
+                  </TooltipContent>
+                </Tooltip>
                 <Badge variant="secondary">{settings.stain_weight}% (0–{settings.stain_weight})</Badge>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cluster-weight" className="text-sm">Cluster Score Weight</Label>
-                <Input
-                  id="cluster-weight"
-                  type="number"
-                  value={settings.cluster_weight}
-                  onChange={(e) => handleWeightChange("cluster_weight", e.target.value)}
-                  min={0}
-                  max={100}
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      id="cluster-weight"
+                      type="number"
+                      value={settings.cluster_weight}
+                      onChange={(e) => handleWeightChange("cluster_weight", e.target.value)}
+                      min={0}
+                      max={100}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Weight for cluster density scoring</p>
+                  </TooltipContent>
+                </Tooltip>
                 <Badge variant="secondary">{settings.cluster_weight}% (0–{settings.cluster_weight})</Badge>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signal-weight" className="text-sm">Signal Score Weight</Label>
-                <Input
-                  id="signal-weight"
-                  type="number"
-                  value={settings.signal_weight}
-                  onChange={(e) => handleWeightChange("signal_weight", e.target.value)}
-                  min={0}
-                  max={100}
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      id="signal-weight"
+                      type="number"
+                      value={settings.signal_weight}
+                      onChange={(e) => handleWeightChange("signal_weight", e.target.value)}
+                      min={0}
+                      max={100}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Weight for signal-based scoring</p>
+                  </TooltipContent>
+                </Tooltip>
                 <Badge variant="secondary">{settings.signal_weight}% (0–{settings.signal_weight})</Badge>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="engagement-weight" className="text-sm">Engagement Score Weight</Label>
-                <Input
-                  id="engagement-weight"
-                  type="number"
-                  value={settings.engagement_weight}
-                  onChange={(e) => handleWeightChange("engagement_weight", e.target.value)}
-                  min={0}
-                  max={100}
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      id="engagement-weight"
+                      type="number"
+                      value={settings.engagement_weight}
+                      onChange={(e) => handleWeightChange("engagement_weight", e.target.value)}
+                      min={0}
+                      max={100}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Weight for engagement activity scoring</p>
+                  </TooltipContent>
+                </Tooltip>
                 <Badge variant="secondary">{settings.engagement_weight}% (0–{settings.engagement_weight})</Badge>
               </div>
             </div>
@@ -354,48 +383,83 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
               <div className="text-center p-2 border rounded space-y-2">
                 <Badge variant="cold">Cold</Badge>
-                <Input
-                  type="number"
-                  value={settings.cold_threshold}
-                  onChange={(e) => handleWeightChange("cold_threshold", e.target.value)}
-                  className="text-center"
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      type="number"
+                      value={settings.cold_threshold}
+                      onChange={(e) => handleWeightChange("cold_threshold", e.target.value)}
+                      className="text-center"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Score threshold for the Cold tier</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <div className="text-center p-2 border rounded space-y-2">
                 <Badge variant="warm">Warm</Badge>
-                <Input
-                  type="number"
-                  value={settings.warm_threshold}
-                  onChange={(e) => handleWeightChange("warm_threshold", e.target.value)}
-                  className="text-center"
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      type="number"
+                      value={settings.warm_threshold}
+                      onChange={(e) => handleWeightChange("warm_threshold", e.target.value)}
+                      className="text-center"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Score threshold for the Warm tier</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <div className="text-center p-2 border rounded space-y-2">
                 <Badge variant="engaged">Engaged</Badge>
-                <Input
-                  type="number"
-                  value={settings.engaged_threshold}
-                  onChange={(e) => handleWeightChange("engaged_threshold", e.target.value)}
-                  className="text-center"
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      type="number"
+                      value={settings.engaged_threshold}
+                      onChange={(e) => handleWeightChange("engaged_threshold", e.target.value)}
+                      className="text-center"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Score threshold for the Engaged tier</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <div className="text-center p-2 border rounded space-y-2">
                 <Badge variant="hot">Hot</Badge>
-                <Input
-                  type="number"
-                  value={settings.hot_threshold}
-                  onChange={(e) => handleWeightChange("hot_threshold", e.target.value)}
-                  className="text-center"
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      type="number"
+                      value={settings.hot_threshold}
+                      onChange={(e) => handleWeightChange("hot_threshold", e.target.value)}
+                      className="text-center"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Score threshold for the Hot tier</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <div className="text-center p-2 border rounded space-y-2">
                 <Badge variant="committed">Committed</Badge>
-                <Input
-                  type="number"
-                  value={settings.committed_threshold}
-                  onChange={(e) => handleWeightChange("committed_threshold", e.target.value)}
-                  className="text-center"
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Input
+                      type="number"
+                      value={settings.committed_threshold}
+                      onChange={(e) => handleWeightChange("committed_threshold", e.target.value)}
+                      className="text-center"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Score threshold for the Committed tier</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -404,23 +468,37 @@ export default function SettingsPage() {
 
           <div className="space-y-4">
             <Label htmlFor="decay-days">Decay Flag Threshold</Label>
-            <Input
-              id="decay-days"
-              type="number"
-              value={settings.decay_flag_days}
-              onChange={(e) => handleWeightChange("decay_flag_days", e.target.value)}
-              className="max-w-[200px]"
-            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Input
+                  id="decay-days"
+                  type="number"
+                  value={settings.decay_flag_days}
+                  onChange={(e) => handleWeightChange("decay_flag_days", e.target.value)}
+                  className="max-w-[200px]"
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Days of inactivity before a contact is flagged as stale</p>
+              </TooltipContent>
+            </Tooltip>
             <p className="text-xs text-muted-foreground">
               Contacts with no engagement for this many days will be flagged as stale
             </p>
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={saveScoringConfig} disabled={scoringLoading} className="gap-2">
-              {scoringLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save Changes
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={saveScoringConfig} disabled={scoringLoading} className="gap-2">
+                  {scoringLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Save scoring configuration</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CardContent>
       </Card>
@@ -499,10 +577,17 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={saveAgentConfig} disabled={agentLoading} className="gap-2">
-              {agentLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save Changes
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={saveAgentConfig} disabled={agentLoading} className="gap-2">
+                  {agentLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Save agent configuration</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CardContent>
       </Card>
@@ -571,10 +656,17 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex justify-end pt-2">
-            <Button onClick={saveNotifications} disabled={notificationsLoading} className="gap-2">
-              {notificationsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save Changes
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={saveNotifications} disabled={notificationsLoading} className="gap-2">
+                  {notificationsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Save notification preferences</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CardContent>
       </Card>
@@ -612,30 +704,51 @@ export default function SettingsPage() {
           <Separator />
 
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={triggerProbe} disabled={probeLoading} className="gap-2">
-              {probeLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Zap className="h-4 w-4" />
-              )}
-              Refresh PROBE Data
-            </Button>
-            <Button variant="outline" onClick={triggerLens} disabled={lensLoading} className="gap-2">
-              {lensLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-              Refresh LENS Scores
-            </Button>
-            <Button variant="outline" onClick={exportContacts} disabled={exportLoading} className="gap-2">
-              {exportLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              Export Data (CSV)
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={triggerProbe} disabled={probeLoading} className="gap-2">
+                  {probeLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Zap className="h-4 w-4" />
+                  )}
+                  Refresh PROBE Data
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Trigger PROBE agent to refresh contact data</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={triggerLens} disabled={lensLoading} className="gap-2">
+                  {lensLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  Refresh LENS Scores
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Trigger LENS agent to recalculate scores</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={exportContacts} disabled={exportLoading} className="gap-2">
+                  {exportLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Export Data (CSV)
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Export all contacts as CSV file</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CardContent>
       </Card>

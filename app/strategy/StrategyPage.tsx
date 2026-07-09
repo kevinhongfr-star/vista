@@ -18,6 +18,7 @@ import { Toaster, useToasts } from "@/components/ui/toast"
 import { formatDate, truncateText } from "@/lib/utils"
 import { Lightbulb, Plus, Calendar, Filter, CheckCircle, Crosshair, Focus, FileText, Loader2, AlertCircle } from "lucide-react"
 import type { StrategicNote, VistaContact, DensityCluster } from "@/lib/types"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const NOTE_CATEGORIES = ["Priority", "Insight", "Action-Item"]
 const NOTE_STATUSES = ["Active", "Archived"]
@@ -58,9 +59,36 @@ export function StrategyPage({ notes: initialNotes, totalCount, contacts, cluste
   }
 
   const categoryIcons: Record<string, React.ReactNode> = {
-    Priority: <AlertCircle className="h-4 w-4" />,
-    Insight: <Lightbulb className="h-4 w-4" />,
-    "Action-Item": <CheckCircle className="h-4 w-4" />,
+    Priority: (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span><AlertCircle className="h-4 w-4" /></span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Priority: high-importance strategic note</p>
+        </TooltipContent>
+      </Tooltip>
+    ),
+    Insight: (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span><Lightbulb className="h-4 w-4" /></span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Insight: observation or learning</p>
+        </TooltipContent>
+      </Tooltip>
+    ),
+    "Action-Item": (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span><CheckCircle className="h-4 w-4" /></span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Action-Item: a task to be completed</p>
+        </TooltipContent>
+      </Tooltip>
+    ),
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,10 +149,17 @@ export function StrategyPage({ notes: initialNotes, totalCount, contacts, cluste
         <h1 className="text-3xl font-bold">Strategy</h1>
         <div className="flex gap-2">
           <Badge variant="secondary">{totalCount} notes</Badge>
-          <Button onClick={() => setIsAddingNote(!isAddingNote)} disabled={isSubmitting}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Note
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={() => setIsAddingNote(!isAddingNote)} disabled={isSubmitting}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Note
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Create a new strategic note</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -249,9 +284,16 @@ export function StrategyPage({ notes: initialNotes, totalCount, contacts, cluste
           <div className="flex items-center gap-4 flex-wrap">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Filter by category</p>
+                </TooltipContent>
+              </Tooltip>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {NOTE_CATEGORIES.map((cat) => (
@@ -262,9 +304,16 @@ export function StrategyPage({ notes: initialNotes, totalCount, contacts, cluste
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Filter by status</p>
+                </TooltipContent>
+              </Tooltip>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 {NOTE_STATUSES.map((status) => (
@@ -291,14 +340,28 @@ export function StrategyPage({ notes: initialNotes, totalCount, contacts, cluste
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">{note.category || note.note_type || "Note"}</Badge>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge variant="outline">{note.category || note.note_type || "Note"}</Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Strategic note category</p>
+                          </TooltipContent>
+                        </Tooltip>
                         {note.status && (
-                          <Badge variant="secondary" className={cn(
-                            note.status === "Active" && "bg-success/10 text-success",
-                            note.status === "Archived" && "bg-muted"
-                          )}>
-                            {note.status}
-                          </Badge>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge variant="secondary" className={cn(
+                                note.status === "Active" && "bg-success/10 text-success",
+                                note.status === "Archived" && "bg-muted"
+                              )}>
+                                {note.status}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Note status: {note.status}</p>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">

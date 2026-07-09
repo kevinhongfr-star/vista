@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   Calendar,
   Phone,
@@ -82,35 +83,56 @@ export function ActivitiesPage({ activities }: ActivitiesPageProps) {
     <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Activities</h1>
-        <Button onClick={() => setActivityLogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Log Activity
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={() => setActivityLogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Log Activity
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Log a new activity</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4 flex-wrap">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by contact name, company, or notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-[250px]"
-            />
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                {ACTIVITY_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Input
+                  placeholder="Search by contact name, company, or notes..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-[250px]"
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Search by contact name, company, or notes</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    {ACTIVITY_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Filter by activity type</p>
+              </TooltipContent>
+            </Tooltip>
             <Badge variant="secondary">{filteredActivities.length} activities</Badge>
           </div>
         </CardContent>
@@ -145,7 +167,16 @@ export function ActivitiesPage({ activities }: ActivitiesPageProps) {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="flex items-center gap-1">
-                          <IconComponent className="h-3 w-3" />
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="flex items-center">
+                                <IconComponent className="h-3 w-3" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{activity.activity_type}</p>
+                            </TooltipContent>
+                          </Tooltip>
                           {activity.activity_type}
                         </Badge>
                       </TableCell>
@@ -159,7 +190,16 @@ export function ActivitiesPage({ activities }: ActivitiesPageProps) {
                       <TableCell>
                         {activity.duration_minutes ? (
                           <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex items-center">
+                                  <Clock className="h-3 w-3 text-muted-foreground" />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Activity duration in minutes</p>
+                              </TooltipContent>
+                            </Tooltip>
                             <span className="text-sm">{activity.duration_minutes} min</span>
                           </div>
                         ) : (
@@ -168,14 +208,21 @@ export function ActivitiesPage({ activities }: ActivitiesPageProps) {
                       </TableCell>
                       <TableCell>
                         {activity.contact_id && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push(`/contacts/${activity.contact_id}`)}
-                          >
-                            View
-                            <ArrowRight className="h-3 w-3 ml-1" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => router.push(`/contacts/${activity.contact_id}`)}
+                              >
+                                View
+                                <ArrowRight className="h-3 w-3 ml-1" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View contact details</p>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </TableCell>
                     </TableRow>

@@ -5,14 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { formatDate, truncateText } from "@/lib/utils"
 import { 
   Mail, 
@@ -32,6 +37,14 @@ import type { CampaignActivity } from "@/lib/types"
 import { useState } from "react"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import { useRouter } from "next/navigation"
+
+const FUNNEL_STEP_DESCRIPTIONS: Record<string, string> = {
+  Drafted: "Campaign drafts awaiting review and approval",
+  Sent: "Campaigns that have been sent to recipients",
+  Opened: "Recipients opened the campaign message",
+  Replied: "Recipients replied to the campaign",
+  Meeting: "Meetings booked as a result of the campaign",
+}
 
 interface CampaignsPageProps {
   activities: CampaignActivity[]
@@ -170,14 +183,21 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
                 Draft Queue ({drafts.length} pending approval)
               </CardTitle>
               {selectedIds.size > 0 && (
-                <Button 
-                  onClick={handleBulkApprove} 
-                  disabled={bulkLoading}
-                  className="gap-2"
-                >
-                  {bulkLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Bulk Approve ({selectedIds.size})
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleBulkApprove}
+                      disabled={bulkLoading}
+                      className="gap-2"
+                    >
+                      {bulkLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                      Bulk Approve ({selectedIds.size})
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Approve all selected drafts at once</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           </CardHeader>
@@ -186,16 +206,23 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[40px]">
-                    <button
-                      onClick={toggleSelectAll}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      {selectedIds.size === drafts.length && drafts.length > 0 ? (
-                        <CheckSquare className="h-4 w-4" />
-                      ) : (
-                        <Square className="h-4 w-4" />
-                      )}
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={toggleSelectAll}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          {selectedIds.size === drafts.length && drafts.length > 0 ? (
+                            <CheckSquare className="h-4 w-4" />
+                          ) : (
+                            <Square className="h-4 w-4" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Select or deselect all drafts</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Angle</TableHead>
@@ -227,57 +254,85 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-success"
-                          title="Approve"
-                          onClick={() => handleStatusUpdate(draft.id, "Approved")}
-                          disabled={loadingId === draft.id}
-                        >
-                          {loadingId === draft.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Check className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-info"
-                          title="Edit"
-                          disabled={loadingId === draft.id}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-error"
-                          title="Reject"
-                          onClick={() => handleStatusUpdate(draft.id, "Rejected")}
-                          disabled={loadingId === draft.id}
-                        >
-                          {loadingId === draft.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <X className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-success"
-                          title="Send Now"
-                          onClick={() => handleStatusUpdate(draft.id, "Sent")}
-                          disabled={loadingId === draft.id}
-                        >
-                          {loadingId === draft.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4" />
-                          )}
-                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-success"
+                              title="Approve"
+                              onClick={() => handleStatusUpdate(draft.id, "Approved")}
+                              disabled={loadingId === draft.id}
+                            >
+                              {loadingId === draft.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Check className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Approve this draft</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-info"
+                              title="Edit"
+                              disabled={loadingId === draft.id}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit this draft</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-error"
+                              title="Reject"
+                              onClick={() => handleStatusUpdate(draft.id, "Rejected")}
+                              disabled={loadingId === draft.id}
+                            >
+                              {loadingId === draft.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <X className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Reject this draft</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-success"
+                              title="Send Now"
+                              onClick={() => handleStatusUpdate(draft.id, "Sent")}
+                              disabled={loadingId === draft.id}
+                            >
+                              {loadingId === draft.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Send className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Send this draft now</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -297,7 +352,14 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
             {funnelSteps.map((step, index) => (
               <div key={step.label} className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{step.label}</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="font-medium cursor-help">{step.label}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{FUNNEL_STEP_DESCRIPTIONS[step.label] || step.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <span className="text-muted-foreground">{step.count}</span>
                 </div>
                 <div className="relative h-8 bg-muted rounded overflow-hidden">

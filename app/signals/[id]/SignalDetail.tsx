@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   ArrowLeft,
   Mail,
@@ -100,15 +101,29 @@ export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
   return (
     <div className="space-y-6 animate-page-enter">
       <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Signals
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Signals
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Back to signals</p>
+          </TooltipContent>
+        </Tooltip>
         <div className="flex-1" />
-        <Button variant="outline" onClick={() => router.refresh()}>
-          <Edit3 className="h-4 w-4 mr-2" />
-          Edit
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" onClick={() => router.refresh()}>
+              <Edit3 className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Edit signal details</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="space-y-4">
@@ -116,25 +131,46 @@ export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
           {signal.company} - {signal.signal_type?.replace("_", " ") || "Signal"}
         </h1>
         <div className="flex items-center gap-3">
-          <Badge variant="outline">
-            Type: {signal.signal_type?.replace("_", " ") || "Unknown"}
-          </Badge>
-          <Badge
-            className={
-              signal.signal_strength === "High"
-                ? "bg-error text-white"
-                : signal.signal_strength === "Medium-High"
-                ? "bg-warning text-white"
-                : signal.signal_strength === "Medium"
-                ? "bg-info text-white"
-                : ""
-            }
-          >
-            Impact: {signal.signal_strength || "Low"}
-          </Badge>
-          <Badge variant="secondary">
-            Status: {signal.status || "New"}
-          </Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline">
+                Type: {signal.signal_type?.replace("_", " ") || "Unknown"}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Category of detected signal</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                className={
+                  signal.signal_strength === "High"
+                    ? "bg-error text-white"
+                    : signal.signal_strength === "Medium-High"
+                    ? "bg-warning text-white"
+                    : signal.signal_strength === "Medium"
+                    ? "bg-info text-white"
+                    : ""
+                }
+              >
+                Impact: {signal.signal_strength || "Low"}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Estimated impact strength of this signal</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="secondary">
+                Status: {signal.status || "New"}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Current workflow status of this signal</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -217,17 +253,31 @@ export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
             )}
 
             <div className="flex gap-3">
-              <Button
-                onClick={handleSendEmailToAll}
-                disabled={affectedContacts.length === 0}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Send Email to All {affectedContacts.length}
-              </Button>
-              <Button variant="outline" onClick={handleLogActivity}>
-                <ClipboardList className="h-4 w-4 mr-2" />
-                Log Activity
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleSendEmailToAll}
+                    disabled={affectedContacts.length === 0}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Email to All {affectedContacts.length}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Send an email to all affected contacts</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" onClick={handleLogActivity}>
+                    <ClipboardList className="h-4 w-4 mr-2" />
+                    Log Activity
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Log a new activity related to this signal</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </CardContent>

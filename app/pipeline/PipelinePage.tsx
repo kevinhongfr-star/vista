@@ -21,6 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   GitBranch,
   List,
   ArrowRight,
@@ -31,6 +36,17 @@ import {
 } from "lucide-react"
 import { PIPELINE_STAGES, type PipelineStage, type VistaContact } from "@/lib/types"
 import { useToasts, Toaster } from "@/components/ui/toast"
+
+const STAGE_DESCRIPTIONS: Record<string, string> = {
+  Prospect: "Initial lead identified, not yet contacted",
+  Contacted: "First outreach made, awaiting response",
+  Engaged: "Contact is actively responding to outreach",
+  "Meeting Booked": "A meeting has been scheduled or held",
+  "Proposal Sent": "A formal proposal has been shared",
+  Negotiation: "Actively discussing terms and pricing",
+  "Closed Won": "Deal won, customer converted",
+  "Closed Lost": "Deal lost or no longer pursuing",
+}
 
 interface PipelineContact {
   id: string
@@ -124,20 +140,34 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Pipeline</h1>
         <div className="flex gap-2">
-          <Button
-            variant={viewMode === "kanban" ? "default" : "outline"}
-            onClick={() => setViewMode("kanban")}
-          >
-            <GitBranch className="h-4 w-4 mr-2" />
-            Kanban View
-          </Button>
-          <Button
-            variant={viewMode === "list" ? "default" : "outline"}
-            onClick={() => setViewMode("list")}
-          >
-            <List className="h-4 w-4 mr-2" />
-            List View
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={viewMode === "kanban" ? "default" : "outline"}
+                onClick={() => setViewMode("kanban")}
+              >
+                <GitBranch className="h-4 w-4 mr-2" />
+                Kanban View
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Switch to kanban board view</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={viewMode === "list" ? "default" : "outline"}
+                onClick={() => setViewMode("list")}
+              >
+                <List className="h-4 w-4 mr-2" />
+                List View
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Switch to list view</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -151,7 +181,14 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                 className="bg-muted/30 rounded-lg p-4 min-h-[400px]"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium">{stage}</h3>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <h3 className="font-medium cursor-help">{stage}</h3>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{STAGE_DESCRIPTIONS[stage] || stage}</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <Badge variant="secondary">{stageContacts.length}</Badge>
                 </div>
                 <div className="space-y-3">
@@ -171,17 +208,24 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                         </Badge>
                         {PIPELINE_STAGES.indexOf(stage) <
                           PIPELINE_STAGES.length - 1 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleAdvanceStage(contact.id, stage)
-                            }}
-                          >
-                            <ArrowRight className="h-3 w-3" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleAdvanceStage(contact.id, stage)
+                                }}
+                              >
+                                <ArrowRight className="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Advance to next stage</p>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </div>
                     </div>
@@ -242,18 +286,25 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                         </TableCell>
                         <TableCell>
                           {canAdvance && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleAdvanceStage(
-                                  contact.id,
-                                  contact.pipeline_stage || "Prospect"
-                                )
-                              }
-                            >
-                              Advance →
-                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleAdvanceStage(
+                                      contact.id,
+                                      contact.pipeline_stage || "Prospect"
+                                    )
+                                  }
+                                >
+                                  Advance →
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Advance to next stage</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
                         </TableCell>
                       </TableRow>
@@ -300,7 +351,14 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                         className="flex items-center gap-3 p-3 bg-warning/10 rounded-lg cursor-pointer hover:bg-warning/20 transition-colors"
                         onClick={() => router.push(`/contacts/${contact.contact_id}`)}
                       >
-                        <AlertTriangle className="h-4 w-4 text-warning" />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertTriangle className="h-4 w-4 text-warning cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Stuck: 30+ days without stage change</p>
+                          </TooltipContent>
+                        </Tooltip>
                         <div className="flex-1">
                           <p className="font-medium text-sm">
                             {contact.name} ({contact.company})
@@ -320,34 +378,69 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                 <div>
                   <h3 className="font-medium mb-3">Conversion Rates</h3>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 rounded">
-                      <span className="text-sm">Prospect → Contacted</span>
-                      <Badge variant="secondary">
-                        {conversionRates.prospect_to_contacted}%
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded">
-                      <span className="text-sm">Contacted → Engaged</span>
-                      <Badge variant="secondary">
-                        {conversionRates.contacted_to_engaged}%
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded">
-                      <span className="text-sm">Engaged → Meeting</span>
-                      <Badge variant="secondary">
-                        {conversionRates.engaged_to_meeting}%
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded">
-                      <span className="text-sm">Meeting → Closed Won</span>
-                      <Badge variant="secondary">
-                        {conversionRates.meeting_to_closed}%
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded bg-primary/10">
-                      <span className="font-medium">Overall Conversion</span>
-                      <Badge>{conversionRates.overall}%</Badge>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center justify-between p-2 rounded cursor-help">
+                          <span className="text-sm">Prospect → Contacted</span>
+                          <Badge variant="secondary">
+                            {conversionRates.prospect_to_contacted}%
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Percentage of prospects that received first contact</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center justify-between p-2 rounded cursor-help">
+                          <span className="text-sm">Contacted → Engaged</span>
+                          <Badge variant="secondary">
+                            {conversionRates.contacted_to_engaged}%
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Percentage of contacted prospects that became engaged</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center justify-between p-2 rounded cursor-help">
+                          <span className="text-sm">Engaged → Meeting</span>
+                          <Badge variant="secondary">
+                            {conversionRates.engaged_to_meeting}%
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Percentage of engaged contacts that booked a meeting</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center justify-between p-2 rounded cursor-help">
+                          <span className="text-sm">Meeting → Closed Won</span>
+                          <Badge variant="secondary">
+                            {conversionRates.meeting_to_closed}%
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Percentage of meetings that resulted in a closed-won deal</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center justify-between p-3 rounded bg-primary/10 cursor-help">
+                          <span className="font-medium">Overall Conversion</span>
+                          <Badge>{conversionRates.overall}%</Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>End-to-end conversion from prospect to closed won</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               )}
