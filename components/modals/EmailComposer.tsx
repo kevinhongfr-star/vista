@@ -94,8 +94,14 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
   }
 
   const handleSend = async () => {
-    if (!subject || !body || contacts.length === 0) {
-      addToast("error", "Please fill in all required fields")
+    // Validation
+    const errors: string[] = []
+    if (contacts.length === 0) errors.push("No recipients selected")
+    if (!subject.trim()) errors.push("Subject is required")
+    if (!body.trim()) errors.push("Email body is required")
+    
+    if (errors.length > 0) {
+      addToast("error", errors.join(", "))
       return
     }
 
@@ -132,8 +138,8 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="absolute inset-0 bg-black/50 animate-backdrop" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modal">
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-accent-fuchsia/10 flex items-center justify-center">

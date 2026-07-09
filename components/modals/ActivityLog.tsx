@@ -73,8 +73,22 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
   }
 
   const handleLog = async () => {
-    if (!activityType || !prefilledContact?.id) {
-      addToast("error", "Please select an activity type")
+    // Validation
+    const errors: string[] = []
+    if (!activityType) errors.push("Activity type is required")
+    if (!prefilledContact?.id) errors.push("Contact is required")
+    if ((activityType === "Call" || activityType === "Meeting") && !durationMinutes) {
+      errors.push("Duration is required for calls and meetings")
+    }
+    if ((activityType === "Call" || activityType === "Meeting") && durationMinutes) {
+      const duration = parseInt(durationMinutes)
+      if (isNaN(duration) || duration <= 0) {
+        errors.push("Duration must be a positive number")
+      }
+    }
+    
+    if (errors.length > 0) {
+      addToast("error", errors.join(", "))
       return
     }
 
@@ -85,7 +99,7 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contact_id: prefilledContact.id,
+          contact_id: prefilledContact!.id,
           activity_type: activityType,
           activity_date: `${date}T09:00:00`,
           subject: subject || activityType,
@@ -119,8 +133,8 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+      <div className="absolute inset-0 bg-black/50 animate-backdrop" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-modal">
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-accent-fuchsia/10 flex items-center justify-center">

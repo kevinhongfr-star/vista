@@ -93,7 +93,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -107,12 +107,12 @@ export function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
         {loading ? (
           <CardSkeleton count={4} />
         ) : (
           <>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/contacts")}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow card-hover" onClick={() => router.push("/contacts")}>
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
