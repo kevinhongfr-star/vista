@@ -29,7 +29,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { formatDate, truncateText } from "@/lib/utils"
-import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight, CheckSquare, Square, Trash2 } from "lucide-react"
+import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight, CheckSquare, Square, Trash2, Sparkles } from "lucide-react"
+import { GenerateReportButton } from "@/components/intelligence/generate-report-button"
 import Link from "next/link"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -254,6 +255,12 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
         <h1 className="text-3xl font-bold">Signals</h1>
         <div className="flex gap-2">
           <Badge variant="secondary">{signalList.length || totalCount} total</Badge>
+          <GenerateReportButton
+            reportType="signal-digest"
+            label="Generate Digest"
+            variant="outline"
+            size="sm"
+          />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button onClick={() => setIsAddingSignal(!isAddingSignal)}>

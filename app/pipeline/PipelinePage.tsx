@@ -33,9 +33,11 @@ import {
   TrendingUp,
   Users,
   ChevronRight,
+  Sparkles,
 } from "lucide-react"
 import { PIPELINE_STAGES, type PipelineStage, type VistaContact } from "@/lib/types"
 import { useToasts, Toaster } from "@/components/ui/toast"
+import { GenerateReportButton } from "@/components/intelligence/generate-report-button"
 
 const STAGE_DESCRIPTIONS: Record<string, string> = {
   Prospect: "Initial lead identified, not yet contacted",
@@ -140,6 +142,12 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Pipeline</h1>
         <div className="flex gap-2">
+          <GenerateReportButton
+            reportType="pipeline-review"
+            label="Generate Review"
+            variant="outline"
+            size="sm"
+          />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

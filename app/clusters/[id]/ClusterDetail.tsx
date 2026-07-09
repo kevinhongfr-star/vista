@@ -26,8 +26,10 @@ import {
   Lightbulb,
   MapPin,
   Building2,
+  Sparkles,
 } from "lucide-react"
 import type { DensityCluster, VistaContact, StrategicNote } from "@/lib/types"
+import { GenerateReportButton } from "@/components/intelligence/generate-report-button"
 
 interface ClusterDetailProps {
   cluster: DensityCluster
@@ -84,7 +86,14 @@ export function ClusterDetail({
             </div>
           </div>
         </div>
-        <Button asChild>
+        <div className="flex gap-2">
+          <GenerateReportButton
+            reportType="cluster"
+            resourceId={cluster.cluster_id}
+            label="Generate Brief"
+            variant="outline"
+          />
+          <Button asChild>
           <Link href="/programs">
             <Plus className="h-4 w-4 mr-2" />
             Create Program from Cluster

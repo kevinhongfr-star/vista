@@ -652,3 +652,83 @@ export interface GeneratedCampaign {
   touches: CampaignTouch[]
   target_contacts: number
 }
+
+// ─── Wave 4: Report Types ───
+
+export interface KeyPlayer {
+  name: string
+  company: string
+  reason: string
+}
+
+export interface ReportAction {
+  action: string
+  priority: "high" | "medium" | "low"
+  timeline?: string
+  expected_impact?: string
+}
+
+export interface ClusterIntelligenceReport {
+  cluster_id: string
+  cluster_name: string
+  generated_at: string
+  narrative: string
+  key_players: KeyPlayer[]
+  recommended_actions: ReportAction[]
+  risks: string[]
+  word_count: number
+}
+
+export interface SignalDigestHeadline {
+  signal_id?: string
+  title: string
+  why_it_matters: string
+}
+
+export interface SignalDigestActionItem {
+  contact_id?: string
+  contact_name: string
+  reason: string
+  signal_id?: string
+}
+
+export interface SignalWatchItem {
+  signal_id?: string
+  title: string
+  monitor_by: string
+}
+
+export interface SignalDigestReport {
+  period: string
+  generated_at: string
+  headline: SignalDigestHeadline
+  digest_markdown: string
+  action_items: SignalDigestActionItem[]
+  watch_list: SignalWatchItem[]
+  total_signals_analyzed: number
+}
+
+export interface PipelineBottleneck {
+  stage: string
+  count: number
+  recommendation: string
+}
+
+export interface AtRiskContact {
+  id?: string
+  name: string
+  company: string
+  reason: string
+}
+
+export interface PipelineReviewReport {
+  period: string
+  generated_at: string
+  health_score: number
+  review_markdown: string
+  bottlenecks: PipelineBottleneck[]
+  at_risk_contacts: AtRiskContact[]
+  recommended_actions: ReportAction[]
+}
+
+export type ReportType = "cluster" | "signal-digest" | "pipeline-review" | "executive-brief"

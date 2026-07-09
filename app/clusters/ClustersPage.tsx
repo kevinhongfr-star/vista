@@ -20,7 +20,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { formatDate } from "@/lib/utils"
-import { Map, Plus, TrendingUp, Users, DollarSign, CheckSquare, Square, Tag } from "lucide-react"
+import { Map, Plus, TrendingUp, Users, DollarSign, CheckSquare, Square, Tag, Sparkles } from "lucide-react"
+import { GenerateReportButton } from "@/components/intelligence/generate-report-button"
 import type { DensityCluster } from "@/lib/types"
 
 interface ClustersPageProps {
@@ -202,6 +203,7 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
                 <TableHead>Contacts</TableHead>
                 <TableHead>Revenue Potential</TableHead>
                 <TableHead>Last Calculated</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -268,11 +270,20 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
                     <TableCell className="text-muted-foreground">
                       {formatDate(cluster.last_calculated)}
                     </TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <GenerateReportButton
+                        reportType="cluster"
+                        resourceId={cluster.cluster_id}
+                        label="Brief"
+                        variant="outline"
+                        size="sm"
+                      />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     No density clusters found. Run PROBE to generate.
                   </TableCell>
                 </TableRow>
