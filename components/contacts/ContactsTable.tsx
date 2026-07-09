@@ -52,6 +52,7 @@ import { EmailComposer } from "@/components/modals/EmailComposer"
 import { ActivityLog } from "@/components/modals/ActivityLog"
 import { Toaster, useToasts } from "@/components/ui/toast"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 interface ContactsTableProps {
   data: VistaContact[]
@@ -106,6 +107,13 @@ export function ContactsTable({
   const [filterPresets, setFilterPresets] = useState<{ name: string; filters: typeof searchParams }[]>([])
   const [showPresetMenu, setShowPresetMenu] = useState(false)
   const [presetName, setPresetName] = useState("")
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean
+    title: string
+    description: string
+    confirmText: string
+    onConfirm: () => void | Promise<void>
+  }>({ open: false, title: "", description: "", confirmText: "Delete", onConfirm: () => {} })
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -347,22 +355,30 @@ export function ContactsTable({
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={async () => {
-                  try {
-                    const res = await fetch(`/api/contacts/${row.original.id}`, {
-                      method: 'DELETE',
-                    })
-                    const data = await res.json()
-                    if (data.success) {
-                      addToast('success', 'Contact deleted')
-                      router.refresh()
-                    } else {
-                      addToast('error', 'Failed to delete contact')
-                    }
-                  } catch (error) {
-                    addToast('error', 'Failed to delete contact')
-                  }
+              <DropdownMenuItem
+                onClick={() => {
+                  setConfirmDialog({
+                    open: true,
+                    title: "Delete Contact",
+                    description: `Are you sure you want to delete ${row.original.name || "this contact"}? This action cannot be undone.`,
+                    confirmText: "Delete",
+                    onConfirm: async () => {
+                      try {
+                        const res = await fetch(`/api/contacts/${row.original.id}`, {
+                          method: 'DELETE',
+                        })
+                        const data = await res.json()
+                        if (data.success) {
+                          addToast('success', 'Contact deleted')
+                          router.refresh()
+                        } else {
+                          addToast('error', 'Failed to delete contact')
+                        }
+                      } catch (error) {
+                        addToast('error', 'Failed to delete contact')
+                      }
+                    },
+                  })
                 }}
                 className="text-red-600"
               >
@@ -515,24 +531,31 @@ export function ContactsTable({
               size="sm"
               variant="outline"
               className="text-red-600 hover:text-red-700"
-              onClick={async () => {
+              onClick={() => {
                 const selected = table.getSelectedRowModel().rows.map(r => r.original)
-                if (!confirm(`Delete ${selected.length} contacts? This cannot be undone.`)) return
-                setBulkLoading(true)
-                try {
-                  let deleted = 0
-                  for (const contact of selected) {
-                    const res = await fetch(`/api/contacts/${contact.id}`, { method: 'DELETE' })
-                    if (res.ok) deleted++
-                  }
-                  addToast('success', `Deleted ${deleted} contacts`)
-                  setRowSelection({})
-                  router.refresh()
-                } catch (error) {
-                  addToast('error', 'Failed to delete contacts')
-                } finally {
-                  setBulkLoading(false)
-                }
+                setConfirmDialog({
+                  open: true,
+                  title: `Delete ${selected.length} Contact${selected.length > 1 ? 's' : ''}`,
+                  description: `Are you sure you want to delete ${selected.length} contact${selected.length > 1 ? 's' : ''}? This action cannot be undone.`,
+                  confirmText: `Delete ${selected.length}`,
+                  onConfirm: async () => {
+                    setBulkLoading(true)
+                    try {
+                      let deleted = 0
+                      for (const contact of selected) {
+                        const res = await fetch(`/api/contacts/${contact.id}`, { method: 'DELETE' })
+                        if (res.ok) deleted++
+                      }
+                      addToast('success', `Deleted ${deleted} contacts`)
+                      setRowSelection({})
+                      router.refresh()
+                    } catch (error) {
+                      addToast('error', 'Failed to delete contacts')
+                    } finally {
+                      setBulkLoading(false)
+                    }
+                  },
+                })
               }}
               disabled={bulkLoading}
             >
@@ -891,6 +914,14 @@ export function ContactsTable({
       />
 
       <Toaster toasts={toasts} onDismiss={dismissToast} />
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        confirmText={confirmDialog.confirmText}
+        onConfirm={confirmDialog.onConfirm}
+      />
     </div>
     </TooltipProvider>
   )

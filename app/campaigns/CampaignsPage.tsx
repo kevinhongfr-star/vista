@@ -36,6 +36,7 @@ import {
 import type { CampaignActivity } from "@/lib/types"
 import { useState } from "react"
 import { useToasts, Toaster } from "@/components/ui/toast"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useRouter } from "next/navigation"
 
 const FUNNEL_STEP_DESCRIPTIONS: Record<string, string> = {
@@ -59,6 +60,7 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [bulkLoading, setBulkLoading] = useState(false)
+  const [rejectDraftId, setRejectDraftId] = useState<string | null>(null)
 
   const sentCount = activities.filter(a => a.activity_status === 'Sent' || a.sent_date).length
   const openedCount = activities.filter(a => a.activity_status === 'Opened').length
@@ -298,7 +300,7 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
                               size="icon"
                               className="h-8 w-8 text-error"
                               title="Reject"
-                              onClick={() => handleStatusUpdate(draft.id, "Rejected")}
+                              onClick={() => setRejectDraftId(draft.id)}
                               disabled={loadingId === draft.id}
                             >
                               {loadingId === draft.id ? (
@@ -438,6 +440,19 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
       </Card>
 
       <Toaster toasts={toasts} onDismiss={dismissToast} />
+      <ConfirmDialog
+        open={rejectDraftId !== null}
+        onOpenChange={(open) => !open && setRejectDraftId(null)}
+        title="Reject Campaign Draft"
+        description="Are you sure you want to reject this draft? This action cannot be undone."
+        confirmText="Reject"
+        onConfirm={() => {
+          if (rejectDraftId) {
+            handleStatusUpdate(rejectDraftId, "Rejected")
+            setRejectDraftId(null)
+          }
+        }}
+      />
     </div>
   )
 }

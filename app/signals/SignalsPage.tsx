@@ -31,6 +31,7 @@ import { formatDate, truncateText } from "@/lib/utils"
 import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight, CheckSquare, Square, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useToasts, Toaster } from "@/components/ui/toast"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import type { Signal } from "@/lib/types"
 
 const SIGNAL_TYPES = [
@@ -109,6 +110,7 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
   const [filterStrength, setFilterStrength] = useState<string>("all")
   const [signalList, setSignalList] = useState<Signal[]>(signals)
   const [selectedSignalIds, setSelectedSignalIds] = useState<Set<string>>(new Set())
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { toasts, addToast, dismissToast } = useToasts()
 
   const toggleSignalSelection = (signalId: string) => {
@@ -415,7 +417,7 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
           </Button>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={isSaving}>
+              <Button variant="destructive" size="sm" onClick={() => setShowDeleteConfirm(true)} disabled={isSaving}>
                 <Trash2 className="h-4 w-4 mr-2" />
                 {isSaving ? "Deleting..." : "Delete Selected"}
               </Button>
@@ -568,6 +570,14 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
       </Card>
 
       <Toaster toasts={toasts} onDismiss={dismissToast} />
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title={`Delete ${selectedSignalIds.size} Signal${selectedSignalIds.size > 1 ? 's' : ''}`}
+        description={`Are you sure you want to delete ${selectedSignalIds.size} signal${selectedSignalIds.size > 1 ? 's' : ''}? This action cannot be undone.`}
+        confirmText={`Delete ${selectedSignalIds.size}`}
+        onConfirm={handleBulkDelete}
+      />
     </div>
   )
 }
