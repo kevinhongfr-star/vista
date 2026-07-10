@@ -46,7 +46,7 @@ export function AlertFeed({ staleContacts, thresholdCrossings, newSignals }: Ale
     <div className="space-y-4">
       {alerts.map((alert) => (
         <div key={alert.type} className="space-y-2">
-          <div className={cn("flex items-center gap-2 px-3 py-2 rounded-lg", alert.bgColor)}>
+          <div className={cn("flex items-center gap-2 px-3 py-2 rounded-none", alert.bgColor)}>
             <span className={alert.color}>{alert.icon}</span>
             <span className="font-medium text-sm">{alert.label}</span>
             <Badge variant="secondary" className="ml-auto">{alert.count}</Badge>

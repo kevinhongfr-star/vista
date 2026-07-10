@@ -227,7 +227,7 @@ export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
             </CardHeader>
             <CardContent className="space-y-3">
               {aiAnalysis.recommended_actions.map((action, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                <div key={i} className="flex items-start gap-3 p-3 rounded-none bg-muted/30">
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-fuchsia/10 flex items-center justify-center text-accent-fuchsia font-bold text-sm">
                     {i + 1}
                   </div>
@@ -281,7 +281,7 @@ export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
             {top3Contacts.map((contact, i) => (
               <div
                 key={contact.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 cursor-pointer hover:opacity-80 transition-opacity"
+                className="flex items-center justify-between p-3 rounded-none bg-muted/30 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => router.push(`/contacts/${contact.id}`)}
               >
                 <div className="flex items-center gap-3">

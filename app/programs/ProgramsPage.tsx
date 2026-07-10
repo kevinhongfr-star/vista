@@ -209,7 +209,7 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
             <div className="flex items-center gap-4">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="p-2 rounded-lg bg-success/10">
+                  <div className="p-2 rounded-none bg-success/10">
                     <CheckCircle className="h-6 w-6 text-success" />
                   </div>
                 </TooltipTrigger>
@@ -229,7 +229,7 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
             <div className="flex items-center gap-4">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="p-2 rounded-lg bg-info/10">
+                  <div className="p-2 rounded-none bg-info/10">
                     <Users className="h-6 w-6 text-info" />
                   </div>
                 </TooltipTrigger>
@@ -249,7 +249,7 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
             <div className="flex items-center gap-4">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="p-2 rounded-lg bg-accent-fuchsia/10">
+                  <div className="p-2 rounded-none bg-accent-fuchsia/10">
                     <DollarSign className="h-6 w-6 text-accent-fuchsia" />
                   </div>
                 </TooltipTrigger>
@@ -269,7 +269,7 @@ export function ProgramsPage({ programs: initialPrograms, assignments: initialAs
             <div className="flex items-center gap-4">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="p-2 rounded-lg bg-warning/10">
+                  <div className="p-2 rounded-none bg-warning/10">
                     <Target className="h-6 w-6 text-warning" />
                   </div>
                 </TooltipTrigger>

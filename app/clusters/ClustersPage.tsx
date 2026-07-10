@@ -100,7 +100,7 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
             <Card className="cursor-help">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-success/10">
+                  <div className="p-2 rounded-none bg-success/10">
                     <TrendingUp className="h-6 w-6 text-success" />
                   </div>
                   <div>
@@ -120,7 +120,7 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
             <Card className="cursor-help">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-warning/10">
+                  <div className="p-2 rounded-none bg-warning/10">
                     <Users className="h-6 w-6 text-warning" />
                   </div>
                   <div>
@@ -140,7 +140,7 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
             <Card className="cursor-help">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-muted/50">
+                  <div className="p-2 rounded-none bg-muted/50">
                     <Map className="h-6 w-6 text-muted-foreground" />
                   </div>
                   <div>
@@ -159,7 +159,7 @@ export function ClustersPage({ clusters, totalCount }: ClustersPageProps) {
 
       {/* Bulk Action Toolbar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+        <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-none">
           <span className="text-sm font-medium">{selectedIds.size} selected</span>
           <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
             Clear Selection

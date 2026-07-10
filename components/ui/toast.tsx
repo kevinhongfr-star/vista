@@ -46,7 +46,7 @@ function Toast({
   return (
     <div
       className={cn(
-        "flex items-start gap-3 p-4 rounded-lg shadow-lg border transition-all duration-200 bg-white",
+        "flex items-start gap-3 p-4 rounded-none shadow-lg border transition-all duration-200 bg-white",
         visible
           ? "opacity-100 translate-y-0"
           : "opacity-0 translate-y-2",

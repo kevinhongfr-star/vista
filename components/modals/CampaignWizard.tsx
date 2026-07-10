@@ -77,7 +77,7 @@ export function CampaignWizard({ isOpen, onClose, contactIds, clusterId }: Campa
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 animate-backdrop" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-modal">
+      <div className="relative bg-white rounded-none shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-modal">
         <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-accent-fuchsia/10 flex items-center justify-center">
@@ -137,15 +137,15 @@ export function CampaignWizard({ isOpen, onClose, contactIds, clusterId }: Campa
           ) : (
             <>
               <div className="grid grid-cols-3 gap-4">
-                <div className="p-3 bg-muted/30 rounded-lg">
+                <div className="p-3 bg-muted/30 rounded-none">
                   <p className="text-xs text-muted-foreground">Duration</p>
                   <p className="font-bold">{campaign.duration_days} days</p>
                 </div>
-                <div className="p-3 bg-muted/30 rounded-lg">
+                <div className="p-3 bg-muted/30 rounded-none">
                   <p className="text-xs text-muted-foreground">Touches</p>
                   <p className="font-bold">{campaign.touches.length}</p>
                 </div>
-                <div className="p-3 bg-muted/30 rounded-lg">
+                <div className="p-3 bg-muted/30 rounded-none">
                   <p className="text-xs text-muted-foreground">Target Contacts</p>
                   <p className="font-bold">{campaign.target_contacts}</p>
                 </div>
@@ -155,7 +155,7 @@ export function CampaignWizard({ isOpen, onClose, contactIds, clusterId }: Campa
                 {campaign.touches.map((touch, i) => {
                   const Icon = CHANNEL_ICONS[touch.channel] || Mail
                   return (
-                    <div key={i} className="p-4 border rounded-lg space-y-2">
+                    <div key={i} className="p-4 border rounded-none space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="h-8 w-8 rounded-full bg-accent-fuchsia/10 flex items-center justify-center">

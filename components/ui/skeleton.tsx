@@ -30,7 +30,7 @@ export const TableSkeleton = ({ rows = 5 }: { rows?: number }) => <SkeletonTable
 
 export function SkeletonCard() {
   return (
-    <div className="border rounded-lg p-4 space-y-3">
+    <div className="border rounded-none p-4 space-y-3">
       <Skeleton className="h-4 w-1/3" />
       <Skeleton className="h-8 w-1/2" />
       <Skeleton className="h-3 w-2/3" />

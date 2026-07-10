@@ -250,7 +250,7 @@ export function StrategyPage({ notes: initialNotes, totalCount, contacts, cluste
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
                     rows={4}
-                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                    className="flex w-full rounded-none border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                   />
                 </div>
               </div>
@@ -334,7 +334,7 @@ export function StrategyPage({ notes: initialNotes, totalCount, contacts, cluste
             <Card key={note.note_id} className="cursor-pointer hover:bg-muted/50">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
-                  <div className={cn("p-2 rounded-lg", categoryColors[note.category || note.note_type || "Insight"])}>
+                  <div className={cn("p-2 rounded-none", categoryColors[note.category || note.note_type || "Insight"])}>
                     {categoryIcons[note.category || note.note_type || "Insight"] || <FileText className="h-4 w-4" />}
                   </div>
                   <div className="flex-1 space-y-2">

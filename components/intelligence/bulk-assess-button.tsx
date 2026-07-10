@@ -154,7 +154,7 @@ export function BulkAssessButton({ onComplete }: BulkAssessButtonProps) {
                 </Select>
               </div>
 
-              <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
+              <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-none">
                 <p>⚠️ This will call the DeepSeek AI API and may take a few minutes.</p>
                 <p>Processing rate: ~10 contacts per batch, 5 concurrent batches.</p>
               </div>
@@ -182,19 +182,19 @@ export function BulkAssessButton({ onComplete }: BulkAssessButtonProps) {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                <div className="text-center p-3 bg-muted/30 rounded-none">
                   <p className="text-2xl font-bold">{result.assessed}</p>
                   <p className="text-xs text-muted-foreground">Assessed</p>
                 </div>
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                <div className="text-center p-3 bg-muted/30 rounded-none">
                   <p className="text-2xl font-bold text-green-600">{result.updated}</p>
                   <p className="text-xs text-muted-foreground">Updated</p>
                 </div>
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                <div className="text-center p-3 bg-muted/30 rounded-none">
                   <p className="text-2xl font-bold text-red-500">{result.errors}</p>
                   <p className="text-xs text-muted-foreground">Errors</p>
                 </div>
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                <div className="text-center p-3 bg-muted/30 rounded-none">
                   <p className="text-2xl font-bold">
                     {Math.round(result.duration_ms / 1000)}s
                   </p>

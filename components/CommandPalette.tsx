@@ -123,7 +123,7 @@ export function CommandPalette() {
                       onClick={() => { item.action(); setIsOpen(false) }}
                       onMouseEnter={() => setActiveIndex(runningIndex)}
                       className={cn(
-                        "w-full flex items-center gap-3 px-2 py-2 rounded-md text-left text-sm transition-colors",
+                        "w-full flex items-center gap-3 px-2 py-2 rounded-none text-left text-sm transition-colors",
                         isActive ? "bg-accent-fuchsia text-white" : "hover:bg-muted"
                       )}
                     >

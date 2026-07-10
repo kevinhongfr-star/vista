@@ -138,7 +138,7 @@ export function ActivityLog({ isOpen, onClose, prefilledContact, prefilledType }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 animate-backdrop" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-modal">
+      <div className="relative bg-white rounded-none shadow-2xl w-full max-w-lg animate-modal">
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-accent-fuchsia/10 flex items-center justify-center">

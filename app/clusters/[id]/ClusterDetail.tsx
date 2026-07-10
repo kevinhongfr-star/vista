@@ -134,7 +134,7 @@ export function ClusterDetail({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-success/10">
+              <div className="p-2 rounded-none bg-success/10">
                 <TrendingUp className="h-6 w-6 text-success" />
               </div>
               <div>
@@ -147,7 +147,7 @@ export function ClusterDetail({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-info/10">
+              <div className="p-2 rounded-none bg-info/10">
                 <Target className="h-6 w-6 text-info" />
               </div>
               <div>
@@ -160,7 +160,7 @@ export function ClusterDetail({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-warning/10">
+              <div className="p-2 rounded-none bg-warning/10">
                 <Zap className="h-6 w-6 text-warning" />
               </div>
               <div>
@@ -173,7 +173,7 @@ export function ClusterDetail({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-muted/50">
+              <div className="p-2 rounded-none bg-muted/50">
                 <DollarSign className="h-6 w-6 text-muted-foreground" />
               </div>
               <div>
@@ -273,7 +273,7 @@ export function ClusterDetail({
                   {notes.map((note) => (
                     <div
                       key={note.note_id}
-                      className="border rounded-lg p-4 hover:bg-muted/30"
+                      className="border rounded-none p-4 hover:bg-muted/30"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <Badge
@@ -341,7 +341,7 @@ export function ClusterDetail({
                   {cluster.recommended_programs.map((program, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2 p-2 rounded-md bg-muted/30"
+                      className="flex items-center gap-2 p-2 rounded-none bg-muted/30"
                     >
                       <Target className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{program}</span>

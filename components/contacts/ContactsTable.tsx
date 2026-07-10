@@ -104,6 +104,7 @@ export function ContactsTable({
   const [selectedContact, setSelectedContact] = useState<VistaContact | undefined>()
   const [selectedContacts, setSelectedContacts] = useState<VistaContact[]>([])
   const [bulkLoading, setBulkLoading] = useState(false)
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [filterPresets, setFilterPresets] = useState<{ name: string; filters: typeof searchParams }[]>([])
   const [showPresetMenu, setShowPresetMenu] = useState(false)
   const [presetName, setPresetName] = useState("")
@@ -281,6 +282,21 @@ export function ContactsTable({
       enableGlobalFilter: true,
     },
     {
+      id: 'title',
+      header: 'Title',
+      accessorKey: 'role',
+      cell: ({ row }) => (
+        <div>
+          <div className="text-sm">{row.original.role || row.original.headline?.slice(0, 50) || "-"}</div>
+          {row.original.seniority && (
+            <div className="text-xs text-muted-foreground capitalize">{row.original.seniority.replace('_', ' ')}</div>
+          )}
+        </div>
+      ),
+      enableGlobalFilter: true,
+      size: 180,
+    },
+    {
       id: 'company',
       header: 'Company',
       accessorKey: 'company',
@@ -293,6 +309,23 @@ export function ContactsTable({
         </div>
       ),
       enableGlobalFilter: true,
+    },
+    {
+      id: 'location',
+      header: 'Location',
+      accessorKey: 'country',
+      cell: ({ row }) => {
+        const city = row.original.location
+        const country = row.original.country
+        if (!city && !country) return <span className="text-muted-foreground">-</span>
+        return (
+          <span className="text-sm text-muted-foreground">
+            {city && country ? `${city}, ${country}` : country || city}
+          </span>
+        )
+      },
+      enableGlobalFilter: true,
+      size: 120,
     },
     {
       id: 'function',
@@ -498,7 +531,7 @@ export function ContactsTable({
     <div className="space-y-4">
       {/* Bulk Actions Bar */}
       {Object.keys(rowSelection).length > 0 && (
-        <div className="flex items-center gap-3 p-3 bg-accent-fuchsia/10 border border-accent-fuchsia/20 rounded-lg">
+        <div className="flex items-center gap-3 p-3 bg-accent-fuchsia/10 border border-accent-fuchsia/20 rounded-none">
           <span className="text-sm font-medium">
             {Object.keys(rowSelection).length} selected
           </span>
@@ -527,6 +560,69 @@ export function ContactsTable({
               <Activity className="h-3 w-3 mr-1" />
               Log Activity
             </Button>
+            <Select
+              onValueChange={async (stage) => {
+                const selected = table.getSelectedRowModel().rows.map(r => r.original)
+                setBulkLoading(true)
+                try {
+                  let updated = 0
+                  for (const contact of selected) {
+                    const res = await fetch(`/api/contacts/${contact.id}`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ pipeline_stage: stage }),
+                    })
+                    if (res.ok) updated++
+                  }
+                  addToast('success', `Updated ${updated} contacts to ${stage}`)
+                  setRowSelection({})
+                  router.refresh()
+                } catch { addToast('error', 'Failed to update stage') }
+                finally { setBulkLoading(false) }
+              }}
+            >
+              <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue placeholder="Set Stage" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Prospect">Prospect</SelectItem>
+                <SelectItem value="Contacted">Contacted</SelectItem>
+                <SelectItem value="Engaged">Engaged</SelectItem>
+                <SelectItem value="Meeting Booked">Meeting Booked</SelectItem>
+                <SelectItem value="Proposal Sent">Proposal Sent</SelectItem>
+                <SelectItem value="Negotiation">Negotiation</SelectItem>
+                <SelectItem value="Closed Won">Closed Won</SelectItem>
+                <SelectItem value="Closed Lost">Closed Lost</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              onValueChange={async (tier) => {
+                const selected = table.getSelectedRowModel().rows.map(r => r.original)
+                setBulkLoading(true)
+                try {
+                  let updated = 0
+                  for (const contact of selected) {
+                    const res = await fetch(`/api/contacts/${contact.id}`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ engagement_tier: tier }),
+                    })
+                    if (res.ok) updated++
+                  }
+                  addToast('success', `Updated ${updated} contacts to Tier ${tier}`)
+                  setRowSelection({})
+                  router.refresh()
+                } catch { addToast('error', 'Failed to update tier') }
+                finally { setBulkLoading(false) }
+              }}
+            >
+              <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue placeholder="Set Tier" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Cold">Cold</SelectItem>
+                <SelectItem value="Warm">Warm</SelectItem>
+                <SelectItem value="Engaged">Engaged</SelectItem>
+                <SelectItem value="Hot">Hot</SelectItem>
+                <SelectItem value="Committed">Committed</SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               size="sm"
               variant="outline"
@@ -575,6 +671,20 @@ export function ContactsTable({
 
       {/* Filters */}
       <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-1 border border-border p-0.5">
+          <button
+            onClick={() => setViewMode('table')}
+            className={`px-2 py-1 text-xs transition-colors ${viewMode === 'table' ? 'bg-accent text-white' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Table
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`px-2 py-1 text-xs transition-colors ${viewMode === 'grid' ? 'bg-accent text-white' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Grid
+          </button>
+        </div>
         <div className="relative">
           <Input
             ref={searchInputRef}
@@ -744,8 +854,57 @@ export function ContactsTable({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="border rounded-lg">
+      {/* Grid/Card View */}
+      {viewMode === 'grid' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {table.getRowModel().rows.map((row) => {
+            const contact = row.original
+            return (
+              <Link
+                key={contact.id}
+                href={`/contacts/${contact.id}`}
+                className="block bg-white border border-border hover:border-accent/30 transition-all p-4 group"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate group-hover:text-accent transition-colors">
+                      {contact.name || 'Unknown'}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {contact.role || contact.headline?.slice(0, 40) || '-'}
+                    </p>
+                  </div>
+                  <ScoreGauge score={contact.priority_score || 0} size="sm" showLabel={false} />
+                </div>
+                <div className="space-y-1.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="font-medium text-foreground/80">{contact.company || '-'}</span>
+                    {contact.industry && <span className="text-muted-foreground/60">· {contact.industry}</span>}
+                  </div>
+                  {(contact.country || contact.location) && (
+                    <div className="truncate">
+                      {contact.location && contact.country ? `${contact.location}, ${contact.country}` : contact.country || contact.location}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                  <span className={`px-1.5 py-0.5 text-[10px] font-medium border ${stageStyles[contact.pipeline_stage || 'Prospect'] || 'bg-blueGrey/10 text-slate border-blueGrey/30'}`}>
+                    {contact.pipeline_stage || 'Prospect'}
+                  </span>
+                  <TierBadge tier={contact.engagement_tier || 'C'} />
+                </div>
+              </Link>
+            )
+          })}
+          {table.getRowModel().rows.length === 0 && (
+            <div className="col-span-full text-center py-16 text-muted-foreground">No contacts found</div>
+          )}
+        </div>
+      )}
+
+      {/* Table View */}
+      {viewMode === 'table' && (
+      <div className="border rounded-none">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -819,6 +978,8 @@ export function ContactsTable({
           </TableBody>
         </Table>
       </div>
+
+      )}
 
       {/* Pagination */}
       <div className="flex items-center justify-between flex-wrap gap-4">

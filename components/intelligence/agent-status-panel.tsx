@@ -112,7 +112,7 @@ export function AgentStatusPanel() {
             return (
               <div
                 key={config.name}
-                className="border rounded-lg p-3 hover:bg-muted/30 transition-colors"
+                className="border rounded-none p-3 hover:bg-muted/30 transition-colors"
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">

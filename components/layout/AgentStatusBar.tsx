@@ -30,7 +30,7 @@ export function AgentStatusBar({
   const agents = Object.keys(AGENT_NAMES) as AgentAction[]
 
   return (
-    <div className="flex items-center gap-4 px-4 py-2 bg-muted/50 rounded-lg flex-wrap">
+    <div className="flex items-center gap-4 px-4 py-2 bg-muted/50 rounded-none flex-wrap">
       <span className="text-xs font-medium text-muted-foreground">
         Agents:
       </span>

@@ -9,7 +9,7 @@ export default function Error({
 }) {
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
-      <div className="max-w-lg w-full bg-white rounded-xl border border-gray-200 p-8">
+      <div className="max-w-lg w-full bg-white rounded-none border border-gray-200 p-8">
         <h2 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h2>
         <p className="text-sm text-gray-500 mb-4">{error.message || 'Unknown error'}</p>
         {error.digest && (

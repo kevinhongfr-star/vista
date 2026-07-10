@@ -164,7 +164,7 @@ export function ReportViewer({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 animate-backdrop" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-modal">
+      <div className="relative bg-white rounded-none shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-modal">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-muted/30 shrink-0">
           <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ export function ReportViewer({
             <textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              className="w-full h-full min-h-[400px] p-4 border rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent-fuchsia/30"
+              className="w-full h-full min-h-[400px] p-4 border rounded-none font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent-fuchsia/30"
             />
           ) : (
             <div

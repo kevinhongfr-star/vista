@@ -93,7 +93,7 @@ export function Sidebar() {
                       <Link
                         href={item.href}
                         className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                          "flex items-center gap-3 rounded-none px-3 py-2 text-sm font-medium transition-colors",
                           isActive
                             ? "bg-accent/10 text-accent-fuchsia font-semibold border-l-2 border-accent-fuchsia"
                             : "text-white/70 hover:bg-white/10 hover:text-white",
@@ -131,7 +131,7 @@ export function Sidebar() {
                       <Link
                         href={item.href}
                         className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                          "flex items-center gap-3 rounded-none px-3 py-2 text-sm font-medium transition-colors",
                           isActive
                             ? "bg-accent/10 text-accent-fuchsia font-semibold border-l-2 border-accent-fuchsia"
                             : "text-white/70 hover:bg-white/10 hover:text-white",

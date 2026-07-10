@@ -442,7 +442,7 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
       </Card>
 
       {selectedSignalIds.size > 0 && (
-        <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+        <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-none">
           <span className="text-sm font-medium">{selectedSignalIds.size} selected</span>
           <Button variant="outline" size="sm" onClick={() => setSelectedSignalIds(new Set())}>
             Clear Selection

@@ -57,6 +57,9 @@ interface PipelineContact {
   pipeline_stage: PipelineStage | null
   vista_composite: number | null
   last_contact_date: string | null
+  role?: string | null
+  country?: string | null
+  location?: string | null
 }
 
 interface PipelinePageProps {
@@ -186,7 +189,7 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
             return (
               <div
                 key={stage}
-                className="bg-muted/30 rounded-lg p-4 min-h-[400px]"
+                className="bg-muted/30 rounded-none border border-border p-4 min-h-[400px]"
               >
                 <div className="flex items-center justify-between mb-4">
                   <Tooltip>
@@ -203,13 +206,18 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                   {stageContacts.map((contact) => (
                     <div
                       key={contact.id}
-                      className="bg-card p-3 shadow-card hover:shadow-md transition-shadow cursor-pointer"
+                      className="bg-white p-3 border border-border hover:border-accent/30 transition-all cursor-pointer"
                       onClick={() => router.push(`/contacts/${contact.id}`)}
                     >
                       <p className="font-medium text-sm">{contact.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {contact.company}
+                      <p className="text-xs text-muted-foreground truncate">
+                        {contact.role || contact.company || '-'}
                       </p>
+                      {(contact.country || contact.location) && (
+                        <p className="text-[10px] text-muted-foreground/70 truncate mt-0.5">
+                          {contact.location && contact.country ? `${contact.location}, ${contact.country}` : contact.country || contact.location}
+                        </p>
+                      )}
                       <div className="flex items-center justify-between mt-2">
                         <Badge variant="outline" className="text-xs">
                           Score: {contact.vista_composite || 0}
@@ -356,7 +364,7 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                     {stuckContacts.map((contact) => (
                       <div
                         key={contact.contact_id}
-                        className="flex items-center gap-3 p-3 bg-warning/10 rounded-lg cursor-pointer hover:bg-warning/20 transition-colors"
+                        className="flex items-center gap-3 p-3 bg-warning/10 rounded-none cursor-pointer hover:bg-warning/20 transition-colors"
                         onClick={() => router.push(`/contacts/${contact.contact_id}`)}
                       >
                         <Tooltip>

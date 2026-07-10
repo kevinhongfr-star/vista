@@ -434,11 +434,11 @@ export function ContactDetail({ contact }: ContactDetailProps) {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="p-4 bg-muted/30 rounded-none">
                   <p className="text-xs text-muted-foreground mb-1">Pipeline Stage</p>
                   <Badge>{contact.pipeline_stage || "Prospect"}</Badge>
                 </div>
-                <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="p-4 bg-muted/30 rounded-none">
                   <p className="text-xs text-muted-foreground mb-1">Last Contact</p>
                   <p className="font-medium">
                     {daysSinceLastContact !== null
@@ -446,19 +446,19 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                       : "Never"}
                   </p>
                 </div>
-                <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="p-4 bg-muted/30 rounded-none">
                   <p className="text-xs text-muted-foreground mb-1">Cluster</p>
                   <p className="font-medium">
                     {contact.density_cluster_id ? "Assigned" : "Unassigned"}
                   </p>
                 </div>
-                <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="p-4 bg-muted/30 rounded-none">
                   <p className="text-xs text-muted-foreground mb-1">Function</p>
                   <p className="font-medium">{contact.function || "-"}</p>
                 </div>
               </div>
 
-              <div className="p-4 bg-warning/5 border border-warning/20 rounded-lg">
+              <div className="p-4 bg-warning/5 border border-warning/20 rounded-none">
                 <h4 className="font-medium text-amber-800 mb-2">Score Breakdown</h4>
                 <div className="space-y-2 text-sm">
                   <Tooltip>
@@ -518,7 +518,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                 </div>
               </div>
 
-              <div className="p-4 bg-accent-5 border border-accent/20 rounded-lg">
+              <div className="p-4 bg-accent-5 border border-accent/20 rounded-none">
                 <h4 className="font-medium text-blue-800 mb-2">Recommended Action</h4>
                 <p className="text-sm text-blue-700">
                   {contact.vista_composite && contact.vista_composite >= 70
@@ -554,7 +554,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                   {activities.map((activity) => (
                     <div
                       key={activity.id}
-                      className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg"
+                      className="flex items-start gap-4 p-4 bg-muted/30 rounded-none"
                     >
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -620,7 +620,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                   {signals.map((signal) => (
                     <div
                       key={signal.id}
-                      className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg"
+                      className="flex items-start gap-4 p-4 bg-muted/30 rounded-none"
                     >
                       <Badge
                         className={cn(
@@ -674,7 +674,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                   {campaigns.map((campaign) => (
                     <div
                       key={campaign.id}
-                      className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg"
+                      className="flex items-start gap-4 p-4 bg-muted/30 rounded-none"
                     >
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -722,7 +722,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                   {notes.map((note) => (
                     <div
                       key={note.note_id}
-                      className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg"
+                      className="flex items-start gap-4 p-4 bg-muted/30 rounded-none"
                     >
                       <Tooltip>
                         <TooltipTrigger asChild>
