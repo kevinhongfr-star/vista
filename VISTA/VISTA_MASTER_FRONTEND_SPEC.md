@@ -694,3 +694,104 @@ Before submitting PR, verify ALL:
 ---
 
 *This spec supersedes all previous frontend specs. It is the single source of truth for VISTA's visual identity, performance, and UX.*
+
+---
+
+## PHASE 7: Accessibility & Mobile (Day 10)
+
+### 7.1 WCAG 2.1 AA — Zero Current Compliance
+
+**Current state:** ZERO files have `aria-*` attributes or semantic `role` attributes. This is a critical gap.
+
+**Required on ALL interactive elements:**
+
+```tsx
+// Buttons
+<button aria-label="Delete contact">...</button>
+
+// Icons (decorative vs functional)
+<Settings aria-hidden="true" />           // decorative
+<Button aria-label="Open settings">       // functional
+  <Settings aria-hidden="true" />
+</Button>
+
+// Dynamic content
+<div aria-live="polite">{notification}</div>
+
+// Modal dialogs
+<div role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+// Tables
+<table role="table">
+  <thead><tr><th scope="col">Name</th></tr></thead>
+```
+
+**Priority files:**
+1. `components/layout/Sidebar.tsx` — `aria-current="page"` on active nav
+2. `components/layout/Header.tsx` — `aria-label` on all icon buttons
+3. All modal components — `role="dialog"`, `aria-modal`, focus trap
+4. All form inputs — label associations
+
+### 7.2 Mobile Navigation
+
+**Current state:** Sidebar is `fixed left-0` with no mobile hamburger menu. On mobile, sidebar covers content or is hidden with no navigation.
+
+**Required:**
+
+1. **Mobile (< 768px):**
+   - Sidebar hidden by default
+   - Hamburger button in header (top-left)
+   - Tap → sidebar slides in from left (280px)
+   - Backdrop overlay
+   - Tap outside → closes
+
+2. **Mobile rules:**
+   - Body text ≥ 14px
+   - Input font-size ≥ 16px (prevents iOS zoom)
+   - Touch targets ≥ 44×44px
+   - Grids collapse to single column
+   - Page padding: 20px
+
+### 7.3 ScoreGauge & TierBadge — Currently Unused
+
+**Critical finding:** `ScoreGauge` and `TierBadge` exist in `components/scoring/` but are NOT imported in ANY page. Scores display as raw numbers or progress bars instead.
+
+**Required:** Replace ALL score displays with `<ScoreGauge>`. Replace ALL tier displays with `<TierBadge>`.
+
+**Files to update:**
+- `app/dashboard/Dashboard.tsx`
+- `app/contacts/[id]/ContactDetail.tsx`
+- `components/contacts/ContactsTable.tsx`
+- `app/signals/[id]/SignalDetail.tsx`
+- `app/clusters/[id]/ClusterDetail.tsx`
+- `app/pipeline/PipelinePage.tsx`
+
+---
+
+## GAPS FROM PREVIOUS SPECS
+
+| Gap | Severity | Phase |
+|---|---|---|
+| Zero accessibility (0 aria attributes) | 🔴 Critical | Phase 7 |
+| No mobile navigation | 🔴 Critical | Phase 7 |
+| ScoreGauge exists but unused everywhere | 🔴 Critical | Phase 7 |
+| TierBadge exists but unused everywhere | 🟡 High | Phase 7 |
+| No focus-visible styles | 🟡 High | Phase 7 |
+| No keyboard navigation | 🟡 High | Phase 7 |
+| No error boundaries | 🟢 Medium | Phase 4 |
+
+---
+
+## UPDATED FINAL CHECKLIST
+
+- [ ] Every interactive element has `aria-label` or visible text
+- [ ] Every modal has `role="dialog"` + `aria-modal` + focus trap
+- [ ] Active nav item has `aria-current="page"`
+- [ ] Mobile: hamburger opens/closes sidebar
+- [ ] Mobile: no horizontal scroll at 375px
+- [ ] Mobile: touch targets ≥ 44×44px
+- [ ] ScoreGauge on every score display
+- [ ] TierBadge on every tier/status display
+- [ ] `:focus-visible` outline on all interactive elements
+- [ ] Tab navigates all interactive elements logically
+- [ ] Escape closes modals/dropdowns
