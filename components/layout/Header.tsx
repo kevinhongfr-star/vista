@@ -26,7 +26,7 @@ export function Header({ onQuickActions }: HeaderProps) {
     <TooltipProvider delayDuration={200}>
       <header
         className={cn(
-          "fixed top-0 z-50 h-16 bg-bg border-b border-border transition-all duration-300",
+          "fixed top-0 z-50 h-16 bg-bg border-t-[3px] border-accent border-b border-border transition-all duration-300",
           sidebarCollapsed ? "left-16" : "left-64",
           "right-0"
         )}

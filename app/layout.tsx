@@ -52,9 +52,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="light">
-      <body className={`${dmSans.variable} ${libreBaskerville.variable} font-sans`} style={{ backgroundColor: '#FAFAFA', borderTop: '4px solid #C108AB' }}>
+      <body className={`${dmSans.variable} ${libreBaskerville.variable} font-sans`} style={{ backgroundColor: '#FAFAFA' }}>
         <StyleInjector />
-        <div className="relative min-h-screen bg-bg">
+        <div className="relative min-h-screen">
           <Sidebar />
           <ClientLayout>
             {children}
