@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sendMessage } from "@/lib/feishu/client"
+import { sendMentionMessage } from "@/lib/feishu/client"
 import { logAgentTrigger, fetchClusterInfo, getAgentChatId } from "@/lib/agents/utils"
 import type { AgentTriggerRequest } from "@/lib/types"
 
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       message = `[VISTA][CARL] Trigger: Full strategic review. Evaluate current portfolio health, cluster diversification, and strategic positioning.`
     }
 
-    await sendMessage(chatId, message)
+    await sendMentionMessage(chatId, message)
     await logAgentTrigger("CARL", triggerType, targetIds, message, "kevin")
 
     return NextResponse.json({

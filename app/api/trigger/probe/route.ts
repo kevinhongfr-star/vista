@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sendMessage } from "@/lib/feishu/client"
+import { sendMentionMessage } from "@/lib/feishu/client"
 import { logAgentTrigger, fetchContactNames, getAgentChatId } from "@/lib/agents/utils"
 import type { AgentTriggerRequest } from "@/lib/types"
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       message = `[VISTA][PROBE] Trigger: Full pipeline refresh. Update encirclement levels, engagement scores, and pipeline stage health metrics for all active contacts.`
     }
 
-    await sendMessage(chatId, message)
+    await sendMentionMessage(chatId, message)
     await logAgentTrigger("PROBE", triggerType, targetIds, message, "kevin")
 
     return NextResponse.json({

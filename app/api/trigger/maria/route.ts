@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sendMessage } from "@/lib/feishu/client"
+import { sendMentionMessage } from "@/lib/feishu/client"
 import { logAgentTrigger, fetchContactNames, fetchClusterInfo, getAgentChatId } from "@/lib/agents/utils"
 import type { AgentTriggerRequest } from "@/lib/types"
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       message = `[VISTA][MARIA] Trigger: Generate campaign drafts for top 10 Hot contacts with no recent outreach.`
     }
 
-    await sendMessage(chatId, message)
+    await sendMentionMessage(chatId, message)
     await logAgentTrigger("MARIA", triggerType, targetIds, message, "kevin")
 
     return NextResponse.json({

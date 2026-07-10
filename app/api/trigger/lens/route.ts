@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sendMessage } from "@/lib/feishu/client"
+import { sendMentionMessage } from "@/lib/feishu/client"
 import { logAgentTrigger, fetchContactNames, fetchClusterInfo, getAgentChatId } from "@/lib/agents/utils"
 import type { AgentTriggerRequest } from "@/lib/types"
 
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     }
     
     // Send message to Feishu
-    await sendMessage(chatId, message)
+    await sendMentionMessage(chatId, message)
     
     // Log trigger to activities
     await logAgentTrigger("LENS", triggerType, targetIds, message, "kevin")
