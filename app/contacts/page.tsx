@@ -64,20 +64,8 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
   const pageCount = Math.ceil((count || 0) / pageSize)
   const totalCount = count || 0
 
-  // Sanitize data for serialization — convert Date objects to strings
-  const serializedData = (data || []).map(row => {
-    const sanitized: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(row)) {
-      if (value instanceof Date) {
-        sanitized[key] = value.toISOString()
-      } else if (typeof value === 'bigint') {
-        sanitized[key] = Number(value)
-      } else {
-        sanitized[key] = value
-      }
-    }
-    return sanitized
-  })
+  // Ensure data is serializable for client components
+  const serializedData = JSON.parse(JSON.stringify(data || []))
 
   return (
     <div className="space-y-6">
