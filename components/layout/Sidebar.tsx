@@ -95,7 +95,7 @@ export function Sidebar() {
                         className={cn(
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                           isActive
-                            ? "bg-accent-fuchsia text-white font-semibold"
+                            ? "bg-accent/10 text-accent-fuchsia font-semibold border-l-2 border-accent-fuchsia"
                             : "text-white/70 hover:bg-white/10 hover:text-white",
                           sidebarCollapsed && "justify-center px-2"
                         )}
@@ -133,7 +133,7 @@ export function Sidebar() {
                         className={cn(
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                           isActive
-                            ? "bg-accent-fuchsia text-white font-semibold"
+                            ? "bg-accent/10 text-accent-fuchsia font-semibold border-l-2 border-accent-fuchsia"
                             : "text-white/70 hover:bg-white/10 hover:text-white",
                           sidebarCollapsed && "justify-center px-2"
                         )}

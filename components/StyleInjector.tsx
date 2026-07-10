@@ -42,9 +42,10 @@ const CRITICAL_CSS = `
     font-weight: 600 !important;
   }
 
-  /* Button specs — 44px min height, hover lift */
+  /* Button specs — 44px min height, hover lift, zero radius */
   button, [role="button"], .btn, a[class*="btn"] {
     min-height: 44px !important;
+    border-radius: 0 !important;
     transition: transform 0.15s ease, box-shadow 0.15s ease !important;
   }
   button:hover, [role="button"]:hover, .btn:hover {
@@ -55,28 +56,15 @@ const CRITICAL_CSS = `
     transform: translateY(0) !important;
   }
 
-  /* Card styles — VistaCard base */
-  [class*="rounded-lg"][class*="border"],
-  [class*="rounded-xl"][class*="border"],
-  [class*="rounded-2xl"][class*="border"],
-  .card, [class*="bg-white"][class*="border"],
-  [class*="bg-card"] {
-    background: #FFFFFF !important;
-    border: 1px solid #E5E5E5 !important;
+  /* VistaCard component styles */
+  .bg-white[class*="border"][class*="shadow"] {
     box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-  }
-  [class*="rounded-lg"][class*="border"]:hover,
-  [class*="rounded-xl"][class*="border"]:hover,
-  .card:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
   }
 `
 
 export function StyleInjector() {
   useEffect(() => {
-    // Check if already injected
     const existingStyle = document.getElementById('vista-brand-css')
     if (existingStyle) return
 
