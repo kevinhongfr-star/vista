@@ -2,12 +2,12 @@ import { NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase/server"
 import type { RecentActivity } from "@/lib/types"
 
+export const revalidate = 60 // Cache for 60 seconds
+
 export async function GET() {
   try {
     const supabase = createServerClient()
 
-    // Get recent activities (last 10) joined with contacts
-    // Note: activities table may not exist yet, so we'll use campaign_activities as fallback
     const { data: activities } = await supabase
       .from("campaign_activities")
       .select(`
@@ -22,7 +22,6 @@ export async function GET() {
       .order("created_at", { ascending: false })
       .limit(10)
 
-    // Transform to RecentActivity format
     const recentActivity: RecentActivity[] = (activities || []).map(a => ({
       id: a.id,
       activity_type: (a.activity_type || "Email Sent") as "Email Sent",

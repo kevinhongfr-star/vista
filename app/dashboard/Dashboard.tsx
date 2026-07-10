@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Activity, TrendingUp, Phone, Mail, Zap, Bell, ArrowRight, Users, Target, Trophy, Play } from "lucide-react"
+import { Activity, TrendingUp, Phone, Mail, Zap, Bell, ArrowRight, Users, Target, Trophy, Play, LucideIcon } from "lucide-react"
 import { CardSkeleton, TableSkeleton, Skeleton } from "@/components/ui/skeleton"
 import { EmailComposer } from "@/components/modals/EmailComposer"
 import { ActivityLog } from "@/components/modals/ActivityLog"
@@ -20,6 +20,31 @@ import { AgentStatusPanel } from "@/components/intelligence/agent-status-panel"
 import { AgentOutputFeed } from "@/components/intelligence/agent-output-feed"
 import { AgentTriggerButton } from "@/components/intelligence/agent-trigger-button"
 import type { PriorityAction, DashboardKPIs, PipelineFunnelStage, RecentActivity, VistaContact, ActivityType } from "@/lib/types"
+
+// Icon map for priority actions (no emojis — brand rule)
+const ACTION_ICONS: Record<string, typeof Phone> = {
+  call: Phone,
+  follow_up: Mail,
+  signal: Zap,
+  cold_alert: Bell,
+}
+
+// Client-side cache — avoids redundant API calls within 60s window
+const CACHE_TTL = 60_000 // 60 seconds
+interface CacheEntry<T> { data: T; timestamp: number }
+const cache: Record<string, CacheEntry<unknown>> = {}
+
+async function cachedFetch<T>(url: string): Promise<T> {
+  const now = Date.now()
+  const cached = cache[url] as CacheEntry<T> | undefined
+  if (cached && now - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+  const res = await fetch(url)
+  const data = await res.json()
+  cache[url] = { data, timestamp: now }
+  return data
+}
 
 export function Dashboard() {
   const router = useRouter()
@@ -36,15 +61,44 @@ export function Dashboard() {
   const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | undefined>()
   const realtimeUnsubscribeRef = useRef<(() => void) | null>(null)
 
+  const fetchDashboardData = useCallback(async (forceRefresh = false) => {
+    setLoading(true)
+    try {
+      if (forceRefresh) {
+        // Clear cache on manual refresh
+        delete cache["/api/dashboard/priority-actions"]
+        delete cache["/api/dashboard/kpis"]
+        delete cache["/api/dashboard/pipeline-funnel"]
+        delete cache["/api/dashboard/recent-activity"]
+      }
+
+      const [actionsData, kpisData, funnelData, activityData] = await Promise.all([
+        cachedFetch<{ actions: PriorityAction[] }>("/api/dashboard/priority-actions"),
+        cachedFetch<DashboardKPIs>("/api/dashboard/kpis"),
+        cachedFetch<{ funnel: PipelineFunnelStage[] }>("/api/dashboard/pipeline-funnel"),
+        cachedFetch<{ activities: RecentActivity[] }>("/api/dashboard/recent-activity"),
+      ])
+
+      setPriorityActions(actionsData.actions || [])
+      setKpis(kpisData)
+      setPipelineFunnel(funnelData.funnel || [])
+      setRecentActivity(activityData.activities || [])
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     fetchDashboardData()
-    const interval = setInterval(fetchDashboardData, 5 * 60 * 1000)
+    const interval = setInterval(() => fetchDashboardData(), 5 * 60 * 1000)
 
     let debounceTimer: NodeJS.Timeout | null = null
     const handleRealtimeChange = () => {
       if (debounceTimer) clearTimeout(debounceTimer)
       debounceTimer = setTimeout(() => {
-        fetchDashboardData()
+        fetchDashboardData(true)
       }, 1000)
     }
 
@@ -59,37 +113,9 @@ export function Dashboard() {
       if (debounceTimer) clearTimeout(debounceTimer)
       realtimeUnsubscribeRef.current?.()
     }
-  }, [])
+  }, [fetchDashboardData])
 
-  const fetchDashboardData = async () => {
-    setLoading(true)
-    try {
-      const [actionsRes, kpisRes, funnelRes, activityRes] = await Promise.all([
-        fetch("/api/dashboard/priority-actions"),
-        fetch("/api/dashboard/kpis"),
-        fetch("/api/dashboard/pipeline-funnel"),
-        fetch("/api/dashboard/recent-activity"),
-      ])
-
-      const [actionsData, kpisData, funnelData, activityData] = await Promise.all([
-        actionsRes.json(),
-        kpisRes.json(),
-        funnelRes.json(),
-        activityRes.json(),
-      ])
-
-      setPriorityActions(actionsData.actions || [])
-      setKpis(kpisData)
-      setPipelineFunnel(funnelData.funnel || [])
-      setRecentActivity(activityData.activities || [])
-    } catch (error) {
-      addToast("error", "Failed to load dashboard data")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const resolveContact = async (contactId: string): Promise<VistaContact | undefined> => {
+  const resolveContact = async (contactId: string) => {
     try {
       const res = await fetch(`/api/contacts/${contactId}`)
       const data = await res.json()
@@ -168,14 +194,14 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Welcome back, Kevin. Here&#39;s your daily BD intelligence overview.</p>
+          <h1 className="text-2xl font-bold font-heading">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Welcome back, Kevin. Here&apos;s your daily BD intelligence overview.</p>
         </div>
         <div className="flex items-center gap-2">
-          <BulkAssessButton onComplete={fetchDashboardData} />
+          <BulkAssessButton onComplete={() => fetchDashboardData(true)} />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button onClick={fetchDashboardData} variant="outline">
+              <Button onClick={() => fetchDashboardData(true)} variant="outline">
                 <Zap className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
@@ -187,114 +213,120 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards — VistaCard with colored left borders */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
         {loading ? (
           <CardSkeleton count={4} />
         ) : (
           <>
+            {/* Total Contacts */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Card className="cursor-pointer hover:shadow-md transition-shadow card-hover" onClick={() => router.push("/contacts")}>
+                <Card
+                  className="cursor-pointer vista-card vista-card-accent-fuchsia"
+                  onClick={() => router.push("/contacts")}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-1">Total Contacts</p>
-                        <p className="text-3xl font-bold">
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1 font-medium">Total Contacts</p>
+                        <p className="text-3xl font-bold font-heading">
                           <CountUp end={kpis?.contacts || 0} />
                         </p>
                         <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.contacts || 0, kpis?.contacts_delta || 0)}`}>
                           {getKPIChange(kpis?.contacts || 0, kpis?.contacts_delta || 0)}
                         </p>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-accent-5 flex items-center justify-center">
+                      <div className="h-12 w-12 bg-accent-5 flex items-center justify-center">
                         <Users className="h-6 w-6 text-accent" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>View all contacts in your database</p>
-              </TooltipContent>
+              <TooltipContent><p>View all contacts in your database</p></TooltipContent>
             </Tooltip>
 
+            {/* Active Deals */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/pipeline")}>
+                <Card
+                  className="cursor-pointer vista-card vista-card-accent-teal"
+                  onClick={() => router.push("/pipeline")}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-1">Active Deals</p>
-                        <p className="text-3xl font-bold">
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1 font-medium">Active Deals</p>
+                        <p className="text-3xl font-bold font-heading">
                           <CountUp end={kpis?.active_deals || 0} />
                         </p>
                         <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}`}>
                           {getKPIChange(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}
                         </p>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-teal/10 flex items-center justify-center">
+                      <div className="h-12 w-12 bg-teal/10 flex items-center justify-center">
                         <Target className="h-6 w-6 text-teal" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>View your active pipeline deals</p>
-              </TooltipContent>
+              <TooltipContent><p>View your active pipeline deals</p></TooltipContent>
             </Tooltip>
 
+            {/* Closed Won */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/pipeline")}>
+                <Card
+                  className="cursor-pointer vista-card vista-card-accent-success"
+                  onClick={() => router.push("/pipeline")}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-1">Closed Won</p>
-                        <p className="text-3xl font-bold">
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1 font-medium">Closed Won</p>
+                        <p className="text-3xl font-bold font-heading">
                           <CountUp end={kpis?.closed_won || 0} />
                         </p>
-                        <p className={`text-xs mt-2 text-success`}>
-                          This Month
-                        </p>
+                        <p className="text-xs mt-2 text-success">This Month</p>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-accent-10 flex items-center justify-center">
+                      <div className="h-12 w-12 bg-accent-10 flex items-center justify-center">
                         <Trophy className="h-6 w-6 text-accent-hover" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>Closed deals this month</p>
-              </TooltipContent>
+              <TooltipContent><p>Closed deals this month</p></TooltipContent>
             </Tooltip>
 
+            {/* New Signals */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push("/signals")}>
+                <Card
+                  className="cursor-pointer vista-card vista-card-accent-ocean"
+                  onClick={() => router.push("/signals")}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-1">New Signals</p>
-                        <p className="text-3xl font-bold">
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1 font-medium">New Signals</p>
+                        <p className="text-3xl font-bold font-heading">
                           <CountUp end={kpis?.signals || 0} />
                         </p>
                         <p className={`text-xs mt-2 ${getKPIChangeColor(kpis?.signals || 0, kpis?.signals_delta || 0)}`}>
                           {getKPIChange(kpis?.signals || 0, kpis?.signals_delta || 0)}
                         </p>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-ocean/10 flex items-center justify-center">
+                      <div className="h-12 w-12 bg-ocean/10 flex items-center justify-center">
                         <Activity className="h-6 w-6 text-ocean-deep" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>New company signals this week</p>
-              </TooltipContent>
+              <TooltipContent><p>New company signals this week</p></TooltipContent>
             </Tooltip>
           </>
         )}
@@ -304,43 +336,19 @@ export function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <AgentStatusPanel />
         <div className="lg:col-span-2 space-y-6">
-          <Card>
+          <Card className="vista-card vista-card-accent-fuchsia">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Play className="h-5 w-5 text-fuchsia-500" />
+              <CardTitle className="flex items-center gap-2 font-heading">
+                <Play className="h-5 w-5 text-accent" />
                 Quick Actions
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                <AgentTriggerButton
-                  agent="LENS"
-                  triggerData={{ scope: "decayed" }}
-                  label="Score Decayed"
-                  variant="outline"
-                  size="sm"
-                />
-                <AgentTriggerButton
-                  agent="MARIA"
-                  triggerData={{ scope: "all" }}
-                  label="Draft Campaigns"
-                  variant="outline"
-                  size="sm"
-                />
-                <AgentTriggerButton
-                  agent="PROBE"
-                  triggerData={{ type: "at-risk" }}
-                  label="Find At-Risk"
-                  variant="outline"
-                  size="sm"
-                />
-                <AgentTriggerButton
-                  agent="CARL"
-                  triggerData={{ type: "strategic-review" }}
-                  label="Strategic Review"
-                  variant="outline"
-                  size="sm"
-                />
+                <AgentTriggerButton agent="LENS" triggerData={{ scope: "decayed" }} label="Score Decayed" variant="outline" size="sm" />
+                <AgentTriggerButton agent="MARIA" triggerData={{ scope: "all" }} label="Draft Campaigns" variant="outline" size="sm" />
+                <AgentTriggerButton agent="PROBE" triggerData={{ type: "at-risk" }} label="Find At-Risk" variant="outline" size="sm" />
+                <AgentTriggerButton agent="CARL" triggerData={{ type: "strategic-review" }} label="Strategic Review" variant="outline" size="sm" />
                 <BulkAssessButton />
               </div>
             </CardContent>
@@ -350,10 +358,10 @@ export function Dashboard() {
       </div>
 
       {/* Priority Actions */}
-      <Card>
+      <Card className="vista-card">
         <CardHeader className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-amber-500" />
+          <CardTitle className="flex items-center gap-2 font-heading">
+            <Zap className="h-5 w-5 text-accent" />
             Priority Actions (Today)
           </CardTitle>
           <Button variant="ghost" size="sm">
@@ -364,68 +372,58 @@ export function Dashboard() {
           {loading ? (
             <TableSkeleton rows={4} />
           ) : priorityActions.length > 0 ? (
-            <div className="space-y-4">
-              {priorityActions.slice(0, 4).map((action) => (
-                <div
-                  key={`${action.type}-${action.contact_id || action.signal_id || action.priority}`}
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="text-2xl">{action.icon}</span>
-                    <div>
-                      <p className="font-medium">{action.title}</p>
-                      <p className="text-sm text-muted-foreground">{action.description}</p>
+            <div className="space-y-3">
+              {priorityActions.slice(0, 4).map((action) => {
+                const IconComponent = ACTION_ICONS[action.type] || Bell
+                return (
+                  <div
+                    key={`${action.type}-${action.contact_id || action.signal_id || action.priority}`}
+                    className="flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 transition-colors border-l-2 border-accent/20"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 bg-accent-5 flex items-center justify-center">
+                        <IconComponent className="h-5 w-5 text-accent" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{action.title}</p>
+                        <p className="text-xs text-muted-foreground">{action.description}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleExecute(action)}
-                      className="bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white"
-                    >
-                      <Play className="h-3 w-3 mr-1" />
-                      Execute
-                    </Button>
-                    {action.type === "call" && (
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleCallNow(action)}
-                        className="bg-teal hover:bg-teal/80 text-white"
-                      >
-                        <Phone className="h-4 w-4 mr-1" />
-                        Call Now
-                      </Button>
-                    )}
-                    {action.type === "follow_up" && (
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleSendEmail(action)}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleExecute(action)}
                         className="bg-accent hover:bg-accent-hover text-white"
                       >
-                        <Mail className="h-4 w-4 mr-1" />
-                        Send Email
+                        <Play className="h-3 w-3 mr-1" />
+                        Execute
                       </Button>
-                    )}
-                    {action.type === "signal" && (
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleViewSignal(action)}
-                      >
-                        View <ArrowRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    )}
-                    {action.type === "cold_alert" && (
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleReEngage(action)}
-                        className="bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white"
-                      >
-                        Re-engage
-                      </Button>
-                    )}
+                      {action.type === "call" && (
+                        <Button size="sm" onClick={() => handleCallNow(action)} className="bg-teal hover:bg-teal/80 text-white">
+                          <Phone className="h-4 w-4 mr-1" />
+                          Call Now
+                        </Button>
+                      )}
+                      {action.type === "follow_up" && (
+                        <Button size="sm" onClick={() => handleSendEmail(action)} className="bg-accent hover:bg-accent-hover text-white">
+                          <Mail className="h-4 w-4 mr-1" />
+                          Send Email
+                        </Button>
+                      )}
+                      {action.type === "signal" && (
+                        <Button size="sm" onClick={() => handleViewSignal(action)}>
+                          View <ArrowRight className="h-4 w-4 ml-1" />
+                        </Button>
+                      )}
+                      {action.type === "cold_alert" && (
+                        <Button size="sm" onClick={() => handleReEngage(action)} className="bg-accent hover:bg-accent-hover text-white">
+                          Re-engage
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
@@ -439,10 +437,10 @@ export function Dashboard() {
       {/* Bottom Row: Pipeline Funnel + Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pipeline Funnel */}
-        <Card>
+        <Card className="vista-card vista-card-accent-teal">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+            <CardTitle className="flex items-center gap-2 font-heading">
+              <TrendingUp className="h-5 w-5 text-teal" />
               Pipeline Funnel
             </CardTitle>
           </CardHeader>
@@ -451,9 +449,9 @@ export function Dashboard() {
               <div className="space-y-4 py-4">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-4">
-                    <div className="w-32 h-4 bg-muted rounded" />
-                    <div className="flex-1 h-4 bg-muted rounded" />
-                    <div className="w-12 h-4 bg-muted rounded" />
+                    <div className="w-32 h-4 bg-muted" />
+                    <div className="flex-1 h-4 bg-muted" />
+                    <div className="w-12 h-4 bg-muted" />
                   </div>
                 ))}
               </div>
@@ -462,15 +460,15 @@ export function Dashboard() {
                 {pipelineFunnel.map((stage, i) => (
                   <div
                     key={stage.stage}
-                    className="flex items-center gap-4 cursor-pointer hover:bg-muted/30 p-2 rounded-lg transition-colors"
+                    className="flex items-center gap-4 cursor-pointer hover:bg-muted/30 p-2 transition-colors"
                     onClick={() => router.push(`/pipeline?stage=${stage.stage}`)}
                     style={{ animationDelay: `${i * 80}ms` }}
                   >
-                    <span className="w-28 text-sm font-medium">{stage.stage}</span>
+                    <span className="w-28 text-xs uppercase tracking-wider font-semibold text-muted-foreground">{stage.stage}</span>
                     <div className="flex-1">
                       <ProgressBar value={stage.percentage} animated={false} barClassName="bg-gradient-to-r from-accent to-accent-hover" />
                     </div>
-                    <span className="w-16 text-right font-bold"><CountUp end={stage.count} /></span>
+                    <span className="w-16 text-right font-bold font-heading"><CountUp end={stage.count} /></span>
                   </div>
                 ))}
               </div>
@@ -479,10 +477,10 @@ export function Dashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card>
+        <Card className="vista-card vista-card-accent-ocean">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-green-500" />
+            <CardTitle className="flex items-center gap-2 font-heading">
+              <Activity className="h-5 w-5 text-ocean-deep" />
               Recent Activity
             </CardTitle>
           </CardHeader>
@@ -494,20 +492,18 @@ export function Dashboard() {
                 {recentActivity.slice(0, 5).map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/30 cursor-pointer transition-colors"
+                    className="flex items-start gap-3 p-3 hover:bg-muted/30 cursor-pointer transition-colors"
                   >
-                    <div className="h-8 w-8 rounded-full bg-teal/10 flex items-center justify-center flex-shrink-0">
-                      <Activity className="h-4 w-4 text-green-600" />
+                    <div className="h-8 w-8 bg-teal/10 flex items-center justify-center flex-shrink-0">
+                      <Activity className="h-4 w-4 text-teal" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
                         {activity.subject || activity.activity_type}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {activity.activity_date
-                          ? new Date(activity.activity_date).toLocaleDateString()
-                          : ""}
-                        {activity.contact_name && ` • ${activity.contact_name}`}
+                        {activity.activity_date ? new Date(activity.activity_date).toLocaleDateString() : ""}
+                        {activity.contact_name && ` · ${activity.contact_name}`}
                         {activity.contact_company && ` (${activity.contact_company})`}
                       </p>
                     </div>
