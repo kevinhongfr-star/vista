@@ -203,7 +203,7 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                   {stageContacts.map((contact) => (
                     <div
                       key={contact.id}
-                      className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                      className="bg-card p-3 shadow-card hover:shadow-md transition-shadow cursor-pointer"
                       onClick={() => router.push(`/contacts/${contact.id}`)}
                     >
                       <p className="font-medium text-sm">{contact.name}</p>

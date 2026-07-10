@@ -15,12 +15,12 @@ export default function Error({
         {error.digest && (
           <p className="text-xs text-gray-400 mb-4">Digest: {error.digest}</p>
         )}
-        <pre className="text-xs text-red-600 bg-red-50 p-3 rounded-lg overflow-auto max-h-60 mb-4">
+        <pre className="text-xs text-red-600 bg-error/5 p-3 overflow-auto max-h-60 mb-4">
           {error.stack || 'No stack trace'}
         </pre>
         <button
           onClick={reset}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+          className="px-4 py-2 bg-accent text-white text-sm hover:bg-accent-hover"
         >
           Try again
         </button>

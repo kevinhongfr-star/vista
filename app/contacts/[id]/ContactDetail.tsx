@@ -60,7 +60,7 @@ function getNextBestAction(contact: VistaContact) {
       action: 'call',
       reason: 'High score + early stage + recent signals',
       icon: Phone,
-      color: 'bg-blue-50 border-blue-200 text-blue-900',
+      color: 'bg-accent-5 border-accent/20 text-primary',
     };
   }
 
@@ -71,7 +71,7 @@ function getNextBestAction(contact: VistaContact) {
       action: 'email',
       reason: 'Stale meeting — needs re-engagement',
       icon: Mail,
-      color: 'bg-amber-50 border-amber-200 text-amber-900',
+      color: 'bg-warning/5 border-warning/20 text-primary',
     };
   }
 
@@ -82,7 +82,7 @@ function getNextBestAction(contact: VistaContact) {
       action: 'call',
       reason: 'Proposal stage — needs follow-up',
       icon: Phone,
-      color: 'bg-purple-50 border-purple-200 text-purple-900',
+      color: 'bg-ocean/5 border-ocean/20 text-primary',
     };
   }
 
@@ -93,7 +93,7 @@ function getNextBestAction(contact: VistaContact) {
       action: 'campaign',
       reason: 'Low score + stale — needs nurturing',
       icon: Mail,
-      color: 'bg-gray-50 border-gray-200 text-gray-900',
+      color: 'bg-bg-alt border-border text-primary',
     };
   }
 
@@ -104,7 +104,7 @@ function getNextBestAction(contact: VistaContact) {
       action: 'call',
       reason: 'Negotiation stage — needs confirmation',
       icon: Phone,
-      color: 'bg-indigo-50 border-indigo-200 text-indigo-900',
+      color: 'bg-teal/5 border-teal/20 text-primary',
     };
   }
 
@@ -114,7 +114,7 @@ function getNextBestAction(contact: VistaContact) {
     action: 'log',
     reason: 'No clear signal — manual review needed',
     icon: Calendar,
-    color: 'bg-slate-50 border-slate-200 text-slate-900',
+    color: 'bg-blueGrey/5 border-blueGrey/20 text-primary',
   };
 }
 
@@ -458,7 +458,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                 </div>
               </div>
 
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="p-4 bg-warning/5 border border-warning/20 rounded-lg">
                 <h4 className="font-medium text-amber-800 mb-2">Score Breakdown</h4>
                 <div className="space-y-2 text-sm">
                   <Tooltip>
@@ -518,7 +518,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                 </div>
               </div>
 
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="p-4 bg-accent-5 border border-accent/20 rounded-lg">
                 <h4 className="font-medium text-blue-800 mb-2">Recommended Action</h4>
                 <p className="text-sm text-blue-700">
                   {contact.vista_composite && contact.vista_composite >= 70
@@ -558,7 +558,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                     >
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
                             <Activity className="h-4 w-4 text-green-600" />
                           </div>
                         </TooltipTrigger>
@@ -678,7 +678,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                     >
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                          <div className="h-8 w-8 rounded-full bg-teal/10 flex items-center justify-center flex-shrink-0">
                             <Building2 className="h-4 w-4 text-purple-600" />
                           </div>
                         </TooltipTrigger>
@@ -726,7 +726,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                     >
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                          <div className="h-8 w-8 rounded-full bg-accent-10 flex items-center justify-center flex-shrink-0">
                             <MessageSquare className="h-4 w-4 text-amber-600" />
                           </div>
                         </TooltipTrigger>

@@ -207,8 +207,8 @@ export function Dashboard() {
                           {getKPIChange(kpis?.contacts || 0, kpis?.contacts_delta || 0)}
                         </p>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                        <Users className="h-6 w-6 text-blue-600" />
+                      <div className="h-12 w-12 rounded-full bg-accent-5 flex items-center justify-center">
+                        <Users className="h-6 w-6 text-accent" />
                       </div>
                     </div>
                   </CardContent>
@@ -233,8 +233,8 @@ export function Dashboard() {
                           {getKPIChange(kpis?.active_deals || 0, kpis?.contacts_delta || 0)}
                         </p>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                        <Target className="h-6 w-6 text-green-600" />
+                      <div className="h-12 w-12 rounded-full bg-teal/10 flex items-center justify-center">
+                        <Target className="h-6 w-6 text-teal" />
                       </div>
                     </div>
                   </CardContent>
@@ -259,8 +259,8 @@ export function Dashboard() {
                           This Month
                         </p>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-                        <Trophy className="h-6 w-6 text-amber-600" />
+                      <div className="h-12 w-12 rounded-full bg-accent-10 flex items-center justify-center">
+                        <Trophy className="h-6 w-6 text-accent-hover" />
                       </div>
                     </div>
                   </CardContent>
@@ -285,8 +285,8 @@ export function Dashboard() {
                           {getKPIChange(kpis?.signals || 0, kpis?.signals_delta || 0)}
                         </p>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Activity className="h-6 w-6 text-purple-600" />
+                      <div className="h-12 w-12 rounded-full bg-ocean/10 flex items-center justify-center">
+                        <Activity className="h-6 w-6 text-ocean-deep" />
                       </div>
                     </div>
                   </CardContent>
@@ -390,7 +390,7 @@ export function Dashboard() {
                       <Button 
                         size="sm" 
                         onClick={() => handleCallNow(action)}
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-teal hover:bg-teal/80 text-white"
                       >
                         <Phone className="h-4 w-4 mr-1" />
                         Call Now
@@ -400,7 +400,7 @@ export function Dashboard() {
                       <Button 
                         size="sm" 
                         onClick={() => handleSendEmail(action)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        className="bg-accent hover:bg-accent-hover text-white"
                       >
                         <Mail className="h-4 w-4 mr-1" />
                         Send Email
@@ -468,7 +468,7 @@ export function Dashboard() {
                   >
                     <span className="w-28 text-sm font-medium">{stage.stage}</span>
                     <div className="flex-1">
-                      <ProgressBar value={stage.percentage} animated={false} barClassName="bg-gradient-to-r from-accent-fuchsia to-purple-500" />
+                      <ProgressBar value={stage.percentage} animated={false} barClassName="bg-gradient-to-r from-accent to-accent-hover" />
                     </div>
                     <span className="w-16 text-right font-bold"><CountUp end={stage.count} /></span>
                   </div>
@@ -496,7 +496,7 @@ export function Dashboard() {
                     key={activity.id}
                     className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/30 cursor-pointer transition-colors"
                   >
-                    <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <div className="h-8 w-8 rounded-full bg-teal/10 flex items-center justify-center flex-shrink-0">
                       <Activity className="h-4 w-4 text-green-600" />
                     </div>
                     <div className="flex-1 min-w-0">

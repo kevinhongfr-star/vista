@@ -117,12 +117,12 @@ export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
           <Badge
             className={
               signal.signal_strength === "High"
-                ? "bg-red-600 text-white"
+                ? "bg-error text-white"
                 : signal.signal_strength === "Medium-High"
-                ? "bg-amber-600 text-white"
+                ? "bg-warning text-white"
                 : signal.signal_strength === "Medium"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-500 text-white"
+                ? "bg-accent text-white"
+                : "bg-blueGrey text-white"
             }
           >
             Impact: {signal.signal_strength || "Low"}

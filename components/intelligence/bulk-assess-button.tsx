@@ -203,7 +203,7 @@ export function BulkAssessButton({ onComplete }: BulkAssessButtonProps) {
               </div>
 
               {result.errors > 0 && (
-                <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <div className="flex items-start gap-2 p-3 bg-warning/5 border border-warning/20">
                   <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-amber-800">
                     {result.errors} contacts had errors during assessment. They were skipped.
