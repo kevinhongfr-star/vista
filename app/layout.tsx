@@ -51,7 +51,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="light">
-      <body className={`${dmSans.variable} ${libreBaskerville.variable} font-sans`}>
+      <body className={`${dmSans.variable} ${libreBaskerville.variable} font-sans`} style={{ backgroundColor: '#FAFAFA', borderTop: '4px solid #C108AB' }}>
+        {/* INLINE PROOF: If you see fuchsia top border + warm bg, deployment is working */}
         <div className="relative min-h-screen bg-bg border-t-[3px] border-accent">
           <Sidebar />
           <ClientLayout>
