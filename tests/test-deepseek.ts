@@ -1,4 +1,4 @@
-import { callDeepSeek, callDeepSeekJSON } from "./lib/deepseek"
+import { callDeepSeek, callDeepSeekJSON } from "@/lib/deepseek"
 
 async function testDeepSeek() {
   console.log("Testing DeepSeek API...")
