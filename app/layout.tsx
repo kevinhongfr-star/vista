@@ -52,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className={`${dmSans.variable} ${libreBaskerville.variable} font-sans`}>
-        <div className="relative min-h-screen bg-bg">
+        <div className="relative min-h-screen bg-bg border-t-[3px] border-accent">
           <Sidebar />
           <ClientLayout>
             {children}

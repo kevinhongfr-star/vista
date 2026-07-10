@@ -55,7 +55,7 @@ export function Sidebar() {
         )}
       >
         {/* Header */}
-        <div className="flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-4 border-b border-white/10">
           {!sidebarCollapsed && (
             <Link href="/dashboard" className="flex flex-col leading-tight">
               <span className="text-[10px] font-semibold tracking-widest text-white/70 uppercase">LYC Partners</span>
