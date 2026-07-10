@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { cn } from "@/lib/utils"
+import { cn, formatDate, truncateText } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { formatDate, truncateText } from "@/lib/utils"
 import {
   ArrowLeft,
   Users,
@@ -30,6 +29,7 @@ import {
 } from "lucide-react"
 import type { DensityCluster, VistaContact, StrategicNote } from "@/lib/types"
 import { GenerateReportButton } from "@/components/intelligence/generate-report-button"
+import { AgentTriggerButton } from "@/components/intelligence/agent-trigger-button"
 
 interface ClusterDetailProps {
   cluster: DensityCluster
@@ -86,19 +86,48 @@ export function ClusterDetail({
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <AgentTriggerButton
+            agent="LENS"
+            triggerData={{ clusterId: cluster.cluster_id }}
+            label="Score Cluster"
+            size="sm"
+            variant="outline"
+          />
+          <AgentTriggerButton
+            agent="MARIA"
+            triggerData={{ clusterId: cluster.cluster_id }}
+            label="Campaigns"
+            size="sm"
+            variant="outline"
+          />
+          <AgentTriggerButton
+            agent="PROBE"
+            triggerData={{ type: "specific", contactIds: contacts.slice(0, 20).map((c) => c.id) }}
+            label="Pipeline Scan"
+            size="sm"
+            variant="outline"
+          />
+          <AgentTriggerButton
+            agent="CARL"
+            triggerData={{ type: "cluster-analysis", clusterId: cluster.cluster_id }}
+            label="Analyze (CARL)"
+            size="sm"
+          />
           <GenerateReportButton
             reportType="cluster"
             resourceId={cluster.cluster_id}
             label="Generate Brief"
             variant="outline"
+            size="sm"
           />
-          <Button asChild>
-          <Link href="/programs">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Program from Cluster
-          </Link>
-        </Button>
+          <Button asChild size="sm">
+            <Link href="/programs">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Program
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -277,3 +277,37 @@ WHERE pipeline_stage IS NULL;
 -- ('status', 'impact_assessment', 'contact_ids');
 
 -- SELECT COUNT(*) FROM email_templates;
+
+-- ============================================================================
+-- 0.13 Wave 5: Agent Outputs table
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS agent_outputs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agent TEXT NOT NULL CHECK (agent IN ('LENS', 'MARIA', 'PROBE', 'CARL')),
+  chat_id TEXT,
+  raw_message TEXT,
+  parsed_data JSONB,
+  triggered_by TEXT DEFAULT 'agent',
+  status TEXT DEFAULT 'received',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for agent_outputs
+CREATE INDEX IF NOT EXISTS idx_agent_outputs_agent ON agent_outputs(agent);
+CREATE INDEX IF NOT EXISTS idx_agent_outputs_created_at ON agent_outputs(created_at);
+CREATE INDEX IF NOT EXISTS idx_agent_outputs_chat_id ON agent_outputs(chat_id);
+
+-- Enable RLS
+ALTER TABLE agent_outputs ENABLE ROW LEVEL SECURITY;
+
+-- Allow service role to manage (for Feishu webhook)
+CREATE POLICY "Service role can manage agent_outputs" ON agent_outputs
+  FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- Allow authenticated users to read
+CREATE POLICY "Authenticated users can read agent_outputs" ON agent_outputs
+  FOR SELECT TO authenticated USING (true);
+
+-- Enable Realtime for agent_outputs
+ALTER PUBLICATION supabase_realtime ADD TABLE agent_outputs;

@@ -50,3 +50,25 @@ export function subscribeToVistaChanges(
     supabase.removeChannel(channel)
   }
 }
+
+/**
+ * Subscribe to agent_outputs table for real-time agent response updates
+ */
+export function subscribeToAgentOutputs(
+  onNewOutput: (payload: RealtimePayload) => void
+): () => void {
+  const supabase = createBrowserClient()
+
+  const channel = supabase
+    .channel("agent_outputs")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "agent_outputs" },
+      (payload) => onNewOutput(payload as unknown as RealtimePayload)
+    )
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}

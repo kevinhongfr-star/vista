@@ -732,3 +732,33 @@ export interface PipelineReviewReport {
 }
 
 export type ReportType = "cluster" | "signal-digest" | "pipeline-review" | "executive-brief"
+
+// ─── Wave 5: Agent Bridge Types ───
+
+export type AgentName = "LENS" | "MARIA" | "PROBE" | "CARL"
+
+export interface AgentTriggerRequest {
+  contactIds?: string[]
+  clusterId?: string
+  scope?: "all" | "unscored" | "decayed"
+  type?: "refresh" | "specific" | "at-risk" | "strategic-review" | "cluster-analysis" | "market-scan"
+  context?: string
+}
+
+export interface AgentOutput {
+  id: string
+  agent: AgentName
+  chat_id?: string
+  raw_message?: string
+  parsed_data?: Record<string, unknown> | null
+  triggered_by?: string
+  status?: string
+  created_at: string
+}
+
+export interface AgentStatus {
+  agent: AgentName
+  status: "online" | "idle" | "offline"
+  last_output_at?: string
+  last_output_summary?: string
+}

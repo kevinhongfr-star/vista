@@ -16,6 +16,9 @@ import { ProgressBar } from "@/components/ui/progress-bar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { subscribeToVistaChanges } from "@/lib/supabase/realtime"
 import { BulkAssessButton } from "@/components/intelligence/bulk-assess-button"
+import { AgentStatusPanel } from "@/components/intelligence/agent-status-panel"
+import { AgentOutputFeed } from "@/components/intelligence/agent-output-feed"
+import { AgentTriggerButton } from "@/components/intelligence/agent-trigger-button"
 import type { PriorityAction, DashboardKPIs, PipelineFunnelStage, RecentActivity, VistaContact, ActivityType } from "@/lib/types"
 
 export function Dashboard() {
@@ -295,6 +298,55 @@ export function Dashboard() {
             </Tooltip>
           </>
         )}
+      </div>
+
+      {/* Agent Status + Quick Actions Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <AgentStatusPanel />
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Play className="h-5 w-5 text-fuchsia-500" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <AgentTriggerButton
+                  agent="LENS"
+                  triggerData={{ scope: "decayed" }}
+                  label="Score Decayed"
+                  variant="outline"
+                  size="sm"
+                />
+                <AgentTriggerButton
+                  agent="MARIA"
+                  triggerData={{ scope: "all" }}
+                  label="Draft Campaigns"
+                  variant="outline"
+                  size="sm"
+                />
+                <AgentTriggerButton
+                  agent="PROBE"
+                  triggerData={{ type: "at-risk" }}
+                  label="Find At-Risk"
+                  variant="outline"
+                  size="sm"
+                />
+                <AgentTriggerButton
+                  agent="CARL"
+                  triggerData={{ type: "strategic-review" }}
+                  label="Strategic Review"
+                  variant="outline"
+                  size="sm"
+                />
+                <BulkAssessButton />
+              </div>
+            </CardContent>
+          </Card>
+          <AgentOutputFeed limit={5} />
+        </div>
       </div>
 
       {/* Priority Actions */}
