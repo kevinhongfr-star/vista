@@ -3,6 +3,7 @@ import localFont from "next/font/local"
 import "./globals.css"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { ClientLayout } from "./client-layout"
+import { StyleInjector } from "@/components/StyleInjector"
 
 // Self-hosted fonts — NO Google CDN
 const dmSans = localFont({
@@ -52,9 +53,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className={`${dmSans.variable} ${libreBaskerville.variable} font-sans`} style={{ backgroundColor: '#FAFAFA', borderTop: '4px solid #C108AB' }}>
-
-        {/* INLINE PROOF: If you see fuchsia top border + warm bg, deployment is working */}
-        <div className="relative min-h-screen bg-bg border-t-[3px] border-accent">
+        <StyleInjector />
+        <div className="relative min-h-screen bg-bg">
           <Sidebar />
           <ClientLayout>
             {children}
