@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { AISummaryPanel } from "@/components/ui/AISummaryPanel"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -173,6 +174,9 @@ export function CampaignsPage({ activities, drafts, totalCount }: CampaignsPageP
     <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Campaigns</h1>
+
+      {/* AI Summary */}
+      <AISummaryPanel context="campaigns" data={{ campaigns: drafts, activities }} className="mb-4" />
         <Badge variant="secondary">{totalCount} total activities</Badge>
       </div>
 

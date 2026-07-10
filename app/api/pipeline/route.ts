@@ -9,7 +9,7 @@ export async function GET() {
     // Get all contacts with pipeline stage
     const { data: contacts, error } = await supabase
       .from("vista_contacts")
-      .select("id, name, company, pipeline_stage, vista_composite, last_contact_date")
+      .select("id, name, company, pipeline_stage, vista_composite, last_contact_date, role, country, location, profile_url")
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })

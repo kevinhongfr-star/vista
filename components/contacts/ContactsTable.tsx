@@ -45,8 +45,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Activity, Edit, Trash2, MoreHorizontal, ArrowRight, Send, Trash, CheckSquare, Square, ArrowUp, ArrowDown, ArrowUpDown, X, Filter, Save, FolderOpen, Trash as TrashIcon
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Activity, Edit, Trash2, MoreHorizontal, ArrowRight, Send, Trash, CheckSquare, Square, ArrowUp, ArrowDown, ArrowUpDown, X, Filter, Save, FolderOpen, Trash as TrashIcon, Linkedin
 } from "lucide-react"
+import { LinkedInLink } from "@/components/ui/LinkedInLink"
+import { ContactPreviewPanel } from "@/components/ui/ContactPreviewPanel"
+import { AISummaryPanel } from "@/components/ui/AISummaryPanel"
+import { InlineCellEditor } from "@/components/ui/InlineCellEditor"
 import type { VistaContact } from "@/lib/types"
 import { EmailComposer } from "@/components/modals/EmailComposer"
 import { ActivityLog } from "@/components/modals/ActivityLog"
@@ -105,6 +109,7 @@ export function ContactsTable({
   const [selectedContacts, setSelectedContacts] = useState<VistaContact[]>([])
   const [bulkLoading, setBulkLoading] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
+  const [previewContact, setPreviewContact] = useState<VistaContact | null>(null)
   const [filterPresets, setFilterPresets] = useState<{ name: string; filters: typeof searchParams }[]>([])
   const [showPresetMenu, setShowPresetMenu] = useState(false)
   const [presetName, setPresetName] = useState("")
@@ -267,15 +272,18 @@ export function ContactsTable({
       header: 'Name',
       accessorKey: 'name',
       cell: ({ row }) => (
-        <div>
-          <Link 
-            href={`/contacts/${row.original.id}`}
-            className="font-medium hover:underline"
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={(e) => { e.stopPropagation(); setPreviewContact(row.original) }}
+            className="font-medium hover:text-accent hover:underline text-left transition-colors"
           >
             {row.original.name || "Unknown"}
-          </Link>
+          </button>
+          {row.original.profile_url && (
+            <LinkedInLink url={row.original.profile_url} size="sm" />
+          )}
           {row.original.email && (
-            <div className="text-xs text-muted-foreground">{row.original.email}</div>
+            <div className="text-xs text-muted-foreground absolute -mt-0.5">{row.original.email}</div>
           )}
         </div>
       ),
@@ -341,9 +349,35 @@ export function ContactsTable({
         const stage = row.original.pipeline_stage || 'Prospect';
         const stageClass = stageStyles[stage] || 'bg-blueGrey/10 text-slate border-blueGrey/30';
         return (
-          <span className={`px-2 py-1 rounded text-xs font-medium border ${stageClass}`}>
-            {stage}
-          </span>
+          <InlineCellEditor
+            value={stage}
+            type="select"
+            options={[
+              { value: 'Prospect', label: 'Prospect' },
+              { value: 'Contacted', label: 'Contacted' },
+              { value: 'Engaged', label: 'Engaged' },
+              { value: 'Meeting Booked', label: 'Meeting Booked' },
+              { value: 'Proposal Sent', label: 'Proposal Sent' },
+              { value: 'Negotiation', label: 'Negotiation' },
+              { value: 'Closed Won', label: 'Closed Won' },
+              { value: 'Closed Lost', label: 'Closed Lost' },
+            ]}
+            onSave={async (newStage) => {
+              try {
+                const res = await fetch(`/api/contacts/${row.original.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ pipeline_stage: newStage }),
+                })
+                if (res.ok) {
+                  addToast('success', `Stage updated to ${newStage}`)
+                  router.refresh()
+                }
+              } catch { addToast('error', 'Failed to update stage') }
+            }}
+            displayTransform={(v) => v || 'Prospect'}
+            className={`inline-block px-2 py-0.5 text-xs font-medium border ${stageClass}`}
+          />
         );
       },
     },
@@ -669,6 +703,9 @@ export function ContactsTable({
         </div>
       )}
 
+      {/* AI Summary */}
+      <AISummaryPanel context="contacts" data={data} className="mb-2" />
+
       {/* Filters */}
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-1 border border-border p-0.5">
@@ -867,9 +904,15 @@ export function ContactsTable({
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-sm truncate group-hover:text-accent transition-colors">
-                      {contact.name || 'Unknown'}
-                    </p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPreviewContact(contact) }}
+                        className="font-medium text-sm truncate group-hover:text-accent transition-colors text-left"
+                      >
+                        {contact.name || 'Unknown'}
+                      </button>
+                      {contact.profile_url && <LinkedInLink url={contact.profile_url} size="sm" />}
+                    </div>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">
                       {contact.role || contact.headline?.slice(0, 40) || '-'}
                     </p>
@@ -1073,6 +1116,14 @@ export function ContactsTable({
         onClose={() => setActivityLogOpen(false)}
         prefilledContact={selectedContact}
       />
+
+      {/* Contact Preview Panel */}
+      {previewContact && (
+        <ContactPreviewPanel
+          contact={previewContact}
+          onClose={() => setPreviewContact(null)}
+        />
+      )}
 
       <Toaster toasts={toasts} onDismiss={dismissToast} />
       <ConfirmDialog

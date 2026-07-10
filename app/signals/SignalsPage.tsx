@@ -31,6 +31,7 @@ import {
 import { formatDate, truncateText } from "@/lib/utils"
 import { Plus, Activity, Filter, Calendar, Loader2, ArrowRight, CheckSquare, Square, Trash2, Sparkles } from "lucide-react"
 import { GenerateReportButton } from "@/components/intelligence/generate-report-button"
+import { AISummaryPanel } from "@/components/ui/AISummaryPanel"
 import Link from "next/link"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
@@ -274,6 +275,9 @@ export function SignalsPage({ signals, totalCount }: SignalsPageProps) {
           </Tooltip>
         </div>
       </div>
+
+      {/* AI Summary */}
+      <AISummaryPanel context="signals" data={signalList} className="mb-4" />
 
       {/* Add Signal Form */}
       {isAddingSignal && (

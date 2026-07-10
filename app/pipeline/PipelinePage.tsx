@@ -38,6 +38,8 @@ import {
 import { PIPELINE_STAGES, type PipelineStage, type VistaContact } from "@/lib/types"
 import { useToasts, Toaster } from "@/components/ui/toast"
 import { GenerateReportButton } from "@/components/intelligence/generate-report-button"
+import { LinkedInLink } from "@/components/ui/LinkedInLink"
+import { AISummaryPanel } from "@/components/ui/AISummaryPanel"
 
 const STAGE_DESCRIPTIONS: Record<string, string> = {
   Prospect: "Initial lead identified, not yet contacted",
@@ -60,6 +62,7 @@ interface PipelineContact {
   role?: string | null
   country?: string | null
   location?: string | null
+  profile_url?: string | null
 }
 
 interface PipelinePageProps {
@@ -144,6 +147,9 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
     <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Pipeline</h1>
+
+      {/* AI Summary */}
+      <AISummaryPanel context="pipeline" data={contacts} className="mb-4" />
         <div className="flex gap-2">
           <GenerateReportButton
             reportType="pipeline-review"
@@ -209,7 +215,10 @@ export function PipelinePage({ contacts }: PipelinePageProps) {
                       className="bg-white p-3 border border-border hover:border-accent/30 transition-all cursor-pointer"
                       onClick={() => router.push(`/contacts/${contact.id}`)}
                     >
+                      <div className="flex items-center gap-1">
                       <p className="font-medium text-sm">{contact.name}</p>
+                      {contact.profile_url && <LinkedInLink url={contact.profile_url} size="sm" />}
+                    </div>
                       <p className="text-xs text-muted-foreground truncate">
                         {contact.role || contact.company || '-'}
                       </p>

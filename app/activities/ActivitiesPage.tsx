@@ -37,6 +37,7 @@ import {
 import { ACTIVITY_TYPES, type Activity } from "@/lib/types"
 import { ActivityLog } from "@/components/modals/ActivityLog"
 import { useToasts, Toaster } from "@/components/ui/toast"
+import { AISummaryPanel } from "@/components/ui/AISummaryPanel"
 
 interface ActivitiesPageProps {
   activities: Activity[]
@@ -83,6 +84,9 @@ export function ActivitiesPage({ activities }: ActivitiesPageProps) {
     <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Activities</h1>
+
+      {/* AI Summary */}
+      <AISummaryPanel context="activities" data={activities} className="mb-4" />
         <Tooltip>
           <TooltipTrigger asChild>
             <Button onClick={() => setActivityLogOpen(true)}>

@@ -39,6 +39,7 @@ import { EmailComposer } from "@/components/modals/EmailComposer"
 import { ActivityLog } from "@/components/modals/ActivityLog"
 import { CampaignWizard } from "@/components/modals/CampaignWizard"
 import { Toaster, useToasts } from "@/components/ui/toast"
+import { LinkedInLink } from "@/components/ui/LinkedInLink"
 
 interface ContactDetailProps {
   contact: VistaContact
@@ -297,10 +298,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                   </div>
                 )}
                 {contact.profile_url && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
-                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">LinkedIn</span>
-                  </div>
+                  <LinkedInLink url={contact.profile_url} size="md" showLabel className="px-3 py-1.5 bg-[#0A66C2]/5 border border-[#0A66C2]/20 hover:bg-[#0A66C2]/10" />
                 )}
               </div>
             </div>
