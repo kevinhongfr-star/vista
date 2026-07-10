@@ -1,6 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server"
 import { ContactsTable } from "@/components/contacts/ContactsTable"
 import { RealtimeRefresher } from "@/components/realtime-refresher"
+import { CreateContactButton } from "@/components/contacts/CreateContactButton"
 
 export const dynamic = 'force-dynamic'
 
@@ -63,35 +64,34 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
   const pageCount = Math.ceil((count || 0) / pageSize)
   const totalCount = count || 0
 
+  // Sanitize data for serialization — convert Date objects to strings
+  const serializedData = (data || []).map(row => {
+    const sanitized: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(row)) {
+      if (value instanceof Date) {
+        sanitized[key] = value.toISOString()
+      } else if (typeof value === 'bigint') {
+        sanitized[key] = Number(value)
+      } else {
+        sanitized[key] = value
+      }
+    }
+    return sanitized
+  })
+
   return (
     <div className="space-y-6">
       <RealtimeRefresher refreshContacts />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Contacts</h1>
-          <p className="text-sm text-muted-foreground">{count || 0} total contacts</p>
+          <p className="text-sm text-muted-foreground">{totalCount} total contacts</p>
         </div>
-        <button
-          onClick={() => {
-            fetch('/api/contacts', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                name: 'New Contact',
-                company: 'New Company',
-              }),
-            }).then(res => res.json()).then(() => {
-              window.location.reload()
-            })
-          }}
-          className="px-4 py-2 bg-accent-fuchsia text-white rounded-lg hover:bg-accent-fuchsia/90 font-medium"
-        >
-          + Create Contact
-        </button>
+        <CreateContactButton />
       </div>
 
       <ContactsTable
-        data={data || []}
+        data={serializedData}
         pageCount={pageCount}
         currentPage={page}
         pageSize={pageSize}
