@@ -27,7 +27,7 @@ import {
   MessageSquare,
   Phone,
   MapPin,
-  ExternalLink,
+  ExternalLink, Linkedin,
   Edit3,
   Target,
   Lightbulb,
@@ -40,6 +40,7 @@ import { ActivityLog } from "@/components/modals/ActivityLog"
 import { CampaignWizard } from "@/components/modals/CampaignWizard"
 import { Toaster, useToasts } from "@/components/ui/toast"
 import { LinkedInLink } from "@/components/ui/LinkedInLink"
+import { TierBadge } from "@/components/scoring/TierBadge"
 
 interface ContactDetailProps {
   contact: VistaContact
@@ -228,9 +229,10 @@ export function ContactDetail({ contact }: ContactDetailProps) {
 
   return (
     <div className="space-y-6 animate-page-enter">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Rich Contact Header — Greenhouse-style sticky */}
+      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-border -mx-6 px-6 py-4">
         <div className="flex items-center gap-4">
+          {/* Back */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" asChild>
@@ -239,119 +241,112 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                 </Link>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Back to contacts</p>
-            </TooltipContent>
+            <TooltipContent><p>Back to contacts</p></TooltipContent>
           </Tooltip>
-          <div>
-            <h1 className="text-2xl font-bold">{contact.name || "Unknown Contact"}</h1>
-            <p className="text-sm text-muted-foreground">
-              {contact.role} @ {contact.company}
-            </p>
+
+          {/* Avatar */}
+          <div className="h-12 w-12 flex items-center justify-center bg-accent-fuchsia/10 text-accent-fuchsia font-bold text-lg border border-accent-fuchsia/20">
+            {(contact.name || "?").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
           </div>
-        </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Edit3 className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Edit contact details</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
 
-      {/* Contact Info */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <p className={`text-4xl font-bold ${getScoreColor(score)}`}>{score}</p>
-                  <p className="text-xs text-muted-foreground">Score</p>
-                </div>
-                <div className="flex-1">
-                  <Progress value={score} className="h-3" />
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {contact.email && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{contact.email}</span>
-                  </div>
-                )}
-                {contact.phone && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{contact.phone}</span>
-                  </div>
-                )}
-                {contact.location && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{contact.location}</span>
-                  </div>
-                )}
-                {contact.profile_url && (
-                  <LinkedInLink url={contact.profile_url} size="md" showLabel className="px-3 py-1.5 bg-[#0A66C2]/5 border border-[#0A66C2]/20 hover:bg-[#0A66C2]/10" />
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={() => setEmailComposerOpen(true)} className="bg-accent-fuchsia hover:bg-accent-fuchsia/90">
-                    <Mail className="h-4 w-4 mr-2" />
-                    Send Email
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Compose and send an email</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={() => setActivityLogOpen(true)} variant="outline">
-                    <Activity className="h-4 w-4 mr-2" />
-                    Log Activity
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Log a new activity for this contact</p>
-                </TooltipContent>
-              </Tooltip>
-              {nextStage && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Select value="" onValueChange={handleAdvanceStage}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Advance Stage →" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={nextStage}>→ {nextStage}</SelectItem>
-                        {stages.slice(currentStageIndex + 2).map((stage) => (
-                          <SelectItem key={stage} value={stage}>
-                            → {stage}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Advance the pipeline stage</p>
-                  </TooltipContent>
-                </Tooltip>
+          {/* Identity */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold truncate">{contact.name || "Unknown Contact"}</h1>
+              {contact.profile_url && (
+                <a href={contact.profile_url} target="_blank" rel="noopener noreferrer" className="text-[#0A66C2] hover:underline">
+                  <Linkedin className="h-4 w-4" />
+                </a>
               )}
             </div>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
+              {contact.role && <span>{contact.role}</span>}
+              {contact.company && <span>@ {contact.company}</span>}
+              {contact.seniority && <span className="text-xs px-1.5 py-0.5 bg-muted capitalize">{contact.seniority.replace("_", " ")}</span>}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* VISTA Mini-Scores */}
+          <div className="hidden md:flex items-center gap-1.5">
+            {[
+              { label: "V", value: contact.vista_v, color: "bg-violet-500" },
+              { label: "I", value: contact.vista_i, color: "bg-ocean" },
+              { label: "S", value: contact.vista_s, color: "bg-teal" },
+              { label: "T", value: contact.vista_t, color: "bg-accent-fuchsia" },
+              { label: "A", value: contact.vista_a, color: "bg-success" },
+            ].map(({ label, value, color }) => (
+              <Tooltip key={label}>
+                <TooltipTrigger asChild>
+                  <div className="flex flex-col items-center">
+                    <div className={`h-8 w-8 ${color}/10 flex items-center justify-center`}>
+                      <span className={`text-xs font-bold ${getScoreColor((value || 0) * 100)}`}>{value != null ? Math.round(value * 100) : "-"}</span>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground mt-0.5">{label}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p>{label === "V" ? "Value" : label === "I" ? "Influence" : label === "S" ? "Strategic" : label === "T" ? "Timing" : "Access"}: {value != null ? Math.round(value * 100) : "N/A"}</p></TooltipContent>
+              </Tooltip>
+            ))}
+            <div className="ml-2 text-center border-l border-border pl-2">
+              <p className={`text-xl font-bold leading-none ${getScoreColor(score)}`}>{score}</p>
+              <p className="text-[9px] text-muted-foreground">Score</p>
+            </div>
+          </div>
+
+          {/* Pipeline Stage */}
+          <div className="hidden lg:block">
+            <span className={`px-2 py-1 text-xs font-medium border ${
+              contact.pipeline_stage === "Closed Won" ? "bg-success/10 text-success border-success/30" :
+              contact.pipeline_stage === "Closed Lost" ? "bg-error/10 text-error border-error/30" :
+              contact.pipeline_stage === "Proposal Sent" ? "bg-accent-10 text-accent-hover border-accent/30" :
+              contact.pipeline_stage === "Meeting Booked" ? "bg-teal/10 text-teal border-teal/30" :
+              contact.pipeline_stage === "Engaged" ? "bg-ocean/10 text-ocean-deep border-ocean/30" :
+              "bg-blueGrey/10 text-slate border-blueGrey/30"
+            }`}>
+              {contact.pipeline_stage || "Prospect"}
+            </span>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={() => setEmailComposerOpen(true)} className="bg-accent-fuchsia hover:bg-accent-fuchsia/90 text-white h-8">
+              <Mail className="h-3.5 w-3.5 mr-1.5" />
+              Email
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setActivityLogOpen(true)} className="h-8">
+              <Activity className="h-3.5 w-3.5 mr-1.5" />
+              Log
+            </Button>
+            {nextStage && (
+              <Select value="" onValueChange={handleAdvanceStage}>
+                <SelectTrigger className="w-[140px] h-8 text-xs">
+                  <SelectValue placeholder="Advance →" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={nextStage}>→ {nextStage}</SelectItem>
+                  {stages.slice(currentStageIndex + 2).map((stage) => (
+                    <SelectItem key={stage} value={stage}>→ {stage}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        </div>
+
+        {/* Contact meta row */}
+        <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground flex-wrap">
+          {contact.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{contact.email}</span>}
+          {contact.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{contact.phone}</span>}
+          {contact.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{contact.location}{contact.country ? `, ${contact.country}` : ""}</span>}
+          {contact.industry && <span className="px-1.5 py-0.5 bg-muted">{contact.industry}</span>}
+          {contact.engagement_tier && <TierBadge tier={contact.engagement_tier} />}
+          {daysSinceLastContact !== null && (
+            <span className={daysSinceLastContact > 30 ? "text-warning" : ""}>
+              Last contact: {daysSinceLastContact}d ago
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* Next Best Action */}
       <Card className={`border-2 ${nextAction.color} mb-6`}>

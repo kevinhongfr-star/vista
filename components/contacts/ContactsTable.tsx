@@ -16,6 +16,7 @@ import {
   type ColumnFiltersState,
   type RowSelectionState,
   type ExpandedState,
+  type VisibilityState,
 } from "@tanstack/react-table"
 import { cn } from "@/lib/utils"
 import { ScoreGauge } from "@/components/scoring/ScoreGauge"
@@ -45,7 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Activity, Edit, Trash2, MoreHorizontal, ArrowRight, Send, Trash, CheckSquare, Square, ArrowUp, ArrowDown, ArrowUpDown, X, Filter, Save, FolderOpen, Trash as TrashIcon, Linkedin
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Activity, Edit, Trash2, MoreHorizontal, ArrowRight, Send, Trash, CheckSquare, Square, ArrowUp, ArrowDown, ArrowUpDown, X, Filter, Save, FolderOpen, Trash as TrashIcon, Linkedin, Eye, EyeOff, Columns3, Layers
 } from "lucide-react"
 import { LinkedInLink } from "@/components/ui/LinkedInLink"
 import { ContactPreviewPanel } from "@/components/ui/ContactPreviewPanel"
@@ -110,6 +111,31 @@ export function ContactsTable({
   const [bulkLoading, setBulkLoading] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [previewContact, setPreviewContact] = useState<VistaContact | null>(null)
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("vista_columnVisibility")
+      if (saved) return JSON.parse(saved)
+    }
+    return {}
+  })
+  const [columnOrder, setColumnOrder] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("vista_columnOrder")
+      if (saved) return JSON.parse(saved)
+    }
+    return []
+  })
+  const [showColumnPicker, setShowColumnPicker] = useState(false)
+  const [savedViews, setSavedViews] = useState<{name: string; columns: VisibilityState; order: string[]; sort: SortingState}[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("vista_savedTableViews")
+      if (saved) return JSON.parse(saved)
+    }
+    return []
+  })
+  const [viewName, setViewName] = useState("")
+  const [showViewMenu, setShowViewMenu] = useState(false)
+  const [clusters, setClusters] = useState<{cluster_id: string; industry: string; geography: string; contact_count: number | null}[]>([])
   const [filterPresets, setFilterPresets] = useState<{ name: string; filters: typeof searchParams }[]>([])
   const [showPresetMenu, setShowPresetMenu] = useState(false)
   const [presetName, setPresetName] = useState("")
@@ -170,6 +196,25 @@ export function ContactsTable({
     localStorage.setItem('contactFilterPresets', JSON.stringify(updated))
     addToast("success", "Preset deleted")
   }
+
+  // Fetch clusters for bulk assignment
+  useEffect(() => {
+    fetch("/api/clusters")
+      .then(r => r.json())
+      .then(d => setClusters(d.clusters || []))
+      .catch(() => {})
+  }, [])
+
+  // Persist column visibility
+  useEffect(() => {
+    localStorage.setItem("vista_columnVisibility", JSON.stringify(columnVisibility))
+  }, [columnVisibility])
+
+  useEffect(() => {
+    if (columnOrder.length > 0) {
+      localStorage.setItem("vista_columnOrder", JSON.stringify(columnOrder))
+    }
+  }, [columnOrder])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -470,11 +515,15 @@ export function ContactsTable({
       globalFilter,
       rowSelection,
       expanded,
+      columnVisibility,
+      columnOrder: columnOrder.length > 0 ? columnOrder : undefined,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
     onExpandedChange: setExpanded,
+    onColumnVisibilityChange: setColumnVisibility,
+    onColumnOrderChange: setColumnOrder,
     onGlobalFilterChange: (value) => {
       setGlobalFilter(value)
       const params = new URLSearchParams(searchParams)
@@ -657,6 +706,38 @@ export function ContactsTable({
                 <SelectItem value="Committed">Committed</SelectItem>
               </SelectContent>
             </Select>
+            <Select
+              onValueChange={async (clusterId) => {
+                const selected = table.getSelectedRowModel().rows.map(r => r.original)
+                setBulkLoading(true)
+                try {
+                  let updated = 0
+                  for (const contact of selected) {
+                    const res = await fetch(`/api/contacts/${contact.id}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ density_cluster_id: clusterId }),
+                    })
+                    if (res.ok) updated++
+                  }
+                  const cl = clusters.find(c => c.cluster_id === clusterId)
+                  addToast("success", `Assigned ${updated} contacts to ${cl ? cl.industry + " / " + cl.geography : "cluster"}`)
+                  setRowSelection({})
+                  router.refresh()
+                } catch { addToast("error", "Failed to assign cluster") }
+                finally { setBulkLoading(false) }
+              }}
+            >
+              <SelectTrigger className="w-[160px] h-8 text-xs"><SelectValue placeholder="Set Cluster" /></SelectTrigger>
+              <SelectContent>
+                {clusters.map(c => (
+                  <SelectItem key={c.cluster_id} value={c.cluster_id}>
+                    {c.industry} / {c.geography} ({c.contact_count || 0})
+                  </SelectItem>
+                ))}
+                {clusters.length === 0 && <SelectItem value="none" disabled>No clusters</SelectItem>}
+              </SelectContent>
+            </Select>
             <Button
               size="sm"
               variant="outline"
@@ -821,6 +902,106 @@ export function ContactsTable({
             Clear filters
           </Button>
         )}
+
+        {/* Column Visibility */}
+        <DropdownMenu open={showColumnPicker} onOpenChange={setShowColumnPicker}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Columns3 className="h-3 w-3 mr-2" />
+              Columns
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-b">
+              Toggle Columns
+            </div>
+            {table.getAllColumns().filter(col => col.id !== "select" && col.id !== "actions").map(col => (
+              <DropdownMenuItem
+                key={col.id}
+                onClick={(e) => { e.preventDefault(); col.toggleVisibility() }}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                {col.getIsVisible() ? <Eye className="h-3 w-3 text-accent" /> : <EyeOff className="h-3 w-3 text-muted-foreground" />}
+                <span className={cn(!col.getIsVisible() && "text-muted-foreground line-through")}>
+                  {col.columnDef.header instanceof Function ? col.id : (col.columnDef.header as string) || col.id}
+                </span>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { setColumnVisibility({}); setColumnOrder([]); addToast("success", "Columns reset") }}>
+              Reset to Default
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Saved Views */}
+        <DropdownMenu open={showViewMenu} onOpenChange={setShowViewMenu}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Layers className="h-3 w-3 mr-2" />
+              Views
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            {savedViews.length > 0 ? (
+              <>
+                {savedViews.map((view, i) => (
+                  <DropdownMenuItem key={i} onClick={() => {
+                    setColumnVisibility(view.columns)
+                    if (view.order.length > 0) setColumnOrder(view.order)
+                    if (view.sort.length > 0) setSorting(view.sort)
+                    setShowViewMenu(false)
+                    addToast("success", `View "${view.name}" loaded`)
+                  }} className="flex justify-between items-center">
+                    <span>{view.name}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => {
+                      e.stopPropagation()
+                      const updated = savedViews.filter((_, idx) => idx !== i)
+                      setSavedViews(updated)
+                      localStorage.setItem("vista_savedTableViews", JSON.stringify(updated))
+                    }}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+              </>
+            ) : (
+              <div className="px-2 py-2 text-xs text-muted-foreground">No saved views</div>
+            )}
+            <div className="px-2 pb-2">
+              <Input
+                placeholder="View name"
+                value={viewName}
+                onChange={(e) => setViewName(e.target.value)}
+                className="h-8 text-sm mb-2"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && viewName.trim()) {
+                    const v = { name: viewName.trim(), columns: { ...columnVisibility }, order: [...columnOrder], sort: [...sorting] as SortingState }
+                    const updated = [...savedViews, v]
+                    setSavedViews(updated)
+                    localStorage.setItem("vista_savedTableViews", JSON.stringify(updated))
+                    setViewName("")
+                    setShowViewMenu(false)
+                    addToast("success", `View "${v.name}" saved`)
+                  }
+                }}
+              />
+              <Button variant="ghost" size="sm" className="w-full" disabled={!viewName.trim()} onClick={() => {
+                const v = { name: viewName.trim(), columns: { ...columnVisibility }, order: [...columnOrder], sort: [...sorting] as SortingState }
+                const updated = [...savedViews, v]
+                setSavedViews(updated)
+                localStorage.setItem("vista_savedTableViews", JSON.stringify(updated))
+                setViewName("")
+                setShowViewMenu(false)
+                addToast("success", `View "${v.name}" saved`)
+              }}>
+                <Save className="h-3 w-3 mr-2" />
+                Save Current View
+              </Button>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

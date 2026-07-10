@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { X, Send, Mail, Sparkles, Loader2 } from "lucide-react"
+import { X, Send, Mail, Sparkles, Loader2, Building2, TrendingUp, Target, Zap, Calendar, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,6 +46,9 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
   const [body, setBody] = useState("")
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [contactSignals, setContactSignals] = useState<{id: string; title: string; signal_type: string; signal_date: string; company?: string}[]>([])
+  const [showContext, setShowContext] = useState(true)
+  const [contextLoading, setContextLoading] = useState(false)
 
   // Pre-fill with contact info
   const contacts = prefilledContacts || (prefilledContact ? [prefilledContact] : [])
@@ -62,6 +65,15 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
       .then(data => {
         setTemplates(data.templates || [])
       })
+    // Fetch signals for primary contact
+    if (contacts[0]?.company) {
+      setContextLoading(true)
+      fetch(`/api/signals?company=${encodeURIComponent(contacts[0].company)}&limit=5`)
+        .then(r => r.json())
+        .then(d => { setContactSignals(d.signals || []) })
+        .catch(() => {})
+        .finally(() => setContextLoading(false))
+    }
   }, [isOpen])
 
   useEffect(() => {
@@ -216,6 +228,83 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
             )}
           </div>
 
+          {/* Contact Context Panel */}
+          {contacts.length > 0 && showContext && (
+            <div className="border border-border bg-muted/20 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                  <Target className="h-3.5 w-3.5" />
+                  Context for AI Personalization
+                </h4>
+                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setShowContext(false)}>
+                  <ChevronUp className="h-3 w-3" />
+                </Button>
+              </div>
+              {contacts.map(c => (
+                <div key={c.id} className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Contact:</span>{" "}
+                    <span className="font-medium">{c.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Title:</span>{" "}
+                    <span className="font-medium">{c.role || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Company:</span>{" "}
+                    <span className="font-medium flex items-center gap-1"><Building2 className="h-3 w-3" />{c.company || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Industry:</span>{" "}
+                    <span className="font-medium">{c.industry || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Pipeline:</span>{" "}
+                    <span className="font-medium">{c.pipeline_stage || "Prospect"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Score:</span>{" "}
+                    <span className="font-medium">{c.priority_score || c.vista_composite || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Last Contact:</span>{" "}
+                    <span className="font-medium">{c.last_contact_date ? new Date(c.last_contact_date).toLocaleDateString() : "Never"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Engagement:</span>{" "}
+                    <span className="font-medium">{c.touch_count || 0} touches</span>
+                  </div>
+                </div>
+              ))}
+              {/* Company Signals */}
+              {contactSignals.length > 0 && (
+                <div className="border-t border-border pt-2 space-y-1.5">
+                  <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                    <Zap className="h-3 w-3 text-warning" />
+                    Company Signals ({contactSignals.length})
+                  </p>
+                  {contactSignals.slice(0, 3).map(s => (
+                    <div key={s.id} className="flex items-start gap-2 text-xs">
+                      <span className="text-muted-foreground shrink-0">{s.signal_date ? new Date(s.signal_date).toLocaleDateString() : ""}</span>
+                      <span className="font-medium">{s.title}</span>
+                      <span className="px-1 py-0.5 bg-accent/10 text-accent text-[10px] ml-auto shrink-0">{s.signal_type}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {contextLoading && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Loading signals...
+                </div>
+              )}
+            </div>
+          )}
+          {contacts.length > 0 && !showContext && (
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => setShowContext(true)}>
+              <ChevronDown className="h-3 w-3 mr-1" /> Show Contact Context
+            </Button>
+          )}
+
           {/* Template selection */}
           <div className="space-y-2">
             <Label htmlFor="template">Template</Label>
@@ -258,7 +347,7 @@ export function EmailComposer({ isOpen, onClose, prefilledContact, prefilledCont
               )}
             </Button>
             <span className="text-xs text-muted-foreground">
-              Let AI write a personalized draft based on contact data & signals
+              AI uses contact profile, pipeline stage, company signals & activity history
             </span>
           </div>
 
