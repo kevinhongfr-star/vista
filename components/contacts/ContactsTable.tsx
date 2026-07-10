@@ -118,15 +118,9 @@ export function ContactsTable({
     }
     return {}
   })
-  const [columnOrder, setColumnOrder] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("vista_columnOrder")
-      if (saved) return JSON.parse(saved)
-    }
-    return []
-  })
+
   const [showColumnPicker, setShowColumnPicker] = useState(false)
-  const [savedViews, setSavedViews] = useState<{name: string; columns: VisibilityState; order: string[]; sort: SortingState}[]>(() => {
+  const [savedViews, setSavedViews] = useState<{name: string; columns: VisibilityState; sort: SortingState}[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("vista_savedTableViews")
       if (saved) return JSON.parse(saved)
@@ -210,11 +204,7 @@ export function ContactsTable({
     localStorage.setItem("vista_columnVisibility", JSON.stringify(columnVisibility))
   }, [columnVisibility])
 
-  useEffect(() => {
-    if (columnOrder.length > 0) {
-      localStorage.setItem("vista_columnOrder", JSON.stringify(columnOrder))
-    }
-  }, [columnOrder])
+
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -516,14 +506,14 @@ export function ContactsTable({
       rowSelection,
       expanded,
       columnVisibility,
-      columnOrder: columnOrder.length > 0 ? columnOrder : undefined,
+
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
     onExpandedChange: setExpanded,
     onColumnVisibilityChange: setColumnVisibility,
-    onColumnOrderChange: setColumnOrder,
+
     onGlobalFilterChange: (value) => {
       setGlobalFilter(value)
       const params = new URLSearchParams(searchParams)
@@ -928,7 +918,7 @@ export function ContactsTable({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { setColumnVisibility({}); setColumnOrder([]); addToast("success", "Columns reset") }}>
+            <DropdownMenuItem onClick={() => { setColumnVisibility({}); addToast("success", "Columns reset") }}>
               Reset to Default
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -948,7 +938,7 @@ export function ContactsTable({
                 {savedViews.map((view, i) => (
                   <DropdownMenuItem key={i} onClick={() => {
                     setColumnVisibility(view.columns)
-                    if (view.order.length > 0) setColumnOrder(view.order)
+                    
                     if (view.sort.length > 0) setSorting(view.sort)
                     setShowViewMenu(false)
                     addToast("success", `View "${view.name}" loaded`)
@@ -977,7 +967,7 @@ export function ContactsTable({
                 className="h-8 text-sm mb-2"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && viewName.trim()) {
-                    const v = { name: viewName.trim(), columns: { ...columnVisibility }, order: [...columnOrder], sort: [...sorting] as SortingState }
+                    const v = { name: viewName.trim(), columns: { ...columnVisibility }, sort: [...sorting] as SortingState }
                     const updated = [...savedViews, v]
                     setSavedViews(updated)
                     localStorage.setItem("vista_savedTableViews", JSON.stringify(updated))
@@ -988,7 +978,7 @@ export function ContactsTable({
                 }}
               />
               <Button variant="ghost" size="sm" className="w-full" disabled={!viewName.trim()} onClick={() => {
-                const v = { name: viewName.trim(), columns: { ...columnVisibility }, order: [...columnOrder], sort: [...sorting] as SortingState }
+                const v = { name: viewName.trim(), columns: { ...columnVisibility }, sort: [...sorting] as SortingState }
                 const updated = [...savedViews, v]
                 setSavedViews(updated)
                 localStorage.setItem("vista_savedTableViews", JSON.stringify(updated))
