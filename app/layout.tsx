@@ -1,18 +1,42 @@
 import type { Metadata } from "next"
-import { DM_Sans, Libre_Baskerville } from "next/font/google"
+import localFont from "next/font/local"
 import "./globals.css"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { ClientLayout } from "./client-layout"
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
+// Self-hosted fonts — NO Google CDN
+const dmSans = localFont({
+  src: [
+    {
+      path: "../public/fonts/DMSans-Variable.ttf",
+      weight: "400 700",
+      style: "normal",
+    },
+  ],
   variable: "--font-dm-sans",
+  display: "swap",
 })
 
-const libreBaskerville = Libre_Baskerville({
-  subsets: ["latin"],
-  weight: ["400", "700"],
+const libreBaskerville = localFont({
+  src: [
+    {
+      path: "../public/fonts/LibreBaskerville-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/LibreBaskerville-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/LibreBaskerville-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+  ],
   variable: "--font-libre-baskerville",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -28,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className={`${dmSans.variable} ${libreBaskerville.variable} font-sans`}>
-        <div className="relative min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="relative min-h-screen bg-bg">
           <Sidebar />
           <ClientLayout>
             {children}
