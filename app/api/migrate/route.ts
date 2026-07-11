@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { Client } from 'pg';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -11,9 +10,12 @@ export async function POST() {
     return NextResponse.json({ error: 'DATABASE_URL not configured' }, { status: 500 });
   }
 
-  const client = new Client({ connectionString: databaseUrl });
-  
   try {
+    // Dynamic import to avoid TypeScript issues
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { Client } = require('pg');
+    const client = new Client({ connectionString: databaseUrl });
+    
     await client.connect();
     
     // Fetch migration SQL from GitHub
@@ -21,6 +23,7 @@ export async function POST() {
     const response = await fetch(sqlUrl);
     
     if (!response.ok) {
+      await client.end();
       return NextResponse.json({ error: `Failed to fetch SQL: ${response.status}` }, { status: 500 });
     }
     
@@ -29,19 +32,19 @@ export async function POST() {
     // Execute the migration
     const result = await client.query(sql);
     
+    await client.end();
+    
     return NextResponse.json({ 
       success: true, 
       message: 'Migration executed successfully',
       command: result.command,
       rowCount: result.rowCount
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ 
-      error: error.message,
-      detail: error.toString()
+      error: message,
     }, { status: 500 });
-  } finally {
-    await client.end();
   }
 }
 
