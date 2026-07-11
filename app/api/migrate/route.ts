@@ -3,15 +3,14 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-export async function POST() {
+async function runMigration() {
   const databaseUrl = process.env.DATABASE_URL;
   
   if (!databaseUrl) {
-    return NextResponse.json({ error: 'DATABASE_URL not configured' }, { status: 500 });
+    return { error: 'DATABASE_URL not configured' };
   }
 
   try {
-    // Dynamic import to avoid TypeScript issues
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Client } = require('pg');
     const client = new Client({ connectionString: databaseUrl });
@@ -24,33 +23,55 @@ export async function POST() {
     
     if (!response.ok) {
       await client.end();
-      return NextResponse.json({ error: `Failed to fetch SQL: ${response.status}` }, { status: 500 });
+      return { error: `Failed to fetch SQL: ${response.status}` };
     }
     
     const sql = await response.text();
     
-    // Execute the migration
-    const result = await client.query(sql);
+    // Execute the migration - split by statements and run each
+    const statements = sql
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !s.startsWith('--'));
+    
+    let executed = 0;
+    let errors: string[] = [];
+    
+    for (const stmt of statements) {
+      try {
+        await client.query(stmt);
+        executed++;
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        // Skip "already exists" errors
+        if (msg.includes('already exists')) {
+          continue;
+        }
+        errors.push(msg);
+      }
+    }
     
     await client.end();
     
-    return NextResponse.json({ 
+    return { 
       success: true, 
-      message: 'Migration executed successfully',
-      command: result.command,
-      rowCount: result.rowCount
-    });
+      message: `Migration executed: ${executed} statements`,
+      errors: errors.length > 0 ? errors : undefined
+    };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ 
-      error: message,
-    }, { status: 500 });
+    return { error: message };
   }
 }
 
+export async function POST() {
+  const result = await runMigration();
+  const status = result.error ? 500 : 200;
+  return NextResponse.json(result, { status });
+}
+
 export async function GET() {
-  return NextResponse.json({ 
-    message: 'POST to run migration',
-    db_configured: !!process.env.DATABASE_URL
-  });
+  const result = await runMigration();
+  const status = result.error ? 500 : 200;
+  return NextResponse.json(result, { status });
 }
