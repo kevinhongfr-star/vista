@@ -1,753 +1,454 @@
--- ============================================================================
--- VISTA Wave 1.5 — Funnel Core: Revenue Engine
--- Migration: schema_migration_wave1.5_funnel_core.sql
--- Date: 2026-07-11
--- Author: James/AI for Kevin Hong
---
--- What this does:
---   F-01: Extends vista_contacts with funnel tracking columns (8 new columns)
---   F-02: Creates vista_outreach_sequences (every outreach touch tracked)
---   F-03: Creates vista_outreach_templates + seeds 8 templates (4 archetypes × 2)
---   F-05: Creates vista_nurture_routes (no dead end routing)
---   F-06: Extends vista_opportunities with 6-signal scoring + auto-compute trigger
---   F-07/08: No DB changes (dashboard widgets use existing + new tables)
---
--- Dependencies:
---   - vista_contacts (must exist)
---   - vista_opportunities (must exist)
---   - Migration V2 (schema_migration_v2_service_catalog.sql) — recommended but not required
---
--- Estimated tables: 3 new, 2 altered
--- Estimated lines: ~450
--- ============================================================================
+-- ============================================================
+-- VISTA Wave 1.6 — Revenue Operating System Migration
+-- ============================================================
+-- Author: James/AI | Date: 2026-07-12
+-- Depends on: Wave 1.5 (funnel core), V2 (service catalog)
+-- Safe to re-run: all statements use IF NOT EXISTS
+-- ============================================================
 
-BEGIN;
+-- ============================================================
+-- SECTION 1: Service Catalog Enhancements
+-- ============================================================
 
--- ============================================================================
--- F-01: CONTACT FUNNEL EXTENSIONS
--- Add 8 columns to vista_contacts for BD funnel tracking
--- ============================================================================
+-- 1.1 Add tier architecture to service catalog
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS tier INT DEFAULT 3;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS tier_name TEXT;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS price_min_cny NUMERIC;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS price_max_cny NUMERIC;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS price_model TEXT;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS engagement_duration TEXT;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS target_buyer TEXT[];
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS is_discountable BOOLEAN DEFAULT true;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS discount_rules JSONB;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS tier_positioning TEXT;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS competitor_anchor TEXT;
 
--- BD Bucket: which archetype approach
-ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS bd_bucket VARCHAR(20)
-  CHECK (bd_bucket IN ('sniper', 'trojan_horse', 'farmer', 'weiqi'));
+-- 1.2 Update existing services with tier info (assign existing 24 services to tiers)
+UPDATE vista_service_catalog SET tier = 3, tier_name = 'Mid-Ticket (Revenue)', is_discountable = true
+WHERE tier IS NULL AND name IN ('PRISM', 'BRIDGE', 'MOSAIC', 'SPARK', 'FORGE');
 
-COMMENT ON COLUMN vista_contacts.bd_bucket IS
-  'BD archetype: sniper=Top-25 high-value, trojan_horse=Podcast guests, farmer=Volume ICP, weiqi=Ecosystem players';
+UPDATE vista_service_catalog SET tier = 3, tier_name = 'Mid-Ticket (Revenue)', is_discountable = true
+WHERE tier IS NULL AND name IN ('COACH', 'DRIVE');
 
--- Warmth Score: 1=cold, 5=referral
-ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS warmth_score SMALLINT
-  CHECK (warmth_score BETWEEN 1 AND 5);
+UPDATE vista_service_catalog SET tier = 4, tier_name = 'High-Ticket (Proof)', is_discountable = true
+WHERE tier IS NULL AND name = 'Advisory Services';
 
-COMMENT ON COLUMN vista_contacts.warmth_score IS
-  '1=cold outreach, 2=linkedin engage, 3=event met, 4=mutual connection, 5=warm referral';
+UPDATE vista_service_catalog SET tier = 5, tier_name = 'Search (Cash Engine)', is_discountable = false
+WHERE tier IS NULL AND name LIKE '%Search%' OR name LIKE '%search%';
 
--- Funnel Stage: where they are in the revenue pipeline
-ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS funnel_stage VARCHAR(30)
-  DEFAULT 'outreach'
-  CHECK (funnel_stage IN ('outreach', 'conversation', 'opportunity', 'paid', 'nurture', 'closed_lost'));
+-- 1.3 Seed Tier 1 — FREE (Acquisition Layer)
+INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, is_discountable, tier_positioning)
+VALUES
+    ('LinkedIn Content (3x/week)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['All ICP contacts'], false, 'The thought leader who gets cross-border talent'),
+    ('Newsletter (weekly)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['All contacts'], false, 'The thought leader who gets cross-border talent'),
+    ('Podcast (weekly)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Target guests', 'Listeners'], false, 'The thought leader who gets cross-border talent'),
+    ('Webinar (monthly, 45 min)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Nurture list', 'Workshop leads'], false, 'The thought leader who gets cross-border talent'),
+    ('Diagnostic Teaser (15 min)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Conversation-stage contacts'], false, 'Show them what the data looks like')
+ON CONFLICT DO NOTHING;
 
-COMMENT ON COLUMN vista_contacts.funnel_stage IS
-  'Revenue funnel stage: outreach → conversation → opportunity → paid. Non-converters → nurture.';
+-- 1.4 Seed Tier 2 — LOW-TICKET (Validation Layer)
+INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+VALUES
+    ('Workshop (online, 2-3 hours)', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 2000, 5000, 'per_session', ARRAY['HR leaders', 'L&D heads'], '2-3 hours', true, '{"max_pct": 0.15, "conditions": ["early_bird"]}', 'Practical, diagnostic-driven, not theory', '2-3x cheaper than Huthwaite/DDI'),
+    ('Workshop (half-day intensive)', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 5000, 8000, 'per_session', ARRAY['VPs', 'Directors'], 'half-day', true, '{"max_pct": 0.15, "conditions": ["early_bird"]}', 'Practical, diagnostic-driven, not theory', '2-3x cheaper than Huthwaite/DDI'),
+    ('Insights Report (single issue)', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 1500, 3000, 'per_issue', ARRAY['PE operators', 'Strategy heads'], 'one-time', true, '{"max_pct": 0.10}', 'Show intelligence quality', NULL),
+    ('Talent Market Map', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 3000, 8000, 'per_project', ARRAY['HR', 'Hiring managers'], '3-6 weeks', true, '{"max_pct": 0.15}', 'Demonstrate GRID capability', NULL),
+    ('The Council (annual membership)', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 8000, 15000, 'per_year', ARRAY['Senior leaders', 'PE partners'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
+    ('DEX AI Starter Credits', 'Platform', 7, 'Platform (DEX AI)', 500, 2000, 'one_time', ARRAY['HR teams', 'Recruiters'], 'one-time', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights')
+ON CONFLICT DO NOTHING;
 
--- Outreach Count: how many touches sent
-ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS outreach_count SMALLINT DEFAULT 0;
+-- 1.5 Seed Tier 3 — MID-TICKET (Revenue Layer)
+INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+VALUES
+    ('Diagnostic (comprehensive)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 8000, 25000, 'per_project', ARRAY['CHROs', 'VPs', 'GMs'], '2-4 weeks', true, '{"max_pct": 0.50, "conditions": ["founding_client", "first_3"]}', 'Data-driven talent intelligence, not gut feel', 'Same price as SHL/Hogan, more actionable'),
+    ('Executive Coaching (6 sessions)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 18000, 36000, 'per_engagement', ARRAY['Senior directors', 'VPs'], '3 months', true, '{"max_pct": 0.15}', 'Boutique coaching with data backing', NULL),
+    ('Executive Coaching (12 sessions)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 30000, 60000, 'per_engagement', ARRAY['C-suite', 'Founders'], '6 months', true, '{"max_pct": 0.15}', 'Boutique coaching with data backing', NULL),
+    ('Training Program (custom, 3 sessions)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 15000, 30000, 'per_program', ARRAY['L&D', 'HR directors'], '1-2 months', true, '{"max_pct": 0.20}', 'Diagnostic-backed training', NULL),
+    ('Syndicate Intelligence Subscription', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 30000, 60000, 'per_year', ARRAY['PE firms', 'Strategy teams'], '12 months', true, '{"max_pct": 0.15, "conditions": ["annual"]}', 'Ongoing intelligence, not point-in-time', NULL),
+    ('DEX AI Pro Subscription', 'Platform', 7, 'Platform (DEX AI)', 5000, 15000, 'per_month', ARRAY['HR teams', 'Talent functions'], 'monthly', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights'),
+    ('Mapping Project (full market scan)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 15000, 40000, 'per_project', ARRAY['CHROs', 'PE operating partners'], '3-6 weeks', true, '{"max_pct": 0.15}', 'Comprehensive market intelligence', NULL)
+ON CONFLICT DO NOTHING;
 
-COMMENT ON COLUMN vista_contacts.outreach_count IS
-  'Number of outreach touches sent. Max 4 before auto-routing to nurture.';
+-- 1.6 Seed Tier 4 — HIGH-TICKET (Proof Layer)
+INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+VALUES
+    ('Advisory Project (single product)', 'High-Ticket', 4, 'High-Ticket (Proof)', 40000, 80000, 'per_project', ARRAY['CHROs', 'CEOs'], '2-3 months', true, '{"max_pct": 0.20, "conditions": ["founding_client", "first_3"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('Advisory Project (multi-product)', 'High-Ticket', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_project', ARRAY['CEOs', 'Boards'], '4-6 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('HQ-China Alignment Program (BRIDGE full)', 'High-Ticket', 4, 'High-Ticket (Proof)', 60000, 120000, 'per_project', ARRAY['Expats', 'China GMs', 'HQ heads'], '6 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('AI Transformation Program (SPARK full)', 'High-Ticket', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_project', ARRAY['CEOs', 'CTOs', 'CHROs'], '6-9 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('Retainer (monthly advisory)', 'High-Ticket', 4, 'High-Ticket (Proof)', 15000, 30000, 'per_month', ARRAY['CHROs', 'CEOs'], '6-12 months', true, '{"max_pct": 0.20, "conditions": ["annual_commitment", "first_3"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('PE Portfolio Talent Review (annual)', 'High-Ticket', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_year', ARRAY['PE partners'], 'ongoing', true, '{"max_pct": 0.18, "conditions": ["bundle"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('DEX AI Enterprise License', 'Platform', 7, 'Platform (DEX AI)', 15000, 30000, 'per_month', ARRAY['Large enterprises'], 'annual contract', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights')
+ON CONFLICT DO NOTHING;
 
--- Last Outreach Date
-ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS last_outreach_date DATE;
+-- 1.7 Seed Tier 5 — SEARCH (Cash Engine)
+INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+VALUES
+    ('Retained Executive Search', 'Search', 5, 'Search (Cash Engine)', 75000, 200000, 'per_role', ARRAY['CHROs', 'CEOs'], '2-4 months', false, NULL, 'Search + intelligence, not just headhunting', 'Same price as Egon Zehnder/Spencer Stuart, more data'),
+    ('Contingent Search', 'Search', 5, 'Search (Cash Engine)', 50000, 150000, 'per_role', ARRAY['CHROs', 'Hiring managers'], '1-3 months', false, NULL, 'Search + intelligence, not just headhunting', 'Same price as Egon Zehnder/Spencer Stuart, more data'),
+    ('Search + Diagnostic Bundle', 'Search', 5, 'Search (Cash Engine)', 90000, 215000, 'per_role', ARRAY['CHROs', 'CEOs'], '2-4 months', true, '{"max_pct": 0.10, "conditions": ["bundle"]}', 'Search + intelligence bundled', 'Same price, more comprehensive'),
+    ('Mapping-to-Search Pipeline', 'Search', 5, 'Search (Cash Engine)', 15000, 40000, 'per_role', ARRAY['CHROs', 'PE operating partners'], '3-6 weeks then search', true, '{"max_pct": 0.10, "note": "mapping fee credited to search"}', 'Mapping converts to search', NULL)
+ON CONFLICT DO NOTHING;
 
--- Next Action Date: when to act next
-ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS next_action_date DATE;
+-- 1.8 Seed Tier 6 — THE COUNCIL (Recurring + Exclusivity)
+INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+VALUES
+    ('Council Individual Member', 'Council', 6, 'Council (Recurring)', 12000, 12000, 'per_year', ARRAY['Senior leaders'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
+    ('Council Corporate Member', 'Council', 6, 'Council (Recurring)', 30000, 30000, 'per_year', ARRAY['CHROs', 'CEOs'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
+    ('Council PE Partner Member', 'Council', 6, 'Council (Recurring)', 50000, 50000, 'per_year', ARRAY['PE partners'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage')
+ON CONFLICT DO NOTHING;
 
-COMMENT ON COLUMN vista_contacts.next_action_date IS
-  'Next date Kevin should take action on this contact. Used for daily digest and dashboard.';
+-- 1.9 Seed Tier 7 — PLATFORM (DEX AI additional products)
+INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, is_discountable, tier_positioning, competitor_anchor)
+VALUES
+    ('DEX AI Credit Top-Up', 'Platform', 7, 'Platform (DEX AI)', 50, 50, 'per_unit', ARRAY['HR teams', 'Recruiters'], false, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights'),
+    ('METRIX Assessment (standalone)', 'Platform', 7, 'Platform (DEX AI)', 200, 500, 'per_assessment', ARRAY['HR teams', 'Recruiters'], true, 'Data-driven assessment, not gut feel', NULL),
+    ('Team Diagnostic (up to 10 people)', 'Platform', 7, 'Platform (DEX AI)', 3000, 8000, 'one_time', ARRAY['HR teams', 'Team leads'], true, 'Team-level intelligence', NULL)
+ON CONFLICT DO NOTHING;
 
--- Next Action Type
-ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS next_action_type VARCHAR(30)
-  CHECK (next_action_type IN (
-    'send_initial', 'follow_up', 'content_engage', 'send_article',
-    'meeting', 'proposal', 'reengage_nurture', 'stop'
-  ));
+-- ============================================================
+-- SECTION 2: Bundle Definitions
+-- ============================================================
 
-COMMENT ON COLUMN vista_contacts.next_action_type IS
-  'What Kevin should do next: send_initial, follow_up, content_engage, meeting, proposal, etc.';
-
--- Lead Source
-ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS lead_source VARCHAR(40)
-  CHECK (lead_source IN (
-    'network', 'sales_nav', 'podcast', 'event', 'referral',
-    'content_engagement', 'inbound', 'linkedin', 'email', 'other'
-  ));
-
-COMMENT ON COLUMN vista_contacts.lead_source IS
-  'Where this contact originated: network, Sales Navigator, podcast guest, event, referral, etc.';
-
--- Funnel stage + next action index (for daily digest queries)
-CREATE INDEX IF NOT EXISTS idx_contacts_funnel_stage
-  ON vista_contacts(funnel_stage, next_action_date);
-
-CREATE INDEX IF NOT EXISTS idx_contacts_bd_bucket
-  ON vista_contacts(bd_bucket, funnel_stage);
-
-CREATE INDEX IF NOT EXISTS idx_contacts_warmth
-  ON vista_contacts(warmth_score DESC, funnel_stage);
-
-
--- ============================================================================
--- F-03: OUTREACH TEMPLATES
--- The 4 BD archetypes × touch variants = 8 seed templates
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS vista_outreach_templates (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(100) NOT NULL,
-  bucket VARCHAR(20) NOT NULL
-    CHECK (bucket IN ('sniper', 'trojan_horse', 'farmer', 'weiqi', 'universal')),
-  touch_number SMALLINT NOT NULL CHECK (touch_number BETWEEN 1 AND 4),
-  subject_line TEXT,
-  body_template TEXT NOT NULL,
-  channel VARCHAR(20) NOT NULL
-    CHECK (channel IN ('linkedin', 'email', 'intro', 'any')),
-  send_window VARCHAR(40) DEFAULT 'Tue-Thu 9-10am Shanghai',
-  variables JSONB DEFAULT '{}'::jsonb,
-  description TEXT,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS vista_service_bundles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    bundle_name TEXT NOT NULL,
+    bundle_code TEXT UNIQUE NOT NULL,
+    component_service_names TEXT[] NOT NULL, -- names since IDs may vary
+    individual_total_min_cny NUMERIC,
+    individual_total_max_cny NUMERIC,
+    bundle_price_min_cny NUMERIC NOT NULL,
+    bundle_price_max_cny NUMERIC NOT NULL,
+    discount_pct NUMERIC NOT NULL,
+    description TEXT,
+    positioning TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
-COMMENT ON TABLE vista_outreach_templates IS
-  'Outreach message templates for each BD archetype and touch number. Uses mustache-style variables.';
+INSERT INTO vista_service_bundles (bundle_name, bundle_code, component_service_names, individual_total_min_cny, individual_total_max_cny, bundle_price_min_cny, bundle_price_max_cny, discount_pct, description, positioning)
+VALUES
+    ('Search + Diagnose', 'BUNDLE_SEARCH_DIAG', ARRAY['Retained Executive Search', 'Diagnostic (comprehensive)'], 100000, 220000, 110000, 200000, 0.09, 'Executive search with bundled diagnostic for the placed candidate', 'Full intelligence package: find them AND assess them'),
+    ('Diagnose + Develop', 'BUNDLE_DIAG_DEV', ARRAY['Diagnostic (comprehensive)', 'Executive Coaching (6 sessions)'], 26000, 61000, 21000, 49000, 0.20, 'Diagnostic followed by coaching arc based on results', 'From insight to action: diagnose, then develop'),
+    ('Diagnose + Transform', 'BUNDLE_DIAG_TRANS', ARRAY['Diagnostic (comprehensive)', 'Advisory Project (single product)'], 48000, 105000, 39000, 84000, 0.19, 'Diagnostic followed by advisory implementation', 'Data-backed transformation: know the gap, then close it'),
+    ('Full Program (ASCENT)', 'BUNDLE_ASCENT', ARRAY['Diagnostic (comprehensive)', 'Executive Coaching (6 sessions)', 'Workshop (online, 2-3 hours)', 'Retainer (monthly advisory)'], 51000, 121000, 41000, 97000, 0.20, 'Complete leadership development arc', 'End-to-end: assess, coach, train, advise'),
+    ('PE Portfolio', 'BUNDLE_PE_PORTFOLIO', ARRAY['PE Portfolio Talent Review (annual)', 'Retained Executive Search', 'Retained Executive Search', 'Retainer (monthly advisory)'], 260000, 490000, 228000, 402000, 0.18, 'Annual PE portfolio talent management package', 'Complete talent infrastructure for your portfolio'),
+    ('Council + Workshop', 'BUNDLE_COUNCIL_WS', ARRAY['Council Individual Member', 'Workshop (online, 2-3 hours)'], 14000, 17000, 11500, 14000, 0.18, 'Council membership with workshop access', 'Join the circle + deepen your knowledge')
+ON CONFLICT DO NOTHING;
 
--- Seed 8 templates from the funnel document
+-- ============================================================
+-- SECTION 3: Discount Rules
+-- ============================================================
 
-INSERT INTO vista_outreach_templates (name, bucket, touch_number, subject_line, body_template, channel, send_window, variables, description) VALUES
-
--- Template 1: Sniper Touch 1
-(
-  'Sniper — Personal Intro',
-  'sniper', 1,
-  NULL,
-  'Hi {{first_name}},
-
-{{mutual_connection}} suggested I reach out. I noticed {{company}} is {{observation}}.
-
-We''ve been working with {{similar_situation}} on {{specific_outcome}}.
-
-Would a 20-minute conversation be useful? Happy to share what we''re seeing in the market — no pitch.
-
-Best,
-Kevin',
-  'linkedin', 'Tue-Thu 9-10am Shanghai',
-  '{"first_name": "string", "mutual_connection": "string", "company": "string", "observation": "string", "similar_situation": "string", "specific_outcome": "string"}'::jsonb,
-  'High-touch personal outreach for Top-25 targets. Named referral + specific observation + relevant proof point + low-commitment ask.'
-),
-
--- Template 2: Trojan Horse Touch 1
-(
-  'Trojan Horse — Podcast Invitation',
-  'trojan_horse', 1,
-  NULL,
-  'Hi {{first_name}},
-
-I host "Leaders in Motion" — a podcast on leadership, talent, and organizational transformation. We''ve had {{notable_guest_count}} share their plays on air.
-
-Your work on {{their_topic}} really stood out. I''d love to have you on for a 30-minute conversation — no prep needed, just your insights.
-
-Would you be open to it?
-
-Best,
-Kevin',
-  'linkedin', 'Tue-Thu 9-10am Shanghai',
-  '{"first_name": "string", "notable_guest_count": "string", "their_topic": "string"}'::jsonb,
-  'Zero sales pressure. Genuine flattery + reciprocity. After the episode → business follow-up.'
-),
-
--- Template 3: Farmer Touch 1 (Connection Request)
-(
-  'Farmer — LinkedIn Connect',
-  'farmer', 1,
-  NULL,
-  'Hi {{first_name}}, I write about {{content_topics}} for senior leaders in Asia. Your profile caught my attention — would love to connect.',
-  'linkedin', 'Any weekday',
-  '{"first_name": "string", "content_topics": "string"}'::jsonb,
-  'Volume play. Content-led connection request. After acceptance → follow-up with content share.'
-),
-
--- Template 4: Farmer Touch 2 (Content Follow-up, Day 2-3)
-(
-  'Farmer — Content Follow-up',
-  'farmer', 2,
-  NULL,
-  'Thanks for connecting, {{first_name}}.
-
-I just published a piece on {{article_topic}}: {{article_link}}. Thought it might resonate.
-
-Curious — is {{topic}} something you''re navigating at {{company}}?',
-  'linkedin', 'Any weekday (Day 2-3 after connect)',
-  '{"first_name": "string", "article_topic": "string", "article_link": "string", "topic": "string", "company": "string"}'::jsonb,
-  'Gives value first. Soft question invites dialogue. If no response → content nurture loop.'
-),
-
--- Template 5: Weiqi Touch 1
-(
-  'Weiqi — Ecosystem Collaboration',
-  'weiqi', 1,
-  'Collaboration on {{topic_area}} in Asia',
-  'Hi {{first_name}},
-
-I''m building a network of {{ecosystem_type}} who are thinking about {{topic_area}} in Asia.
-
-We''re hosting a private roundtable on {{roundtable_topic}} in {{month}} and also produce research on {{research_area}}. Would love to explore if there''s a way to collaborate or cross-refer clients.
-
-Open to a quick chat?
-
-Best,
-Kevin',
-  'linkedin', 'Any weekday',
-  '{"first_name": "string", "ecosystem_type": "string", "topic_area": "string", "roundtable_topic": "string", "month": "string", "research_area": "string"}'::jsonb,
-  'Ecosystem collaboration for PE partners, coaches, board advisors, university deans. Multi-angle surround of target accounts.'
-),
-
--- Template 6: Sniper Touch 3 (Day 7, different angle)
-(
-  'Sniper — Article Share (Touch 3)',
-  'sniper', 3,
-  NULL,
-  'Hi {{first_name}},
-
-Thought you''d find this relevant — {{article_or_insight}}.
-
-We''re seeing {{market_insight}} across {{sector}}. Happy to share more if useful.
-
-Best,
-Kevin',
-  'linkedin', 'Any weekday (Day 7)',
-  '{"first_name": "string", "article_or_insight": "string", "market_insight": "string", "sector": "string"}'::jsonb,
-  'Day 7 follow-up with a different angle. Share a relevant article or market insight. Creates value, not pressure.'
-),
-
--- Template 7: Trojan Horse Touch 3 (Day 7, podcast content)
-(
-  'Trojan Horse — Episode Share (Touch 3)',
-  'trojan_horse', 3,
-  NULL,
-  'Hi {{first_name}},
-
-New episode just dropped — {{episode_title}} with {{guest_name}}. {{one_line_insight}}.
-
-Thought of you given your work on {{their_topic}}: {{episode_link}}
-
-Would love to have you on for a future episode if you''re open.
-
-Best,
-Kevin',
-  'linkedin', 'Any weekday (Day 7)',
-  '{"first_name": "string", "episode_title": "string", "guest_name": "string", "one_line_insight": "string", "their_topic": "string", "episode_link": "string"}'::jsonb,
-  'Share a relevant podcast episode. Demonstrates value + credibility. Soft re-invitation to guest.'
-),
-
--- Template 8: Universal Touch 4 (Day 14, final touch)
-(
-  'Universal — Final Touch (Event Invite)',
-  'universal', 4,
-  NULL,
-  'Hi {{first_name}},
-
-I wanted to make sure you saw this — we''re hosting {{event_type}} on {{event_topic}} in {{event_date}}.
-
-{{one_line_why_relevant}}.
-
-Would love to have you join: {{event_link}}
-
-If timing isn''t right, no worries at all. I''ll keep sharing our research and insights — always useful stuff for {{their_role}}.
-
-Best,
-Kevin',
-  'any', 'Any weekday (Day 14)',
-  '{"first_name": "string", "event_type": "string", "event_topic": "string", "event_date": "string", "one_line_why_relevant": "string", "event_link": "string", "their_role": "string"}'::jsonb,
-  'Final touch before nurture. Invite to webinar/roundtable/workshop. If no response → auto-route to nurture.'
+CREATE TABLE IF NOT EXISTS vista_discount_rules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    rule_name TEXT NOT NULL,
+    applicable_tier INT, -- which pricing tier
+    max_discount_pct NUMERIC NOT NULL,
+    condition_type TEXT NOT NULL,
+    condition_params JSONB,
+    frame_as TEXT NOT NULL,
+    never_override BOOLEAN DEFAULT false,
+    priority INT DEFAULT 50,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
+INSERT INTO vista_discount_rules (rule_name, applicable_tier, max_discount_pct, condition_type, condition_params, frame_as, never_override, priority)
+VALUES
+    ('Founding Client Rate (Diagnostics)', 3, 0.50, 'founding_client', '{"first_n_clients": 3}', 'Founding client rate', false, 90),
+    ('Founding Client Rate (Advisory)', 4, 0.20, 'founding_client', '{"first_n_clients": 3}', 'Founding client rate', false, 90),
+    ('Annual Retainer Commitment', 4, 0.20, 'annual_commitment', '{"min_months": 12}', 'Annual partnership rate', false, 70),
+    ('Council Founding Members', 6, 0.20, 'founding_member', '{"max_founding": 20}', 'Founding member rate', false, 90),
+    ('Workshop Early-Bird', 2, 0.15, 'early_bird', '{"days_before": 14}', 'Early-bird pricing', false, 50),
+    ('Multi-Product Bundle', NULL, 0.30, 'bundle', NULL, 'Program rate', false, 60),
+    ('NEVER: Search Fees', 5, 0.00, 'never', NULL, 'N/A', true, 100),
+    ('NEVER: Platform Subscriptions', 7, 0.00, 'never', NULL, 'N/A', true, 100),
+    ('NEVER: Post-Founding Retainers', 4, 0.00, 'never_post_founding', '{"after_n_clients": 3}', 'N/A', true, 100)
+ON CONFLICT DO NOTHING;
 
--- ============================================================================
--- F-02: OUTREACH SEQUENCES
--- Track every outreach touch sent to every contact
--- ============================================================================
+-- ============================================================
+-- SECTION 4: Content Attribution
+-- ============================================================
 
-CREATE TABLE IF NOT EXISTS vista_outreach_sequences (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  contact_id UUID NOT NULL REFERENCES vista_contacts(id) ON DELETE CASCADE,
-  template_id UUID REFERENCES vista_outreach_templates(id) ON DELETE SET NULL,
-  touch_number SMALLINT NOT NULL CHECK (touch_number BETWEEN 1 AND 4),
-  channel VARCHAR(20) NOT NULL
-    CHECK (channel IN ('linkedin', 'email', 'intro', 'any')),
-  sent_at TIMESTAMPTZ,
-  scheduled_at TIMESTAMPTZ NOT NULL,
-  status VARCHAR(20) DEFAULT 'scheduled'
-    CHECK (status IN ('scheduled', 'sent', 'replied', 'no_response', 'bounced', 'cancelled')),
-  response_text TEXT,
-  response_sentiment VARCHAR(20)
-    CHECK (response_sentiment IN ('positive', 'neutral', 'negative', 'not_interested', 'meeting_booked')),
-  rendered_body TEXT,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-
-  -- Each contact can only have one sequence per touch number
-  UNIQUE(contact_id, touch_number)
+CREATE TABLE IF NOT EXISTS vista_content_attribution (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content_type TEXT NOT NULL CHECK (content_type IN ('linkedin', 'newsletter', 'podcast', 'webinar', 'workshop')),
+    content_title TEXT NOT NULL,
+    content_date DATE,
+    content_url TEXT,
+    contacts_reached INT DEFAULT 0,
+    contacts_engaged INT DEFAULT 0,
+    contacts_converted INT DEFAULT 0,
+    revenue_attributed_cny NUMERIC DEFAULT 0,
+    attribution_model TEXT DEFAULT 'direct',
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
-COMMENT ON TABLE vista_outreach_sequences IS
-  'Tracks every outreach touch. 4-touch cadence: Day 0 → 3 → 7 → 14. After touch 4 + no reply → nurture.';
-
-CREATE INDEX IF NOT EXISTS idx_outreach_contact_touch
-  ON vista_outreach_sequences(contact_id, touch_number);
-
-CREATE INDEX IF NOT EXISTS idx_outreach_scheduled
-  ON vista_outreach_sequences(scheduled_at, status)
-  WHERE status = 'scheduled';
-
-CREATE INDEX IF NOT EXISTS idx_outreach_status
-  ON vista_outreach_sequences(status, scheduled_at DESC);
-
--- Trigger: auto-update contact's outreach_count, last_outreach_date, next_action when sequence status changes
-CREATE OR REPLACE FUNCTION fn_sync_outreach_to_contact()
-RETURNS TRIGGER AS $$
-DECLARE
-  v_max_touch SMALLINT;
-  v_max_date TIMESTAMPTZ;
-BEGIN
-  -- Only fire on UPDATE (status change)
-  IF TG_OP = 'UPDATE' AND OLD.status IS DISTINCT FROM NEW.status THEN
-
-    -- Update outreach_count to max touch_number with status='sent' or 'replied'
-    SELECT MAX(touch_number), MAX(sent_at)
-    INTO v_max_touch, v_max_date
-    FROM vista_outreach_sequences
-    WHERE contact_id = NEW.contact_id
-      AND status IN ('sent', 'replied');
-
-    UPDATE vista_contacts SET
-      outreach_count = COALESCE(v_max_touch, 0),
-      last_outreach_date = v_max_date::date,
-      updated_at = NOW()
-    WHERE id = NEW.contact_id;
-
-    -- If replied with positive sentiment → advance to conversation
-    IF NEW.status = 'replied' AND NEW.response_sentiment IN ('positive', 'meeting_booked') THEN
-      UPDATE vista_contacts SET
-        funnel_stage = 'conversation',
-        next_action_type = 'meeting',
-        next_action_date = CURRENT_DATE + INTERVAL '2 days',
-        updated_at = NOW()
-      WHERE id = NEW.contact_id;
-    END IF;
-
-    -- If this was touch 4 and no response → auto-route to nurture
-    IF NEW.touch_number = 4 AND NEW.status = 'no_response' THEN
-      UPDATE vista_contacts SET
-        funnel_stage = 'nurture',
-        next_action_type = 'reengage_nurture',
-        next_action_date = CURRENT_DATE + INTERVAL '7 days',
-        updated_at = NOW()
-      WHERE id = NEW.contact_id;
-
-      -- Create nurture route if not exists
-      INSERT INTO vista_nurture_routes (contact_id, route_type, entered_at, entered_reason, reengage_date)
-      VALUES (
-        NEW.contact_id,
-        'linkedin',
-        NOW(),
-        'max_touches',
-        CURRENT_DATE + INTERVAL '7 days'
-      )
-      ON CONFLICT DO NOTHING;
-    END IF;
-
-    -- Schedule next touch if applicable
-    IF NEW.status = 'sent' AND NEW.touch_number < 4 THEN
-      DECLARE
-        v_next_touch SMALLINT := NEW.touch_number + 1;
-        v_next_date TIMESTAMPTZ;
-      BEGIN
-        -- Cadence: Touch 2 = Day 3, Touch 3 = Day 7, Touch 4 = Day 14
-        v_next_date = CASE v_next_touch
-          WHEN 2 THEN NEW.sent_at + INTERVAL '3 days'
-          WHEN 3 THEN NEW.sent_at + INTERVAL '4 days'  -- Day 7 from start
-          WHEN 4 THEN NEW.sent_at + INTERVAL '7 days'  -- Day 14 from start
-        END;
-
-        -- Auto-create next touch if template exists
-        INSERT INTO vista_outreach_sequences (contact_id, template_id, touch_number, channel, scheduled_at, status)
-        SELECT
-          NEW.contact_id,
-          t.id,
-          v_next_touch,
-          t.channel,
-          v_next_date,
-          'scheduled'
-        FROM vista_outreach_templates t
-        WHERE t.bucket IN (
-          SELECT bucket FROM vista_outreach_templates WHERE id = NEW.template_id
-        )
-        AND t.touch_number = v_next_touch
-        AND t.is_active = true
-        LIMIT 1;
-
-      END;
-    END IF;
-
-  END IF;
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_sync_outreach_to_contact
-  AFTER UPDATE ON vista_outreach_sequences
-  FOR EACH ROW EXECUTE FUNCTION fn_sync_outreach_to_contact();
-
-
--- ============================================================================
--- F-05: NURTURE ROUTES
--- "No Dead End" — every non-converter gets routed to nurture
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS vista_nurture_routes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  contact_id UUID NOT NULL REFERENCES vista_contacts(id) ON DELETE CASCADE,
-  route_type VARCHAR(20) NOT NULL
-    CHECK (route_type IN ('newsletter', 'podcast', 'webinar', 'linkedin', 'workshop')),
-  entered_at TIMESTAMPTZ DEFAULT NOW(),
-  entered_reason VARCHAR(40) NOT NULL
-    CHECK (entered_reason IN (
-      'max_touches', 'not_interested', 'no_budget',
-      'timing_off', 'low_score', 'manual'
-    )),
-  reengage_date DATE,
-  reengage_count SMALLINT DEFAULT 0,
-  last_engagement_date DATE,
-  status VARCHAR(20) DEFAULT 'active'
-    CHECK (status IN ('active', 'reengaged', 'converted', 'unsubscribed')),
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-
-  -- One route per contact per type
-  UNIQUE(contact_id, route_type)
+CREATE TABLE IF NOT EXISTS vista_content_contact_interactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content_id UUID REFERENCES vista_content_attribution(id),
+    contact_id UUID REFERENCES vista_contacts(id),
+    interaction_type TEXT NOT NULL CHECK (interaction_type IN ('viewed', 'attended', 'responded', 'shared', 'registered')),
+    interaction_date TIMESTAMPTZ DEFAULT now(),
+    resulted_in_conversation BOOLEAN DEFAULT false,
+    conversation_id UUID
 );
 
-COMMENT ON TABLE vista_nurture_routes IS
-  'No Dead End: every non-converter gets routed to ≥1 nurture channel. Timing: Week 1 (personal note), Week 2-4 (passive), Month 2 (webinar), Month 3 (workshop), Ongoing (podcast).';
+-- Index for content attribution lookups
+CREATE INDEX IF NOT EXISTS idx_content_interactions_contact ON vista_content_contact_interactions(contact_id);
+CREATE INDEX IF NOT EXISTS idx_content_interactions_content ON vista_content_contact_interactions(content_id);
 
-CREATE INDEX IF NOT EXISTS idx_nurture_contact
-  ON vista_nurture_routes(contact_id, status);
+-- ============================================================
+-- SECTION 5: Workshop Management
+-- ============================================================
 
-CREATE INDEX IF NOT EXISTS idx_nurture_reengage
-  ON vista_nurture_routes(reengage_date, status)
-  WHERE status = 'active';
+CREATE TABLE IF NOT EXISTS vista_workshops (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    workshop_type TEXT NOT NULL CHECK (workshop_type IN ('online_2_3hr', 'half_day_intensive', 'webinar_45min')),
+    scheduled_date TIMESTAMPTZ,
+    duration_minutes INT,
+    price_cny NUMERIC,
+    max_capacity INT,
+    registered_count INT DEFAULT 0,
+    attended_count INT DEFAULT 0,
+    status TEXT DEFAULT 'planned' CHECK (status IN ('planned', 'open_registration', 'full', 'delivered', 'cancelled')),
+    recording_url TEXT,
+    content_clips TEXT[],
+    follow_up_sequence_id UUID,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
 
-CREATE INDEX IF NOT EXISTS idx_nurture_type_status
-  ON vista_nurture_routes(route_type, status);
+CREATE TABLE IF NOT EXISTS vista_workshop_attendees (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workshop_id UUID REFERENCES vista_workshops(id),
+    contact_id UUID REFERENCES vista_contacts(id),
+    registration_date TIMESTAMPTZ DEFAULT now(),
+    attended BOOLEAN DEFAULT false,
+    paid_amount_cny NUMERIC DEFAULT 0,
+    feedback_score INT CHECK (feedback_score BETWEEN 1 AND 5),
+    follow_up_status TEXT DEFAULT 'pending' CHECK (follow_up_status IN ('pending', 'contacted', 'meeting_booked', 'proposal_sent', 'converted')),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(workshop_id, contact_id)
+);
 
+CREATE INDEX IF NOT EXISTS idx_workshop_attendees_contact ON vista_workshop_attendees(contact_id);
 
--- ============================================================================
--- F-06: OPPORTUNITY SCORING
--- 6-signal scoring system for conversation → opportunity qualification
--- ============================================================================
+-- ============================================================
+-- SECTION 6: Council Membership
+-- ============================================================
 
--- Add scoring columns to vista_opportunities
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS score_named_problem SMALLINT DEFAULT 0
-  CHECK (score_named_problem BETWEEN 0 AND 3);
-COMMENT ON COLUMN vista_opportunities.score_named_problem IS '+3 if they named a specific, urgent problem';
+CREATE TABLE IF NOT EXISTS vista_council_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    contact_id UUID REFERENCES vista_contacts(id),
+    membership_tier TEXT NOT NULL CHECK (membership_tier IN ('individual', 'corporate', 'pe_partner')),
+    annual_fee_cny NUMERIC NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'expired', 'cancelled', 'renewed')),
+    auto_renew BOOLEAN DEFAULT false,
+    seats_included INT DEFAULT 1,
+    seats_used INT DEFAULT 0,
+    roundtables_attended INT DEFAULT 0,
+    workshop_seats_used INT DEFAULT 0,
+    referral_count INT DEFAULT 0,
+    is_founding_member BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(contact_id, membership_tier)
+);
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS score_budget_authority SMALLINT DEFAULT 0
-  CHECK (score_budget_authority BETWEEN 0 AND 3);
-COMMENT ON COLUMN vista_opportunities.score_budget_authority IS '+3 if they have budget authority or can get it';
+CREATE INDEX IF NOT EXISTS idx_council_members_contact ON vista_council_members(contact_id);
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS score_pricing_ask SMALLINT DEFAULT 0
-  CHECK (score_pricing_ask BETWEEN 0 AND 2);
-COMMENT ON COLUMN vista_opportunities.score_pricing_ask IS '+2 if they asked about pricing or engagement model';
+-- ============================================================
+-- SECTION 7: DEX AI Subscriptions
+-- ============================================================
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS score_product_fit SMALLINT DEFAULT 0
-  CHECK (score_product_fit BETWEEN 0 AND 2);
-COMMENT ON COLUMN vista_opportunities.score_product_fit IS '+2 if problem maps to PRISM/BRIDGE/MOSAIC/SPARK/FORGE';
+CREATE TABLE IF NOT EXISTS vista_dex_subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    contact_id UUID REFERENCES vista_contacts(id),
+    company_name TEXT,
+    subscription_tier TEXT NOT NULL CHECK (subscription_tier IN ('starter', 'pro', 'enterprise')),
+    monthly_fee_cny NUMERIC,
+    total_credits INT DEFAULT 0,
+    used_credits INT DEFAULT 0,
+    remaining_credits INT,
+    subscription_start DATE,
+    subscription_end DATE,
+    status TEXT DEFAULT 'active' CHECK (status IN ('trial', 'active', 'paused', 'cancelled', 'upgraded')),
+    auto_renew BOOLEAN DEFAULT true,
+    last_credit_usage_date DATE,
+    upgrade_eligible BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS score_timeline SMALLINT DEFAULT 0
-  CHECK (score_timeline BETWEEN 0 AND 2);
-COMMENT ON COLUMN vista_opportunities.score_timeline IS '+2 if timeline < 6 months';
+CREATE INDEX IF NOT EXISTS idx_dex_subscriptions_contact ON vista_dex_subscriptions(contact_id);
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS score_competitor_ref SMALLINT DEFAULT 0
-  CHECK (score_competitor_ref BETWEEN 0 AND 1);
-COMMENT ON COLUMN vista_opportunities.score_competitor_ref IS '+1 if they referenced a competitor or alternative';
+-- ============================================================
+-- SECTION 8: Cross-Sell Rules
+-- ============================================================
 
--- Computed fields
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS total_score SMALLINT DEFAULT 0;
-COMMENT ON COLUMN vista_opportunities.total_score IS 'Sum of all scoring signals. Max 13.';
+CREATE TABLE IF NOT EXISTS vista_cross_sell_rules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_service_name TEXT NOT NULL,
+    target_service_name TEXT NOT NULL,
+    priority INT DEFAULT 50,
+    trigger_condition TEXT DEFAULT 'on_completion',
+    trigger_delay_days INT DEFAULT 0,
+    pitch_script TEXT,
+    success_rate NUMERIC DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS score_tier VARCHAR(20);
-COMMENT ON COLUMN vista_opportunities.score_tier IS
-  'Auto-computed: opportunity (7+) / warm_nurture (4-6) / early (1-3)';
+INSERT INTO vista_cross_sell_rules (source_service_name, target_service_name, priority, trigger_condition, trigger_delay_days, pitch_script)
+VALUES
+    ('Retained Executive Search', 'Diagnostic (comprehensive)', 90, 'on_completion', 7, 'We found your VP. Here''s their leadership profile. Want to see how they''ll fit with your existing team?'),
+    ('Diagnostic (comprehensive)', 'Executive Coaching (6 sessions)', 85, 'on_completion', 3, 'Your assessment shows clear development areas. Here''s a 6-month coaching arc to build them.'),
+    ('Diagnostic (comprehensive)', 'Workshop (online, 2-3 hours)', 80, 'on_completion', 3, 'Your gap is clear. Bring your leadership team to our alignment workshop.'),
+    ('Diagnostic (comprehensive)', 'Advisory Project (single product)', 75, 'on_completion', 5, 'Your readiness score indicates significant opportunity. Here''s a transformation roadmap.'),
+    ('Workshop (online, 2-3 hours)', 'Diagnostic (comprehensive)', 85, 'on_completion', 14, 'You saw the framework in the workshop. Here''s what it looks like for YOUR team specifically.'),
+    ('Workshop (half-day intensive)', 'Diagnostic (comprehensive)', 85, 'on_completion', 14, 'You saw the framework in the workshop. Here''s what it looks like for YOUR team specifically.'),
+    ('Executive Coaching (6 sessions)', 'Retainer (monthly advisory)', 80, 'on_completion', 7, 'Your coaching is going well. Want ongoing advisory access so you don''t lose momentum?'),
+    ('Executive Coaching (12 sessions)', 'Retainer (monthly advisory)', 80, 'on_completion', 7, 'Your coaching is going well. Want ongoing advisory access so you don''t lose momentum?'),
+    ('Mapping Project (full market scan)', 'Retained Executive Search', 90, 'on_completion', 3, 'We mapped the market. Here are the top 5 candidates. Want us to approach them?'),
+    ('Council Individual Member', 'Workshop (online, 2-3 hours)', 70, 'manual', 0, 'As a Council member, you get priority seating + 20% off workshops.'),
+    ('DEX AI Starter Credits', 'DEX AI Pro Subscription', 85, 'on_usage', 0, 'You''ve used 8 of 10 credits. Here''s what unlimited looks like.'),
+    ('Retainer (monthly advisory)', 'Retained Executive Search', 75, 'manual', 0, 'Your retainer includes quarterly talent reviews. Found any hard-to-fill roles?')
+ON CONFLICT DO NOTHING;
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS product_recommendation VARCHAR(30);
-COMMENT ON COLUMN vista_opportunities.product_recommendation IS
-  'Which LYC product fits: PRISM / BRIDGE / MOSAIC / SPARK / FORGE / SHIFT_COMPOSITE / ADVISORY';
+-- ============================================================
+-- SECTION 9: Tier Progression Tracking
+-- ============================================================
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS first_step_price DECIMAL(12,2);
-COMMENT ON COLUMN vista_opportunities.first_step_price IS
-  'Low-risk diagnostic entry price (8K-25K RMB). The diagnostic IS the sale.';
+CREATE TABLE IF NOT EXISTS vista_tier_progressions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    contact_id UUID REFERENCES vista_contacts(id),
+    from_tier INT,
+    to_tier INT,
+    triggered_by_service_name TEXT,
+    progression_date DATE NOT NULL,
+    days_in_previous_tier INT,
+    consultant_name TEXT,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS full_engagement_price DECIMAL(12,2);
-COMMENT ON COLUMN vista_opportunities.full_engagement_price IS
-  'Full service engagement price (30K-120K RMB)';
+CREATE INDEX IF NOT EXISTS idx_tier_progressions_contact ON vista_tier_progressions(contact_id);
 
-ALTER TABLE vista_opportunities ADD COLUMN IF NOT EXISTS conversation_notes TEXT;
-COMMENT ON COLUMN vista_opportunities.conversation_notes IS
-  'Notes from the 3-question diagnostic: biggest challenge, what they tried, magic wand fix';
+-- ============================================================
+-- SECTION 10: Contact Service Engagements
+-- ============================================================
 
--- Auto-compute trigger for total_score and score_tier
-CREATE OR REPLACE FUNCTION fn_compute_opportunity_score()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.total_score = COALESCE(NEW.score_named_problem, 0)
-    + COALESCE(NEW.score_budget_authority, 0)
-    + COALESCE(NEW.score_pricing_ask, 0)
-    + COALESCE(NEW.score_product_fit, 0)
-    + COALESCE(NEW.score_timeline, 0)
-    + COALESCE(NEW.score_competitor_ref, 0);
+CREATE TABLE IF NOT EXISTS vista_contact_service_engagements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    contact_id UUID REFERENCES vista_contacts(id),
+    service_id UUID REFERENCES vista_service_catalog(id),
+    engagement_date DATE,
+    tier_at_engagement INT,
+    price_paid_cny NUMERIC,
+    was_discounted BOOLEAN DEFAULT false,
+    discount_pct NUMERIC DEFAULT 0,
+    discount_rule_applied TEXT,
+    status TEXT DEFAULT 'completed' CHECK (status IN ('scheduled', 'in_progress', 'completed', 'cancelled')),
+    satisfaction_score INT CHECK (satisfaction_score BETWEEN 1 AND 5),
+    testimonial_obtained BOOLEAN DEFAULT false,
+    converted_to_service_name TEXT,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
 
-  NEW.score_tier = CASE
-    WHEN NEW.total_score >= 7 THEN 'opportunity'
-    WHEN NEW.total_score >= 4 THEN 'warm_nurture'
-    WHEN NEW.total_score >= 1 THEN 'early'
-    ELSE NULL
-  END;
+CREATE INDEX IF NOT EXISTS idx_engagements_contact ON vista_contact_service_engagements(contact_id);
+CREATE INDEX IF NOT EXISTS idx_engagements_service ON vista_contact_service_engagements(service_id);
 
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- ============================================================
+-- SECTION 11: Payment Schedules
+-- ============================================================
 
-CREATE TRIGGER trg_opportunity_score
-  BEFORE INSERT OR UPDATE OF
-    score_named_problem, score_budget_authority, score_pricing_ask,
-    score_product_fit, score_timeline, score_competitor_ref
-  ON vista_opportunities
-  FOR EACH ROW EXECUTE FUNCTION fn_compute_opportunity_score();
+CREATE TABLE IF NOT EXISTS vista_payment_schedules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    opportunity_id UUID REFERENCES vista_opportunities(id),
+    total_value_cny NUMERIC NOT NULL,
+    currency TEXT DEFAULT 'CNY',
+    payment_model TEXT NOT NULL CHECK (payment_model IN ('milestone', 'monthly', 'quarterly', 'annual', 'on_completion')),
+    schedule JSONB NOT NULL,
+    paid_amount NUMERIC DEFAULT 0,
+    outstanding_amount NUMERIC,
+    next_payment_date DATE,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
 
+CREATE INDEX IF NOT EXISTS idx_payment_schedules_opportunity ON vista_payment_schedules(opportunity_id);
 
--- ============================================================================
--- HELPER FUNCTIONS
--- ============================================================================
+-- ============================================================
+-- SECTION 12: Proposals
+-- ============================================================
 
--- Funnel summary for dashboard
-CREATE OR REPLACE FUNCTION fn_funnel_summary()
-RETURNS TABLE (
-  stage VARCHAR(30),
-  count BIGINT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT funnel_stage, COUNT(*)::BIGINT
-  FROM vista_contacts
-  WHERE funnel_stage IS NOT NULL
-  GROUP BY funnel_stage
-  ORDER BY
-    CASE funnel_stage
-      WHEN 'outreach' THEN 1
-      WHEN 'conversation' THEN 2
-      WHEN 'opportunity' THEN 3
-      WHEN 'paid' THEN 4
-      WHEN 'nurture' THEN 5
-      WHEN 'closed_lost' THEN 6
-    END;
-END;
-$$ LANGUAGE plpgsql STABLE;
+CREATE TABLE IF NOT EXISTS vista_proposals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    contact_id UUID REFERENCES vista_contacts(id),
+    proposal_number TEXT UNIQUE,
+    service_ids UUID[],
+    bundle_id UUID REFERENCES vista_service_bundles(id),
+    total_value_cny NUMERIC,
+    discount_applied_pct NUMERIC DEFAULT 0,
+    discount_rule_used TEXT,
+    payment_schedule JSONB,
+    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'accepted', 'in_progress', 'completed', 'declined')),
+    valid_until DATE,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
 
-COMMENT ON FUNCTION fn_funnel_summary IS
-  'Returns count of contacts at each funnel stage. Used by dashboard widget.';
+CREATE INDEX IF NOT EXISTS idx_proposals_contact ON vista_proposals(contact_id);
 
--- Today's action items
-CREATE OR REPLACE FUNCTION fn_today_actions()
-RETURNS TABLE (
-  contact_id UUID,
-  contact_name TEXT,
-  funnel_stage VARCHAR(30),
-  next_action_type VARCHAR(30),
-  next_action_date DATE,
-  days_overdue INT,
-  warmth_score SMALLINT,
-  bd_bucket VARCHAR(20)
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    c.id,
-    COALESCE(c.full_name, c.company, 'Unknown')::TEXT,
-    c.funnel_stage,
-    c.next_action_type,
-    c.next_action_date,
-    CASE
-      WHEN c.next_action_date < CURRENT_DATE
-      THEN (CURRENT_DATE - c.next_action_date)::INT
-      ELSE 0
-    END,
-    c.warmth_score,
-    c.bd_bucket
-  FROM vista_contacts c
-  WHERE c.next_action_date <= CURRENT_DATE
-    AND c.funnel_stage NOT IN ('paid', 'closed_lost')
-    AND c.next_action_type IS NOT NULL
-  ORDER BY
-    days_overdue DESC,
-    c.warmth_score DESC NULLS LAST,
-    c.next_action_date ASC
-  LIMIT 20;
-END;
-$$ LANGUAGE plpgsql STABLE;
+-- ============================================================
+-- SECTION 13: Contact Revenue Scoring Columns
+-- ============================================================
 
-COMMENT ON FUNCTION fn_today_actions IS
-  'Returns contacts needing action today, sorted by overdue days + warmth. Dashboard widget.';
+ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS revenue_potential_score INT DEFAULT 0;
+ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS current_tier INT DEFAULT 0;
+ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS estimated_ltv_cny NUMERIC DEFAULT 0;
+ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS recommended_next_service_name TEXT;
+ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS bundle_eligible BOOLEAN DEFAULT false;
 
--- Overdue outreaches
-CREATE OR REPLACE FUNCTION fn_overdue_outreaches()
-RETURNS TABLE (
-  sequence_id UUID,
-  contact_id UUID,
-  contact_name TEXT,
-  touch_number SMALLINT,
-  channel VARCHAR(20),
-  scheduled_at TIMESTAMPTZ,
-  days_overdue INT,
-  template_name VARCHAR(100)
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    s.id,
-    s.contact_id,
-    COALESCE(c.full_name, c.company, 'Unknown')::TEXT,
-    s.touch_number,
-    s.channel,
-    s.scheduled_at,
-    (CURRENT_DATE - s.scheduled_at::date)::INT,
-    t.name
-  FROM vista_outreach_sequences s
-  JOIN vista_contacts c ON c.id = s.contact_id
-  LEFT JOIN vista_outreach_templates t ON t.id = s.template_id
-  WHERE s.status = 'scheduled'
-    AND s.scheduled_at < NOW()
-  ORDER BY s.scheduled_at ASC;
-END;
-$$ LANGUAGE plpgsql STABLE;
+-- ============================================================
+-- SECTION 14: Funnel Stage Update
+-- ============================================================
 
--- Nurture re-engagement due
-CREATE OR REPLACE FUNCTION fn_nurture_due_reengage()
-RETURNS TABLE (
-  route_id UUID,
-  contact_id UUID,
-  contact_name TEXT,
-  route_type VARCHAR(20),
-  reengage_date DATE,
-  days_overdue INT,
-  reengage_count SMALLINT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    n.id,
-    n.contact_id,
-    COALESCE(c.full_name, c.company, 'Unknown')::TEXT,
-    n.route_type,
-    n.reengage_date,
-    CASE
-      WHEN n.reengage_date < CURRENT_DATE
-      THEN (CURRENT_DATE - n.reengage_date)::INT
-      ELSE 0
-    END,
-    n.reengage_count
-  FROM vista_nurture_routes n
-  JOIN vista_contacts c ON c.id = n.contact_id
-  WHERE n.status = 'active'
-    AND n.reengage_date <= CURRENT_DATE
-  ORDER BY n.reengage_date ASC;
-END;
-$$ LANGUAGE plpgsql STABLE;
+-- Add tier-based funnel stages to outreach sequences
+ALTER TABLE vista_outreach_sequences ADD COLUMN IF NOT EXISTS tier_model BOOLEAN DEFAULT false;
+ALTER TABLE vista_outreach_sequences ADD COLUMN IF NOT EXISTS applicable_tiers INT[];
 
--- Weekly stats for rhythm dashboard
-CREATE OR REPLACE FUNCTION fn_weekly_outreach_stats(p_week_start DATE DEFAULT CURRENT_DATE - INTERVAL '1 day' * (EXTRACT(DOW FROM CURRENT_DATE)::INT))
-RETURNS TABLE (
-  week_start DATE,
-  outreach_sent BIGINT,
-  outreach_due BIGINT,
-  conversations_started BIGINT,
-  content_engagements BIGINT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    p_week_start,
-    (SELECT COUNT(*) FROM vista_outreach_sequences
-     WHERE sent_at >= p_week_start AND sent_at < p_week_start + INTERVAL '7 days'
-     AND status IN ('sent', 'replied'))::BIGINT,
+-- Add current funnel stage to contacts
+ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS funnel_stage TEXT DEFAULT 'awareness';
+-- awareness, engagement, validation, investment, transformation, membership, advocacy
 
-    (SELECT COUNT(*) FROM vista_outreach_sequences
-     WHERE scheduled_at >= p_week_start AND scheduled_at < p_week_start + INTERVAL '7 days')::BIGINT,
-
-    (SELECT COUNT(*) FROM vista_contacts
-     WHERE funnel_stage = 'conversation'
-     AND updated_at >= p_week_start AND updated_at < p_week_start + INTERVAL '7 days')::BIGINT,
-
-    (SELECT COUNT(*) FROM vista_nurture_routes
-     WHERE last_engagement_date >= p_week_start
-     AND last_engagement_date < p_week_start + INTERVAL '7 days')::BIGINT;
-END;
-$$ LANGUAGE plpgsql STABLE;
-
-
--- ============================================================================
+-- ============================================================
 -- VERIFICATION
--- ============================================================================
+-- ============================================================
 
 DO $$
 DECLARE
-  v_count INT;
+    catalog_count INT;
+    bundle_count INT;
+    rule_count INT;
+    crosssell_count INT;
 BEGIN
-  -- Verify vista_contacts columns
-  SELECT COUNT(*) INTO v_count FROM information_schema.columns
-  WHERE table_name = 'vista_contacts'
-    AND column_name IN ('bd_bucket', 'warmth_score', 'funnel_stage', 'outreach_count',
-                        'last_outreach_date', 'next_action_date', 'next_action_type', 'lead_source');
-  RAISE NOTICE 'F-01 Contact extensions: % / 8 columns added', v_count;
-
-  -- Verify templates seeded
-  SELECT COUNT(*) INTO v_count FROM vista_outreach_templates;
-  RAISE NOTICE 'F-03 Outreach templates: % templates seeded', v_count;
-
-  -- Verify sequences table
-  SELECT COUNT(*) INTO v_count FROM information_schema.columns
-  WHERE table_name = 'vista_outreach_sequences';
-  RAISE NOTICE 'F-02 Outreach sequences table: % columns', v_count;
-
-  -- Verify nurture routes
-  SELECT COUNT(*) INTO v_count FROM information_schema.columns
-  WHERE table_name = 'vista_nurture_routes';
-  RAISE NOTICE 'F-05 Nurture routes table: % columns', v_count;
-
-  -- Verify opportunity scoring
-  SELECT COUNT(*) INTO v_count FROM information_schema.columns
-  WHERE table_name = 'vista_opportunities'
-    AND column_name IN ('score_named_problem', 'score_budget_authority', 'score_pricing_ask',
-                        'score_product_fit', 'score_timeline', 'score_competitor_ref',
-                        'total_score', 'score_tier', 'product_recommendation',
-                        'first_step_price', 'full_engagement_price', 'conversation_notes');
-  RAISE NOTICE 'F-06 Opportunity scoring: % / 12 columns added', v_count;
-
-  RAISE NOTICE '✅ Wave 1.5 Funnel Core migration complete';
+    SELECT COUNT(*) INTO catalog_count FROM vista_service_catalog;
+    SELECT COUNT(*) INTO bundle_count FROM vista_service_bundles;
+    SELECT COUNT(*) INTO rule_count FROM vista_discount_rules;
+    SELECT COUNT(*) INTO crosssell_count FROM vista_cross_sell_rules;
+    
+    RAISE NOTICE '=== Wave 1.6 Migration Complete ===';
+    RAISE NOTICE 'Service catalog entries: %', catalog_count;
+    RAISE NOTICE 'Bundle definitions: %', bundle_count;
+    RAISE NOTICE 'Discount rules: %', rule_count;
+    RAISE NOTICE 'Cross-sell rules: %', crosssell_count;
 END $$;
 
-COMMIT;
+
