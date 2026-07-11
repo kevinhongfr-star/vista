@@ -13,13 +13,13 @@ export async function GET() {
       return writeResultsToGitHub(results, false);
     }
 
-    results.push(`Connecting to database...`);
+    results.push('Connecting to database...');
     const client = new Client({ connectionString: databaseUrl });
     await client.connect();
     results.push('Connected successfully');
 
-    // Fetch the migration SQL from GitHub
-    const sqlUrl = 'https://raw.githubusercontent.com/kevinhongfr-star/vista/main/VISTA/schema_migration_wave1.5_funnel_core.sql';
+    // Fetch the Wave 1.6 migration SQL from GitHub
+    const sqlUrl = 'https://raw.githubusercontent.com/kevinhongfr-star/vista/main/VISTA/run_this_wave1.6_migration.sql';
     results.push(`Fetching SQL from: ${sqlUrl}`);
     
     const sqlResponse = await fetch(sqlUrl);
@@ -63,59 +63,89 @@ export async function GET() {
 
     results.push(`\nExecuted: ${executed}, Errors: ${errors}`);
 
-    // Verify tables created
-    const verifyQuery = `
+    // ============================================================
+    // VERIFICATION: Wave 1.6 Tables
+    // ============================================================
+    const newTables = [
+      'vista_service_bundles',
+      'vista_discount_rules',
+      'vista_cross_sell_rules',
+      'vista_content_attribution',
+      'vista_content_contact_interactions',
+      'vista_workshops',
+      'vista_workshop_attendees',
+      'vista_council_members',
+      'vista_dex_subscriptions',
+      'vista_tier_progressions',
+      'vista_contact_service_engagements',
+      'vista_payment_schedules',
+      'vista_proposals'
+    ];
+
+    const tableCheck = await client.query(`
       SELECT table_name FROM information_schema.tables 
       WHERE table_schema = 'public' 
-      AND table_name IN ('vista_outreach_templates', 'vista_outreach_sequences', 'vista_nurture_routes')
+      AND table_name = ANY($1)
       ORDER BY table_name
-    `;
-    const verifyResult = await client.query(verifyQuery);
-    results.push(`\nNew tables created: ${verifyResult.rows.map((r: any) => r.table_name).join(', ') || 'NONE'}`);
+    `, [newTables]);
+    results.push(`\n📊 New tables created: ${tableCheck.rows.length}/${newTables.length}`);
+    results.push(`   ${tableCheck.rows.map((r: any) => r.table_name).join(', ')}`);
+    
+    const missing = newTables.filter(t => !tableCheck.rows.some((r: any) => r.table_name === t));
+    if (missing.length > 0) {
+      results.push(`   ❌ Missing: ${missing.join(', ')}`);
+    }
 
-    // Verify contact columns
-    const colQuery = `
+    // Verify service catalog tier columns
+    const colCheck = await client.query(`
+      SELECT column_name FROM information_schema.columns 
+      WHERE table_name = 'vista_service_catalog' 
+      AND column_name IN ('tier', 'tier_name', 'price_min_cny', 'price_max_cny', 'price_model', 
+                          'engagement_duration', 'target_buyer', 'is_discountable', 'discount_rules',
+                          'tier_positioning', 'competitor_anchor')
+      ORDER BY column_name
+    `);
+    results.push(`\n📋 Service catalog tier columns: ${colCheck.rows.length}/11`);
+
+    // Count seeded services
+    const svcCount = await client.query(`SELECT COUNT(*) as cnt FROM vista_service_catalog`);
+    results.push(`📦 Total services in catalog: ${svcCount.rows[0].cnt}`);
+
+    // Count by tier
+    const tierCount = await client.query(`
+      SELECT tier, tier_name, COUNT(*) as cnt 
+      FROM vista_service_catalog 
+      WHERE tier IS NOT NULL 
+      GROUP BY tier, tier_name 
+      ORDER BY tier
+    `);
+    results.push(`\n📊 Services by tier:`);
+    tierCount.rows.forEach((r: any) => {
+      results.push(`   Tier ${r.tier} (${r.tier_name}): ${r.cnt}`);
+    });
+
+    // Count bundles
+    const bundleCount = await client.query(`SELECT COUNT(*) as cnt FROM vista_service_bundles`);
+    results.push(`\n🎁 Bundles seeded: ${bundleCount.rows[0].cnt}`);
+
+    // Count discount rules
+    const discCount = await client.query(`SELECT COUNT(*) as cnt FROM vista_discount_rules`);
+    results.push(`💰 Discount rules seeded: ${discCount.rows[0].cnt}`);
+
+    // Count cross-sell rules
+    const csCount = await client.query(`SELECT COUNT(*) as cnt FROM vista_cross_sell_rules`);
+    results.push(`🔀 Cross-sell rules seeded: ${csCount.rows[0].cnt}`);
+
+    // Verify contact columns added
+    const contactColCheck = await client.query(`
       SELECT column_name FROM information_schema.columns 
       WHERE table_name = 'vista_contacts' 
-      AND column_name IN ('bd_bucket', 'warmth_score', 'funnel_stage', 'outreach_count', 
-                          'last_outreach_date', 'next_action_date', 'next_action_type', 'lead_source')
-      ORDER BY column_name
-    `;
-    const colResult = await client.query(colQuery);
-    results.push(`Contact columns added: ${colResult.rows.length}/8 — ${colResult.rows.map((r: any) => r.column_name).join(', ') || 'NONE'}`);
+      AND column_name IN ('revenue_tier', 'lifetime_value_cny', 'tier_progression_score')
+    `);
+    results.push(`\n👤 Contact revenue columns: ${contactColCheck.rows.length}/3`);
 
-    // Verify opportunity scoring columns
-    const scoreQuery = `
-      SELECT column_name FROM information_schema.columns 
-      WHERE table_name = 'vista_opportunities' 
-      AND column_name IN ('score_named_problem', 'score_budget_authority', 'score_pricing_ask',
-                          'score_product_fit', 'score_timeline', 'score_competitor_ref',
-                          'total_score', 'score_tier', 'product_recommendation',
-                          'first_step_price', 'full_engagement_price', 'conversation_notes')
-      ORDER BY column_name
-    `;
-    const scoreResult = await client.query(scoreQuery);
-    results.push(`Opportunity scoring columns: ${scoreResult.rows.length}/12 — ${scoreResult.rows.map((r: any) => r.column_name).join(', ') || 'NONE'}`);
-
-    // Verify templates seeded
-    const tmplQuery = `SELECT COUNT(*) as cnt FROM vista_outreach_templates`;
-    const tmplResult = await client.query(tmplQuery);
-    results.push(`Templates seeded: ${tmplResult.rows[0].cnt}`);
-
-    // Verify functions
-    const funcQuery = `
-      SELECT routine_name FROM information_schema.routines 
-      WHERE routine_schema = 'public' 
-      AND routine_name IN ('fn_funnel_summary', 'fn_today_actions', 'fn_overdue_outreaches', 
-                           'fn_nurture_due_reengage', 'fn_weekly_outreach_stats', 
-                           'fn_compute_opportunity_score', 'fn_sync_outreach_to_contact')
-      ORDER BY routine_name
-    `;
-    const funcResult = await client.query(funcQuery);
-    results.push(`Functions created: ${funcResult.rows.length}/7 — ${funcResult.rows.map((r: any) => r.routine_name).join(', ') || 'NONE'}`);
-
-    success = errors === 0;
-    results.push(`\n${success ? '✅ MIGRATION COMPLETE' : '⚠️ MIGRATION COMPLETE WITH ERRORS'}`);
+    success = errors === 0 && tableCheck.rows.length === newTables.length;
+    results.push(`\n${success ? '✅ WAVE 1.6 MIGRATION COMPLETE' : '⚠️ MIGRATION COMPLETE WITH ISSUES'}`);
 
     await client.end();
   } catch (err: any) {
@@ -127,13 +157,12 @@ export async function GET() {
 
 async function writeResultsToGitHub(results: string[], success: boolean) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const content = `# Wave 1.5 Migration Results\n\n**Time:** ${new Date().toISOString()}\n**Status:** ${success ? 'SUCCESS' : 'ERRORS'}\n\n## Log\n\n${results.join('\n')}\n`;
+  const content = `# Wave 1.6 Revenue OS Migration Results\n\n**Time:** ${new Date().toISOString()}\n**Status:** ${success ? 'SUCCESS' : 'ERRORS'}\n\n## Log\n\n${results.join('\n')}\n`;
   
   const base64Content = Buffer.from(content).toString('base64');
-  const fileName = `VISTA/migration_log_wave1.5_${timestamp}.md`;
+  const fileName = `VISTA/migration_log_wave1.6_${timestamp}.md`;
   
   try {
-    // Use GitHub token from env var (set in Vercel)
     const ghToken = process.env.GITHUB_PAT;
     if (!ghToken) {
       results.push('\n⚠️ GITHUB_PAT not set — cannot write results to repo');
@@ -148,7 +177,7 @@ async function writeResultsToGitHub(results: string[], success: boolean) {
             'Accept': 'application/vnd.github.v3+json',
           },
           body: JSON.stringify({
-            message: `chore: Wave 1.5 migration log ${success ? 'SUCCESS' : 'ERRORS'}`,
+            message: `chore: Wave 1.6 Revenue OS migration log ${success ? 'SUCCESS' : 'ERRORS'}`,
             content: base64Content,
           }),
         }
@@ -167,7 +196,7 @@ async function writeResultsToGitHub(results: string[], success: boolean) {
   }
 
   const html = `<!DOCTYPE html><html><body>
-    <h1>${success ? '✅ MIGRATION SUCCESS' : '⚠️ MIGRATION ERRORS'}</h1>
+    <h1>${success ? '✅ WAVE 1.6 MIGRATION SUCCESS' : '⚠️ MIGRATION ERRORS'}</h1>
     <pre>${results.join('\n')}</pre>
   </body></html>`;
 
@@ -175,5 +204,3 @@ async function writeResultsToGitHub(results: string[], success: boolean) {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 }
-// redeploy for pooler DB connection - 20260711-120134
-// pooler retry 120653
