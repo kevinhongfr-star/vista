@@ -7,7 +7,7 @@ async function runMigration() {
   const databaseUrl = process.env.DATABASE_URL;
   
   if (!databaseUrl) {
-    return { error: 'DATABASE_URL not configured' };
+    return { success: false, message: 'DATABASE_URL not configured' };
   }
 
   try {
@@ -23,7 +23,7 @@ async function runMigration() {
     
     if (!response.ok) {
       await client.end();
-      return { error: `Failed to fetch SQL: ${response.status}` };
+      return { success: false, message: `Failed to fetch SQL: ${response.status}` };
     }
     
     const sql = await response.text();
@@ -36,14 +36,19 @@ async function runMigration() {
     
     let executed = 0;
     let errors: string[] = [];
+    let created_tables: string[] = [];
     
     for (const stmt of statements) {
       try {
-        await client.query(stmt);
+        const result = await client.query(stmt);
         executed++;
+        // Track CREATE TABLE statements
+        if (stmt.toUpperCase().includes('CREATE TABLE')) {
+          const match = stmt.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(\w+)/i);
+          if (match) created_tables.push(match[1]);
+        }
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
-        // Skip "already exists" errors
         if (msg.includes('already exists')) {
           continue;
         }
@@ -51,27 +56,45 @@ async function runMigration() {
       }
     }
     
+    // Verify tables were created
+    const checkResult = await client.query(`
+      SELECT table_name FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name LIKE 'vista_service%'
+      ORDER BY table_name
+    `);
+    
     await client.end();
     
     return { 
-      success: true, 
-      message: `Migration executed: ${executed} statements`,
-      errors: errors.length > 0 ? errors : undefined
+      success: errors.length === 0,
+      message: `Migration complete: ${executed} statements executed`,
+      tables_created: created_tables,
+      verified_tables: checkResult.rows.map((r: {table_name: string}) => r.table_name),
+      errors: errors.length > 0 ? errors.slice(0, 5) : undefined
     };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    return { error: message };
+    return { success: false, message: message };
   }
-}
-
-export async function POST() {
-  const result = await runMigration();
-  const status = result.error ? 500 : 200;
-  return NextResponse.json(result, { status });
 }
 
 export async function GET() {
   const result = await runMigration();
-  const status = result.error ? 500 : 200;
+  
+  // Return both JSON and HTML for compatibility
+  const html = `<!DOCTYPE html>
+<html><body>
+<h1>VISTA Migration V2</h1>
+<pre>${JSON.stringify(result, null, 2)}</pre>
+</body></html>`;
+  
+  return new NextResponse(html, {
+    headers: { 'Content-Type': 'text/html' }
+  });
+}
+
+export async function POST() {
+  const result = await runMigration();
+  const status = result.success ? 200 : 500;
   return NextResponse.json(result, { status });
 }
