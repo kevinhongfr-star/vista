@@ -1,7 +1,7 @@
 # VISTA — Master Specification & Ticket Index
 
 > **Complete platform spec + all tickets in one document**
-> Generated: 2026-07-11 | Total: 479 tickets across 5 versions
+> Generated: 2026-07-11 | Updated: 2026-07-12 | Total: 499 tickets across 6 versions
 
 ---
 
@@ -18,6 +18,7 @@
 | [Master Frontend Spec](VISTA_MASTER_FRONTEND_SPEC.md) | 27KB | Complete frontend architecture, design tokens, component library |
 | [UX Completion Spec](VISTA_UX_COMPLETION_SPEC.md) | 26KB | UX patterns, responsive design, accessibility |
 | [Intelligence Layer Spec](INTELLIGENCE_LAYER_SPEC.md) | 20KB | AI agent architecture, signal processing |
+| [Wave 1.6 Revenue OS Spec](spec_wave1.6_revenue_os.md) | 30KB | 20 tickets (R-01→R-20) — pricing architecture, tiered funnel, cross-sell, content attribution |
 
 ---
 
@@ -622,3 +623,68 @@
 **Funnel (Wave 1.5)**: vista_outreach_templates (8 seeded), vista_outreach_sequences, vista_nurture_routes
 
 **Service Catalog (V2)**: vista_service_catalog (24 services seeded), vista_contact_services, vista_service_templates, vista_goals, vista_daily_log, vista_achievements, vista_nudges, vista_tasks, vista_signal_intelligence, vista_contact_briefs, vista_lens_recommendations, vista_alert_rules, vista_alerts, vista_shared_reports, vista_layout_config, vista_platform_sync, vista_inbound_signals
+
+---
+
+### Wave 1.6 — Revenue Operating System (20 tickets: R-01 to R-20)
+
+> **Triggered by:** Pricing Strategy & Market Penetration Playbook (2026-07-12)
+> **Focus:** 7-tier pricing architecture, tiered conversion funnel, cross-sell rules engine, content attribution, bundle/discount logic
+> **Migration SQL:** `run_this_wave1.6_migration.sql`
+> **Spec:** `spec_wave1.6_revenue_os.md`
+
+| # | Ticket | Domain | Estimate |
+|---|--------|--------|----------|
+| R-01 | Service Catalog Restructure — 7 Tier Architecture (all 7 tiers, 40+ services) | Catalog | 3d |
+| R-02 | Bundle Definitions & Pricing Engine (6 bundles with auto-calculation) | Catalog | 3d |
+| R-03 | Discount Rules Engine (never-discount enforcement, founding client rates) | Catalog | 2d |
+| R-04 | Proposal & Quote Generator (auto-pricing, PDF output) | Catalog | 3d |
+| R-05 | Revenue Tracking Dashboard (by tier, by service, bundle adoption) | Catalog | 2d |
+| R-06 | Payment Schedule Tracker (milestone/monthly/quarterly tracking) | Catalog | 2d |
+| R-07 | Contact Revenue Potential Scoring (LTV estimation, tier potential) | Catalog | 2d |
+| R-08 | Service Engagement Tracker (full history, upgrade path, testimonial tracking) | Catalog | 1d |
+| R-09 | Tiered Funnel Stage Model (7 stages replacing linear 500→50→10→2) | Funnel | 3d |
+| R-10 | Tier Progression Tracking & Analytics (conversion rates, drop-off points) | Funnel | 2d |
+| R-11 | Content Attribution Engine (LinkedIn/Newsletter/Podcast/Webinar → lead) | Funnel | 3d |
+| R-12 | Workshop & Event Management (registration, attendance, follow-up automation) | Funnel | 2d |
+| R-13 | The Council Membership Module (3 tiers, capacity limits, renewals) | Funnel | 3d |
+| R-14 | DEX AI Platform Tracking (credits, subscriptions, upgrade paths) | Funnel | 2d |
+| R-15 | Cross-Sell Matrix Configuration (10 explicit if-bought→recommend paths) | Cross-Sell | 2d |
+| R-16 | Automated Cross-Sell Recommendations (auto-trigger on engagement completion) | Cross-Sell | 2d |
+| R-17 | Bundle Suggestion Engine (auto-suggest bundles when 2+ services selected) | Cross-Sell | 1d |
+| R-18 | "Never Discount" Enforcement (hard block on search/platform/post-founding) | Cross-Sell | 1d |
+| R-19 | Phase 1 (Month 1-2) Minimum Viable Revenue Stack | Priority | 3d |
+| R-20 | Phase 2 (Month 2-4) Diagnostic + Workshop Stack | Priority | 3d |
+| | | **Wave 1.6 Total:** | **~48 days** |
+
+### Updated Totals
+
+| Version | Tickets | Description |
+|---------|---------|-------------|
+| V1 — Original Gap | 51 | UX, visual design, dashboard |
+| V2 — Gap Analysis | 100 | T-01→T-100: CV, search, integrations |
+| V3 — Exhaustive Feature Map | 193 | T-101→T-293: 20 domains, 16 portals |
+| V4 — Action-Pushing Platform | 89 | T-294→T-382: intelligence, gamification, kanban |
+| Wave 1.5 — Funnel Core | 8 | F-01→F-08: outreach engine, scoring |
+| **Wave 1.6 — Revenue OS** | **20** | **R-01→R-20: pricing, tiered funnel, cross-sell, content** |
+| **GRAND TOTAL** | **499** | |
+
+### Updated 12-Wave Execution Order
+
+| Wave | Name | Duration | Status |
+|------|------|----------|--------|
+| Wave 1 | Foundation | 27d | ✅ DONE |
+| Wave 1.5 | Funnel Core (DB) | 8d | ✅ DB Migrated |
+| **Wave 1.6** | **Revenue Operating System** | **18d** | **🆕 SPEC READY** |
+| Wave 2 | Context & Connectivity | 17d | Next |
+| Wave 3 | Qualitative Intelligence + Kanban | 20d | Transformative |
+| Wave 4 | Action-Pushing + Gamification | 18d | |
+| Wave 5 | Companies, Mandates, Meetings | 18d | |
+| Wave 6 | Contact Depth & CV | 13d | |
+| Wave 7 | Funnel + Editable Everything | 16d | |
+| Wave 8 | Products, Assessment, Communications | 15d | |
+| Wave 9 | Auto-Logging + Shareable Outputs | 14d | |
+| Wave 10 | Three-Platform Integration | 16d | |
+| Wave 11 | AI Intelligence Layer | 14d | |
+| Wave 12 | Design Craft & Polish | 15d | |
+| **Total** | | **~232 days sequential, ~75 days with 3 devs** | |
