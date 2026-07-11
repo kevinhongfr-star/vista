@@ -1,24 +1,20 @@
 -- ============================================================================
--- VISTA V2 MIGRATION — COMBINED (FIX + FULL)
--- Single paste in Supabase SQL Editor
--- Fix: adds 'Live' to status check constraint
--- Then: full V2 migration (17 tables, 24 service seed rows, all functions)
+-- VISTA V2 MIGRATION — FINAL COMBINED (ALL FIXES INCLUDED)
+-- Single paste in Supabase SQL Editor. No pre-steps needed.
+--
+-- Fixes applied:
+--   1. 'Live' added to status check constraint
+--   2. QUEST INSERT: removed extra empty value (22 cols ≠ 23 vals)
 -- ============================================================================
 
--- STEP 0: Fix status constraint BEFORE table creation
--- (If table already exists from partial run, alter it; if not, this is harmless)
+-- Pre-fix: update status constraint if table exists from partial run
 DO $$
 BEGIN
-  -- Drop old constraint if table exists
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'vista_service_catalog') THEN
     ALTER TABLE vista_service_catalog DROP CONSTRAINT IF EXISTS vista_service_catalog_status_check;
     ALTER TABLE vista_service_catalog ADD CHECK (status IN ('Active', 'Live', 'Coming Soon', 'In Development', 'Retired', 'Internal'));
   END IF;
 END $$;
-
--- ============================================================================
--- V2 MIGRATION SQL FOLLOWS
--- ============================================================================
 
 -- ============================================================================
 -- VISTA Schema Migration V2 — Service Catalog & V4 Backend Wiring
@@ -156,7 +152,6 @@ VALUES (
   ARRAY['SHIFT-QUEST', 'COACH', 'Advisory Retainer'],
   ARRAY[]::text[],
   'Phase 1A', 'Live',
-  '',
   'vs. Hogan/Korn Ferry: QUEST is APAC-specific + includes AI readiness; Western tools lack APAC calibration'
 );
 
