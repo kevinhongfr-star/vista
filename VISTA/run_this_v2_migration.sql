@@ -559,23 +559,23 @@ CREATE TABLE IF NOT EXISTS vista_nudges (
 );
 
 -- ============================================================================
--- SECTION 5: ACTION TAXONOMY — Extend activities table
+-- SECTION 5: ACTION TAXONOMY — Extend campaign_activities table
 -- ============================================================================
 
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS purpose text;
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS outcome text;
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS next_step text;
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS next_step_due_date date;
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS template_used_id uuid REFERENCES email_templates(id);
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS service_id uuid REFERENCES vista_service_catalog(id);
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS signal_id uuid REFERENCES signals(id);
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS parent_activity_id uuid REFERENCES activities(id);
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS response_received boolean DEFAULT false;
-ALTER TABLE activities ADD COLUMN IF NOT EXISTS company_name text;
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS purpose text;
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS outcome text;
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS next_step text;
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS next_step_due_date date;
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS template_used_id uuid REFERENCES email_templates(id);
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS service_id uuid REFERENCES vista_service_catalog(id);
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS signal_id uuid REFERENCES signals(id);
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS parent_activity_id uuid REFERENCES campaign_activities(id);
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS response_received boolean DEFAULT false;
+ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS company_name text;
 
-CREATE INDEX IF NOT EXISTS idx_activities_purpose ON activities(purpose) WHERE purpose IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_activities_outcome ON activities(outcome) WHERE outcome IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_activities_next_due ON activities(next_step_due_date) WHERE next_step_due_date IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_activities_purpose ON campaign_activities(purpose) WHERE purpose IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_activities_outcome ON campaign_activities(outcome) WHERE outcome IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_activities_next_due ON campaign_activities(next_step_due_date) WHERE next_step_due_date IS NOT NULL;
 
 -- ============================================================================
 -- SECTION 6: INBOUND SIGNAL TRACKING
@@ -624,7 +624,7 @@ CREATE TABLE IF NOT EXISTS vista_tasks (
   company_name text,
   campaign_id uuid REFERENCES campaign_activities(id),
   signal_id uuid REFERENCES signals(id),
-  activity_id uuid REFERENCES activities(id),
+  activity_id uuid REFERENCES campaign_activities(id),
   status text DEFAULT 'Open' CHECK (status IN ('Open', 'In Progress', 'Waiting', 'Completed', 'Cancelled', 'Overdue')),
   completed_at timestamptz,
   auto_generated boolean DEFAULT false,
