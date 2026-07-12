@@ -1,9 +1,9 @@
 # VISTA — Internal Platform Business Case & Operating Brief
 
-**Version:** 4.0 | **Date:** 2026-07-12 | **Author:** James/AI for Kevin Hong
+**Version:** 5.0 | **Date:** 2026-07-12 | **Author:** James/AI for Kevin Hong
 **Status:** Internal Draft — For Kevin Review
 **Classification:** LYC Partners Internal — Confidential
-**Updated:** Incorporated Pricing Strategy V2 — B2C Portal + Council Restructure
+**Updated:** V5 — Corrected scope: B2C portal is separate product; VISTA tracks B2C→B2B conversion only
 
 ---
 
@@ -44,16 +44,16 @@ LYC consultants currently manage BD through fragmented tools — spreadsheets, p
 | Daily priorities | "I know I should call X" | Kanban board pushes next actions |
 | Content attribution | Unknown which content drives revenue | Full attribution: content → lead → deal |
 | Cross-sell | Manual memory | 10 explicit "if bought X → recommend Y" paths |
-| B2C revenue stream | No individual professional offering | AI career portal: ¥1.2M/yr target |
+| B2C→B2B pipeline | No tracking of B2C users as B2B leads | Auto-flag B2B potential, conversion pipeline |
 | Performance tracking | None | Revenue by tier, conversion rates, deal velocity |
 
 **Current state:**
 - 39 database tables live in production (Supabase)
-- 524 feature tickets scoped across 14 waves (including Wave 1.7 B2C Portal)
+- 509 feature tickets scoped across 14 waves (including Wave 1.7 B2C Portal)
 - Core infrastructure deployed on Vercel + Supabase
 - Wave 1 (foundation) shipped and live
 - Wave 1.5 (funnel engine) database migrated
-- **Wave 1.6 (Revenue OS) + Wave 1.7 (B2C Portal) specs + migration SQL ready**
+- **Wave 1.6 (Revenue OS) + Wave 1.7 (B2C→B2B Intelligence) specs + migration SQL ready**
 
 ---
 
@@ -75,7 +75,7 @@ LYC consultants currently manage BD through fragmented tools — spreadsheets, p
 LinkedIn Content (3x/week), Newsletter (weekly), Podcast (weekly), Webinar (monthly), Diagnostic Teaser (15 min)
 
 
-**Tier 1.5 — B2C PORTAL (NEW — V2 Addition):**
+**Tier 1.5 — DEX AI B2C PORTAL (Separate Product — V2 Addition):**
 DEX AI Explorer (Free, 5 msgs), Credit Packs (¥99/¥399/¥799), Member (¥99/mo, 30 credits), Pro (¥299/mo, 100 credits)
 
 **Credit Consumption (B2C Portal):**
@@ -102,9 +102,16 @@ Starter (¥500/10 credits), Pro (¥5K/mo), Enterprise (¥15-30K/mo), Credit Top-
 ### 2.3 The Tiered Conversion Path
 
 ```
-                                              ┌─── B2C PATH (NEW) ───┐
-                                              │                       │
-Contact enters → Content (T1) → DEX AI Explorer (T1.5) → Credits → Member → Pro → Council (T6)
+                                              ┌─── DEX AI B2C (SEPARATE PRODUCT) ───┐
+                                              │                                      │
+Contact enters → Content (T1) → DEX AI Explorer → Credits → Member → Pro → Council (T6)
+                        ↓           │                                    ↓
+                        │           │ B2C users showing B2B potential    │
+                        │           │ are flagged in VISTA               │
+                        │           ▼                                    │
+                        │     ┌─── VISTA B2C→B2B PIPELINE ───┐        │
+                        │     │ Flagged → Research → Outreach → Promoted │
+                        │     └───────────────────────────────┘        │
                         ↓                                              ↓
                   Workshop (T2) → Diagnostic (T3) → Advisory (T4) → Retainer (T4)
                                       ↓                                    ↓
@@ -264,14 +271,21 @@ Contact enters → Content (T1) → DEX AI Explorer (T1.5) → Credits → Membe
 | **Leadership** | 2-3 | Strategic oversight, performance review |
 
 
-### 5.3 B2C Users (NEW — V2)
+### 5.3 B2C → B2B Conversion Tracking (NEW — V2, CORRECTED v5.0)
 
-| Segment | Users | Primary Use | Key Features |
-|---------|-------|-------------|-------------|
-| **Explorer (Free)** | Target: 500+ | Career chat, assessment discovery | 5 free messages, upgrade prompts |
-| **Credit Buyer** | Target: 100+ | Assessments, career tools | PRISM/TRIDENT/CANVAS, credit management |
-| **Member (¥99/mo)** | Target: 50+ | Ongoing career development | Monthly credits, full assessment access |
-| **Pro (¥299/mo)** | Target: 20+ | Active career transformation | 100 credits/mo, priority features, Council path |
+> The DEX AI Career Advisory Portal is a **separate product** (not part of VISTA).
+> VISTA tracks B2C users who show B2B potential and manages the conversion pipeline.
+
+| B2C Signal | B2B Interpretation | VISTA Action |
+|-----------|-------------------|-------------|
+| C-suite/VP/Director title | Decision-maker → org-level needs | Auto-flag (score ≥80) |
+| Company >50 employees | Potential enterprise client | Score boost |
+| Executive credit pack (¥799) | High engagement, high value | Score boost |
+| CANVAS assessment completed | Strategic career thinking → may need team diagnostics | Score boost |
+| Coaching booked | Serious development investment → org-level potential | Score boost |
+| Pro tier subscriber | High LTV, deep engagement | Pipeline priority |
+
+**VISTA's role:** Ingest B2C data → Score B2B potential → Flag high-value leads → Manage conversion pipeline → Track revenue attribution
 
 ---
 
@@ -285,8 +299,8 @@ Contact enters → Content (T1) → DEX AI Explorer (T1.5) → Credits → Membe
 4. **Five Core Engines** — Contact Intel, Signal Detection, Tiered Funnel, Service Matching, Action-Pushing
 5. **The 7-Tier Revenue Model** — Free → Low → Mid → High → Search → Council → Platform
 6. **ROI Projection** — Revenue lift (¥3M → ¥15.8M), 3,000 hrs saved, 30x-130x ROI
-7. **Current State** — 52 tables (39 live + 13 B2C pending), Wave 1 shipped, 524 tickets scoped, Wave 1.7 ready
-8. **Execution Roadmap** — 14 Waves, ~90 days with team (incl. B2C Portal)
+7. **Current State** — 42 tables (39 live + 3 B2C→B2B pending), Wave 1 shipped, 509 tickets scoped, Wave 1.7 ready
+8. **Execution Roadmap** — 14 Waves, ~80 days with team (incl. B2C→B2B Intelligence)
 9. **What We Need** — Budget ($120-180K) + participation + data + mandate
 10. **Risk & Mitigation** — 4 risks with mitigations
 11. **User Profiles & Adoption** — Partners, Consultants, Ops + 4-phase timeline
@@ -301,7 +315,7 @@ Contact enters → Content (T1) → DEX AI Explorer (T1.5) → Credits → Membe
 
 | Phase | Timeline | Activities | VISTA Milestone |
 |-------|----------|-----------|----------------|
-| **Alpha** | Wave 1-3 (Month 1-2) | Kevin + James/AI | Wave 1.7 B2C Portal + Revenue OS built |
+| **Alpha** | Wave 1-3 (Month 1-2) | Kevin + James/AI | Wave 1.7 B2C→B2B Intelligence + Revenue OS built |
 | **Beta** | Wave 4-6 (Month 3-4) | 3-5 senior consultants | Cross-sell + content attribution live |
 | **Pilot** | Wave 7-9 (Month 4-5) | Full team, data migration | Council module + DEX tracking live |
 | **Launch** | Wave 10-12 (Month 6) | Firm-wide adoption | Full platform operational |
@@ -323,7 +337,7 @@ Contact enters → Content (T1) → DEX AI Explorer (T1.5) → Credits → Membe
 ## Appendix: Technical Architecture
 
 - **Frontend:** Next.js 15, deployed on Vercel
-- **Database:** PostgreSQL on Supabase (52+ tables: 39 live + 13 B2C pending)
+- **Database:** PostgreSQL on Supabase (42 tables: 39 live + 3 B2C→B2B pending)
 - **AI:** DeepSeek API (flash + pro models)
 - **Auth:** Supabase Auth
 - **Production URL:** https://vista-azure-delta.vercel.app
