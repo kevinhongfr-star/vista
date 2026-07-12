@@ -1,9 +1,9 @@
 # VISTA — Internal Platform Business Case & Operating Brief
 
-**Version:** 3.0 | **Date:** 2026-07-12 | **Author:** James/AI for Kevin Hong
+**Version:** 4.0 | **Date:** 2026-07-12 | **Author:** James/AI for Kevin Hong
 **Status:** Internal Draft — For Kevin Review
 **Classification:** LYC Partners Internal — Confidential
-**Updated:** Incorporated Pricing Strategy & Market Penetration Playbook
+**Updated:** Incorporated Pricing Strategy V2 — B2C Portal + Council Restructure
 
 ---
 
@@ -44,15 +44,16 @@ LYC consultants currently manage BD through fragmented tools — spreadsheets, p
 | Daily priorities | "I know I should call X" | Kanban board pushes next actions |
 | Content attribution | Unknown which content drives revenue | Full attribution: content → lead → deal |
 | Cross-sell | Manual memory | 10 explicit "if bought X → recommend Y" paths |
+| B2C revenue stream | No individual professional offering | AI career portal: ¥1.2M/yr target |
 | Performance tracking | None | Revenue by tier, conversion rates, deal velocity |
 
 **Current state:**
 - 39 database tables live in production (Supabase)
-- 499 feature tickets scoped across 13 waves (including new Wave 1.6)
+- 524 feature tickets scoped across 14 waves (including Wave 1.7 B2C Portal)
 - Core infrastructure deployed on Vercel + Supabase
 - Wave 1 (foundation) shipped and live
 - Wave 1.5 (funnel engine) database migrated
-- **Wave 1.6 (Revenue OS) spec + migration SQL ready**
+- **Wave 1.6 (Revenue OS) + Wave 1.7 (B2C Portal) specs + migration SQL ready**
 
 ---
 
@@ -73,6 +74,13 @@ LYC consultants currently manage BD through fragmented tools — spreadsheets, p
 **Tier 1 — FREE (Acquisition Layer):**
 LinkedIn Content (3x/week), Newsletter (weekly), Podcast (weekly), Webinar (monthly), Diagnostic Teaser (15 min)
 
+
+**Tier 1.5 — B2C PORTAL (NEW — V2 Addition):**
+DEX AI Explorer (Free, 5 msgs), Credit Packs (¥99/¥399/¥799), Member (¥99/mo, 30 credits), Pro (¥299/mo, 100 credits)
+
+**Credit Consumption (B2C Portal):**
+PRISM Assessment (3cr), TRIDENT (5cr), CANVAS (8cr), Market Report (10cr), Coaching Booking (15cr), CV Audit (5cr), LinkedIn Audit (5cr)
+
 **Tier 2 — LOW-TICKET (Validation Layer):**
 Workshop (2-3hr, ¥2-5K), Workshop (half-day, ¥5-8K), Insights Report (¥1.5-3K), Talent Market Map (¥3-8K), The Council (¥8-15K/yr), DEX AI Starter (¥500-2K)
 
@@ -85,8 +93,8 @@ Advisory single (¥40-80K), Advisory multi (¥80-150K), BRIDGE full (¥60-120K),
 **Tier 5 — SEARCH (Cash Engine):**
 Retained Search (¥75-200K/role), Contingent (¥50-150K/role), Search+Diagnostic Bundle (¥90-215K), Mapping-to-Search (¥15-40K)
 
-**Tier 6 — THE COUNCIL (Recurring):**
-Individual (¥12K/yr, 60 max), Corporate (¥30K/yr, 10 max), PE Partner (¥50K/yr, 5 max)
+**Tier 6 — THE COUNCIL (Recurring — V2 Restructured):**
+Founding (¥2,800/yr, 20 max), Regular (¥3,800/yr, 60 max), Premium (¥5,000/yr, 10 max), Enterprise (¥30-50K/yr, 5 max)
 
 **Tier 7 — PLATFORM (DEX AI):**
 Starter (¥500/10 credits), Pro (¥5K/mo), Enterprise (¥15-30K/mo), Credit Top-Up (¥50/credit), METRIX Assessment (¥200-500), Team Diagnostic (¥3-8K)
@@ -94,11 +102,13 @@ Starter (¥500/10 credits), Pro (¥5K/mo), Enterprise (¥15-30K/mo), Credit Top-
 ### 2.3 The Tiered Conversion Path
 
 ```
-Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) → Advisory (T4) → Retainer (T4)
-                                                                    ↓                          ↓
-                                                              Search (T5)              Platform (T7)
-                                                                    ↓                          ↓
-                                                              Council (T6) ←─────────────── Council (T6)
+                                              ┌─── B2C PATH (NEW) ───┐
+                                              │                       │
+Contact enters → Content (T1) → DEX AI Explorer (T1.5) → Credits → Member → Pro → Council (T6)
+                        ↓                                              ↓
+                  Workshop (T2) → Diagnostic (T3) → Advisory (T4) → Retainer (T4)
+                                      ↓                                    ↓
+                                Search (T5)                        Platform (T7)
 ```
 
 ### 2.4 Cross-Sell Rules (Explicit Paths)
@@ -115,6 +125,10 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 | The Council | Workshop | "As a Council member, priority seating + 20% off." |
 | DEX AI Starter | Pro | "You've used 8/10 credits. Here's what unlimited looks like." |
 | Retainer | Search | "Your retainer includes talent reviews. Hard-to-fill roles?" |
+| DEX AI Explorer (free) | Credit Pack | "You've seen what AI advisory can do. Unlock assessments from ¥99." |
+| Credit Pack buyer | Member subscription | "You're spending ¥X on credits. Member saves you ¥Y/month." |
+| Pro subscriber | Council membership | "You're serious about growth. Council starts at ¥2,800/yr." |
+| B2C assessment user | Workshop/Diagnostic | "Your CANVAS results show team-level challenges. Our workshop addresses exactly this." |
 
 ### 2.5 Bundle Architecture
 
@@ -126,6 +140,7 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 | Full Program (ASCENT) | Diag + Coach + Workshop + Retainer | ¥51-121K | ¥41-97K | 20% |
 | PE Portfolio | Annual review + 2 searches + Retainer | ¥260-490K | ¥228-402K | 18% |
 | Council + Workshop | Membership + 2 workshop seats | ¥14-17K | ¥11.5-14K | 18% |
+| B2C Career Accelerator | 3mo Pro + PRISM + CANVAS + 1 coaching | ¥1,496 | ¥1,200 | 20% |
 
 ### 2.6 Pricing Discipline
 
@@ -151,7 +166,7 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 | **Phase 1: WEDGE** | Month 1-2 | Executive Search + Free Diagnostic Teaser | ¥75-200K |
 | **Phase 2: PROVE** | Month 2-4 | Paid Diagnostic + First Workshop | ¥40-80K |
 | **Phase 3: SCALE** | Month 4-6 | Advisory Retainer + Platform Trial + Council Launch | ¥60-120K/mo |
-| **Phase 4: PREMIUM** | Month 6-12 | Full pricing architecture active | ¥150-300K/mo |
+| **Phase 4: PREMIUM** | Month 6-12 | Full pricing architecture active + B2C portal scaled | ¥150-300K/mo + ¥50-100K B2C |
 
 ### 3.2 Revenue Path by Quarter
 
@@ -161,13 +176,23 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 | Q2 (Month 4-6) | Retainers + workshops + Council + DEX trials | ¥180-360K |
 | Q3 (Month 7-9) | Full pricing active + PE portfolio deals | ¥450-900K |
 | Q4 (Month 10-12) | Recurring revenue dominant (retainers + subscriptions + Council) | ¥450-900K |
-| **Year 1 Total** | | **¥1.2M-2.4M** |
+| **Year 1 B2B Total** | | **¥1.2M-2.4M** |
+| **Year 1 B2C Total** | DEX AI Portal (credits + subscriptions) | **¥0.5M-1.2M** |
+| **Year 1 Combined** | | **¥1.7M-3.6M** |
 
-### 3.3 90-Day Validation Milestones
+### 3.3 90-Day Revenue Target
+
+| Stream | Conservative | Target | Stretch |
+|--------|-------------|--------|--------|
+| B2B Revenue | ¥60K | ¥120K | ¥200K |
+| B2C Revenue | ¥20K | ¥30K | ¥50K |
+| **Combined** | **¥80K** | **¥150K** | **¥250K** |
+
+### 3.4 90-Day Validation Milestones
 
 | Week | Action | Revenue | Proof Generated |
 |------|--------|---------|----------------|
-| 1-2 | 20 outreach, 5 conversations | 0 | Pipeline data |
+| 1-2 | 20 outreach, 5 conversations + B2C portal soft launch to 50 contacts | 0 | Pipeline data + B2C signups |
 | 3-4 | 1 search mandate confirmed | ¥30-50K | Search case study |
 | 5-6 | 1 diagnostic delivered (bundled) | 0 (bundled) | Diagnostic proof |
 | 7-8 | First workshop delivered | 0-3K | Workshop recording |
@@ -238,6 +263,16 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 | **Operations** | 2-3 | Campaign management, reporting, data |
 | **Leadership** | 2-3 | Strategic oversight, performance review |
 
+
+### 5.3 B2C Users (NEW — V2)
+
+| Segment | Users | Primary Use | Key Features |
+|---------|-------|-------------|-------------|
+| **Explorer (Free)** | Target: 500+ | Career chat, assessment discovery | 5 free messages, upgrade prompts |
+| **Credit Buyer** | Target: 100+ | Assessments, career tools | PRISM/TRIDENT/CANVAS, credit management |
+| **Member (¥99/mo)** | Target: 50+ | Ongoing career development | Monthly credits, full assessment access |
+| **Pro (¥299/mo)** | Target: 20+ | Active career transformation | 100 credits/mo, priority features, Council path |
+
 ---
 
 ## 6. Internal Brief — Partner Budget Approval
@@ -250,8 +285,8 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 4. **Five Core Engines** — Contact Intel, Signal Detection, Tiered Funnel, Service Matching, Action-Pushing
 5. **The 7-Tier Revenue Model** — Free → Low → Mid → High → Search → Council → Platform
 6. **ROI Projection** — Revenue lift (¥3M → ¥15.8M), 3,000 hrs saved, 30x-130x ROI
-7. **Current State** — 39 tables, Wave 1 shipped, 499 tickets scoped, Wave 1.6 ready
-8. **Execution Roadmap** — 13 Waves, ~75 days with team
+7. **Current State** — 52 tables (39 live + 13 B2C pending), Wave 1 shipped, 524 tickets scoped, Wave 1.7 ready
+8. **Execution Roadmap** — 14 Waves, ~90 days with team (incl. B2C Portal)
 9. **What We Need** — Budget ($120-180K) + participation + data + mandate
 10. **Risk & Mitigation** — 4 risks with mitigations
 11. **User Profiles & Adoption** — Partners, Consultants, Ops + 4-phase timeline
@@ -266,7 +301,7 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 
 | Phase | Timeline | Activities | VISTA Milestone |
 |-------|----------|-----------|----------------|
-| **Alpha** | Wave 1-3 (Month 1-2) | Kevin + James/AI | Wave 1.6 Revenue OS built |
+| **Alpha** | Wave 1-3 (Month 1-2) | Kevin + James/AI | Wave 1.7 B2C Portal + Revenue OS built |
 | **Beta** | Wave 4-6 (Month 3-4) | 3-5 senior consultants | Cross-sell + content attribution live |
 | **Pilot** | Wave 7-9 (Month 4-5) | Full team, data migration | Council module + DEX tracking live |
 | **Launch** | Wave 10-12 (Month 6) | Firm-wide adoption | Full platform operational |
@@ -288,7 +323,7 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 ## Appendix: Technical Architecture
 
 - **Frontend:** Next.js 15, deployed on Vercel
-- **Database:** PostgreSQL on Supabase (39+ tables, Wave 1.6 adds ~15 more)
+- **Database:** PostgreSQL on Supabase (52+ tables: 39 live + 13 B2C pending)
 - **AI:** DeepSeek API (flash + pro models)
 - **Auth:** Supabase Auth
 - **Production URL:** https://vista-azure-delta.vercel.app
@@ -296,4 +331,4 @@ Contact enters → Content/Webinar (T1) → Workshop (T2) → Diagnostic (T3) �
 ---
 
 *Document generated: 2026-07-12 | V3 with Pricing Architecture | Author: James/AI for Kevin Hong*
-*Previous versions: V2 (internal framing), V1 (SaaS framing — deprecated)*
+*Previous versions: V3 (pricing architecture), V2 (internal framing), V1 (SaaS framing — deprecated)*

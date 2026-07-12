@@ -1,7 +1,7 @@
 # VISTA — Master Specification & Ticket Index
 
 > **Complete platform spec + all tickets in one document**
-> Generated: 2026-07-11 | Updated: 2026-07-12 | Total: 499 tickets across 6 versions
+> Generated: 2026-07-11 | Updated: 2026-07-12 | Total: 524 tickets across 7 versions
 
 ---
 
@@ -19,6 +19,7 @@
 | [UX Completion Spec](VISTA_UX_COMPLETION_SPEC.md) | 26KB | UX patterns, responsive design, accessibility |
 | [Intelligence Layer Spec](INTELLIGENCE_LAYER_SPEC.md) | 20KB | AI agent architecture, signal processing |
 | [Wave 1.6 Revenue OS Spec](spec_wave1.6_revenue_os.md) | 30KB | 20 tickets (R-01→R-20) — pricing architecture, tiered funnel, cross-sell, content attribution |
+| [Wave 1.7 B2C Portal Spec](spec_wave1.7_b2c_portal.md) | 40KB | 25 tickets (BC-01→BC-25) — B2C auth, chat engine, credits, assessments, upgrade paths |
 
 ---
 
@@ -603,7 +604,7 @@
 | Wave 11 | AI Intelligence Layer | 14d | 📋 Ready |
 | Wave 12 | Design Craft & Polish | 15d | 📋 Ready |
 
-**Total estimated: ~184 days** (sequential), parallelizable to ~60 days with 3 devs
+**Total estimated: ~272 days** (sequential), parallelizable to ~90 days with 3 devs
 
 ---
 
@@ -614,13 +615,17 @@
 | Original (V1) | 19 tables | ✅ Live |
 | Wave 1.5 Funnel | 3 new + 2 altered | ✅ Live |
 | V2 Service Catalog | 17 new + 1 altered | ✅ Live |
-| **Total** | **39 tables** | **✅ All live** |
+| Wave 1.7 B2C Portal | 13 new + 3 altered | 📋 Migration Ready |
+| **Total** | **52 tables** | **39 live + 13 pending** |
 
 ### Key Tables
 
 **Core**: vista_contacts, vista_opportunities, signals, campaign_activities, campaign_contacts
 
 **Funnel (Wave 1.5)**: vista_outreach_templates (8 seeded), vista_outreach_sequences, vista_nurture_routes
+
+
+**B2C Portal (Wave 1.7)**: vista_b2c_users, vista_b2c_profiles, vista_b2c_credit_ledger, vista_b2c_credit_packs, vista_b2c_payments, vista_b2c_subscriptions, vista_b2c_chat_sessions, vista_b2c_chat_messages, vista_b2c_assessment_results, vista_b2c_events, vista_b2c_upgrade_candidates, vista_b2c_cross_sell_rules, vista_b2c_revenue_metrics
 
 **Service Catalog (V2)**: vista_service_catalog (24 services seeded), vista_contact_services, vista_service_templates, vista_goals, vista_daily_log, vista_achievements, vista_nudges, vista_tasks, vista_signal_intelligence, vista_contact_briefs, vista_lens_recommendations, vista_alert_rules, vista_alerts, vista_shared_reports, vista_layout_config, vista_platform_sync, vista_inbound_signals
 
@@ -657,6 +662,43 @@
 | R-20 | Phase 2 (Month 2-4) Diagnostic + Workshop Stack | Priority | 3d |
 | | | **Wave 1.6 Total:** | **~48 days** |
 
+
+### Wave 1.7 — DEX AI B2C Career Advisory Portal (25 tickets: BC-01 to BC-25)
+
+> **Triggered by:** LYC Pricing Strategy V2 (2026-07-12)
+> **Focus:** B2C AI career advisory portal — entirely new business line
+> **Migration SQL:** `run_this_wave1.7_migration.sql`
+> **Spec:** `spec_wave1.7_b2c_portal.md`
+
+| # | Ticket | Domain | Estimate |
+|---|--------|--------|----------|
+| BC-01 | B2C User Registration & Authentication (email + LinkedIn OAuth) | Auth | 3d |
+| BC-02 | B2C User Profile Management (career context, LinkedIn import) | Auth | 2d |
+| BC-03 | Credit System & Ledger (purchase, consumption, expiry, balance) | Auth | 3d |
+| BC-04 | Subscription Management — Member (¥99/mo) & Pro (¥299/mo) | Auth | 3d |
+| BC-05 | Chat Interface — Core UI (chat-first AI career advisory) | Chat | 3d |
+| BC-06 | Message Counting & Free Tier Enforcement (5-message lifetime limit) | Chat | 1d |
+| BC-07 | Conversation History & Context Management | Chat | 2d |
+| BC-08 | DeepSeek AI Integration — Career Advisory Engine | Chat | 3d |
+| BC-09 | Credit Pack Purchase Flow (3 packs: ¥99/¥399/¥799) | Billing | 2d |
+| BC-10 | Payment Integration — MVP manual + future Stripe/WeChat | Billing | 3d |
+| BC-11 | B2C Billing Dashboard — Admin (MRR, transactions, subscriptions) | Billing | 2d |
+| BC-12 | B2C Conversion Funnel Tracking (8-stage funnel) | Analytics | 2d |
+| BC-13 | B2C User Analytics Dashboard (DAU/MAU, ARPU, LTV) | Analytics | 2d |
+| BC-14 | Credit Burn Analytics & Forecasting | Analytics | 2d |
+| BC-15 | Assessment Gateway — Credit-Gated Access (7 assessment types) | Assessment | 2d |
+| BC-16 | PRISM Assessment — Personality Profile (3 credits) | Assessment | 3d |
+| BC-17 | TRIDENT Assessment — Skills Gap Analysis (5 credits) | Assessment | 3d |
+| BC-18 | CANVAS Assessment — Career Path Mapping (8 credits) | Assessment | 3d |
+| BC-19 | B2C → B2B Upgrade Pipeline (auto-detect enterprise signals) | Upgrade | 3d |
+| BC-20 | Council Pricing Restructure — V2 Model (¥2.8K-50K, 4 tiers) | Upgrade | 2d |
+| BC-21 | B2C Cross-Sell Paths — 4 explicit paths (Free→Credits→Member→Pro→Council) | Upgrade | 2d |
+| BC-22 | Update R-01 Service Catalog — Add B2C Products (6 entries + 1 bundle) | Modifications | 1d |
+| BC-23 | Update Funnel Core — Add Tier 1.5 | Modifications | 1d |
+| BC-24 | Update Revenue Dashboard — B2C Revenue Lines | Modifications | 1d |
+| BC-25 | Update R-13 Council Module — V2 Pricing + B2C Path | Modifications | 1d |
+| | | **Wave 1.7 Total:** | **~55 days** |
+
 ### Updated Totals
 
 | Version | Tickets | Description |
@@ -667,7 +709,8 @@
 | V4 — Action-Pushing Platform | 89 | T-294→T-382: intelligence, gamification, kanban |
 | Wave 1.5 — Funnel Core | 8 | F-01→F-08: outreach engine, scoring |
 | **Wave 1.6 — Revenue OS** | **20** | **R-01→R-20: pricing, tiered funnel, cross-sell, content** |
-| **GRAND TOTAL** | **499** | |
+| Wave 1.7 — B2C Portal | 25 | BC-01→BC-25: B2C auth, chat, credits, assessments, upgrade |
+| **GRAND TOTAL** | **524** | |
 
 ### Updated 12-Wave Execution Order
 
@@ -687,4 +730,4 @@
 | Wave 10 | Three-Platform Integration | 16d | |
 | Wave 11 | AI Intelligence Layer | 14d | |
 | Wave 12 | Design Craft & Polish | 15d | |
-| **Total** | | **~232 days sequential, ~75 days with 3 devs** | |
+| **Total** | | **~272 days sequential, ~90 days with 3 devs** | |
