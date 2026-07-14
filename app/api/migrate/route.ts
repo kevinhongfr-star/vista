@@ -1,206 +1,266 @@
-// @ts-nocheck
-/* eslint-disable */
-const { Client } = require('pg');
+import { NextResponse } from "next/server"
+import { createClient } from '@supabase/supabase-js'
 
-export async function GET() {
-  const results: string[] = [];
-  let success = false;
+export const dynamic = 'force-dynamic'
 
-  try {
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      results.push('ERROR: DATABASE_URL not set');
-      return writeResultsToGitHub(results, false);
-    }
+const MIGRATION_KEY = process.env.MIGRATION_KEY || 'vista-migrate-2026'
 
-    results.push('Connecting to database...');
-    const client = new Client({ connectionString: databaseUrl });
-    await client.connect();
-    results.push('Connected successfully');
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const key = searchParams.get('key')
 
-    // Fetch the Wave 1.6 migration SQL from GitHub
-    const sqlUrl = 'https://raw.githubusercontent.com/kevinhongfr-star/vista/main/VISTA/run_this_wave1.6_migration.sql';
-    results.push(`Fetching SQL from: ${sqlUrl}`);
-    
-    const sqlResponse = await fetch(sqlUrl);
-    if (!sqlResponse.ok) {
-      results.push(`ERROR: Failed to fetch SQL: ${sqlResponse.status}`);
-      await client.end();
-      return writeResultsToGitHub(results, false);
-    }
-    
-    const sqlText = await sqlResponse.text();
-    results.push(`SQL fetched: ${sqlText.length} chars`);
-
-    // Split by semicolons, filter empty
-    const statements = sqlText
-      .split(';')
-      .map((s: string) => s.trim())
-      .filter((s: string) => s.length > 0 && !s.startsWith('--'));
-
-    results.push(`Parsed ${statements.length} statements`);
-
-    // Execute each statement
-    let executed = 0;
-    let errors = 0;
-
-    for (let i = 0; i < statements.length; i++) {
-      const stmt = statements[i] + ';';
-      try {
-        await client.query(stmt);
-        executed++;
-      } catch (err: any) {
-        const msg = err.message || 'unknown error';
-        if (msg.includes('already exists')) {
-          results.push(`[SKIP] Statement ${i + 1}: already exists`);
-          executed++;
-        } else {
-          results.push(`[ERROR] Statement ${i + 1}: ${msg.substring(0, 200)}`);
-          errors++;
-        }
-      }
-    }
-
-    results.push(`\nExecuted: ${executed}, Errors: ${errors}`);
-
-    // ============================================================
-    // VERIFICATION: Wave 1.6 Tables
-    // ============================================================
-    const newTables = [
-      'vista_service_bundles',
-      'vista_discount_rules',
-      'vista_cross_sell_rules',
-      'vista_content_attribution',
-      'vista_content_contact_interactions',
-      'vista_workshops',
-      'vista_workshop_attendees',
-      'vista_council_members',
-      'vista_dex_subscriptions',
-      'vista_tier_progressions',
-      'vista_contact_service_engagements',
-      'vista_payment_schedules',
-      'vista_proposals'
-    ];
-
-    const tableCheck = await client.query(`
-      SELECT table_name FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name = ANY($1)
-      ORDER BY table_name
-    `, [newTables]);
-    results.push(`\n📊 New tables created: ${tableCheck.rows.length}/${newTables.length}`);
-    results.push(`   ${tableCheck.rows.map((r: any) => r.table_name).join(', ')}`);
-    
-    const missing = newTables.filter(t => !tableCheck.rows.some((r: any) => r.table_name === t));
-    if (missing.length > 0) {
-      results.push(`   ❌ Missing: ${missing.join(', ')}`);
-    }
-
-    // Verify service catalog tier columns
-    const colCheck = await client.query(`
-      SELECT column_name FROM information_schema.columns 
-      WHERE table_name = 'vista_service_catalog' 
-      AND column_name IN ('tier', 'tier_name', 'price_min_cny', 'price_max_cny', 'price_model', 
-                          'engagement_duration', 'target_buyer', 'is_discountable', 'discount_rules',
-                          'tier_positioning', 'competitor_anchor')
-      ORDER BY column_name
-    `);
-    results.push(`\n📋 Service catalog tier columns: ${colCheck.rows.length}/11`);
-
-    // Count seeded services
-    const svcCount = await client.query(`SELECT COUNT(*) as cnt FROM vista_service_catalog`);
-    results.push(`📦 Total services in catalog: ${svcCount.rows[0].cnt}`);
-
-    // Count by tier
-    const tierCount = await client.query(`
-      SELECT tier, tier_name, COUNT(*) as cnt 
-      FROM vista_service_catalog 
-      WHERE tier IS NOT NULL 
-      GROUP BY tier, tier_name 
-      ORDER BY tier
-    `);
-    results.push(`\n📊 Services by tier:`);
-    tierCount.rows.forEach((r: any) => {
-      results.push(`   Tier ${r.tier} (${r.tier_name}): ${r.cnt}`);
-    });
-
-    // Count bundles
-    const bundleCount = await client.query(`SELECT COUNT(*) as cnt FROM vista_service_bundles`);
-    results.push(`\n🎁 Bundles seeded: ${bundleCount.rows[0].cnt}`);
-
-    // Count discount rules
-    const discCount = await client.query(`SELECT COUNT(*) as cnt FROM vista_discount_rules`);
-    results.push(`💰 Discount rules seeded: ${discCount.rows[0].cnt}`);
-
-    // Count cross-sell rules
-    const csCount = await client.query(`SELECT COUNT(*) as cnt FROM vista_cross_sell_rules`);
-    results.push(`🔀 Cross-sell rules seeded: ${csCount.rows[0].cnt}`);
-
-    // Verify contact columns added
-    const contactColCheck = await client.query(`
-      SELECT column_name FROM information_schema.columns 
-      WHERE table_name = 'vista_contacts' 
-      AND column_name IN ('revenue_tier', 'lifetime_value_cny', 'tier_progression_score')
-    `);
-    results.push(`\n👤 Contact revenue columns: ${contactColCheck.rows.length}/3`);
-
-    success = errors === 0 && tableCheck.rows.length === newTables.length;
-    results.push(`\n${success ? '✅ WAVE 1.6 MIGRATION COMPLETE' : '⚠️ MIGRATION COMPLETE WITH ISSUES'}`);
-
-    await client.end();
-  } catch (err: any) {
-    results.push(`FATAL: ${err.message}`);
+  if (key !== MIGRATION_KEY) {
+    return NextResponse.json({ 
+      status: 'error', 
+      message: 'Unauthorized' 
+    }, { status: 401 })
   }
 
-  return writeResultsToGitHub(results, success);
-}
+  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-async function writeResultsToGitHub(results: string[], success: boolean) {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const content = `# Wave 1.6 Revenue OS Migration Results\n\n**Time:** ${new Date().toISOString()}\n**Status:** ${success ? 'SUCCESS' : 'ERRORS'}\n\n## Log\n\n${results.join('\n')}\n`;
-  
-  const base64Content = Buffer.from(content).toString('base64');
-  const fileName = `VISTA/migration_log_wave1.6_${timestamp}.md`;
-  
-  try {
-    const ghToken = process.env.GITHUB_PAT;
-    if (!ghToken) {
-      results.push('\n⚠️ GITHUB_PAT not set — cannot write results to repo');
-    } else {
-      const response = await fetch(
-        'https://api.github.com/repos/kevinhongfr-star/vista/contents/' + fileName,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': `token ${ghToken}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/vnd.github.v3+json',
-          },
-          body: JSON.stringify({
-            message: `chore: Wave 1.6 Revenue OS migration log ${success ? 'SUCCESS' : 'ERRORS'}`,
-            content: base64Content,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json() as any;
-        results.push(`\n📄 Results committed to GitHub: ${fileName}`);
-      } else {
-        const errText = await response.text();
-        results.push(`\nGitHub write failed: ${response.status}`);
-      }
-    }
-  } catch (ghErr: any) {
-    results.push(`\nGitHub write error: ${ghErr.message}`);
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.json({
+      status: 'error',
+      message: 'Missing Supabase environment variables'
+    }, { status: 500 })
   }
 
-  const html = `<!DOCTYPE html><html><body>
-    <h1>${success ? '✅ WAVE 1.6 MIGRATION SUCCESS' : '⚠️ MIGRATION ERRORS'}</h1>
-    <pre>${results.join('\n')}</pre>
-  </body></html>`;
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false }
+  })
 
-  return new Response(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
-  });
+  const results: { step: string; status: 'success' | 'error'; message?: string }[] = []
+
+  try {
+    // 1. ALTER TABLE vista_contacts - Add new columns
+    results.push({ step: 'Adding columns to vista_contacts', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS score_delta TEXT;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS last_score_update TIMESTAMPTZ;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS last_engagement_date DATE;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS decay_flag BOOLEAN DEFAULT FALSE;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS vista_v INTEGER DEFAULT 0;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS vista_i INTEGER DEFAULT 0;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS vista_s INTEGER DEFAULT 0;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS vista_t INTEGER DEFAULT 0;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS vista_a INTEGER DEFAULT 0;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS vista_composite INTEGER DEFAULT 0;
+        ALTER TABLE vista_contacts ADD COLUMN IF NOT EXISTS density_cluster_id UUID;
+      ` 
+    })
+
+    // 2. ALTER TABLE signals - Add BD columns
+    results.push({ step: 'Adding columns to signals', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        ALTER TABLE signals ADD COLUMN IF NOT EXISTS company TEXT;
+        ALTER TABLE signals ADD COLUMN IF NOT EXISTS signal_type TEXT;
+        ALTER TABLE signals ADD COLUMN IF NOT EXISTS signal_strength TEXT CHECK (signal_strength IS NULL OR signal_strength IN ('Low','Medium','Medium-High','High'));
+        ALTER TABLE signals ADD COLUMN IF NOT EXISTS detected_date DATE;
+        ALTER TABLE signals ADD COLUMN IF NOT EXISTS recency_weight DECIMAL DEFAULT 1.0;
+        ALTER TABLE signals ADD COLUMN IF NOT EXISTS score_impact INTEGER DEFAULT 0;
+      ` 
+    })
+
+    // 3. ALTER TABLE campaign_activities - Add MARIA columns
+    results.push({ step: 'Adding columns to campaign_activities', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS campaign_type TEXT CHECK (campaign_type IS NULL OR campaign_type IN ('Signal-triggered','Nurture','Ecosystem Invite','Kevin Intro','Re-engagement'));
+        ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS service_route TEXT;
+        ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS message_template TEXT;
+        ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS conversation_angle TEXT;
+        ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS activity_status TEXT CHECK (activity_status IS NULL OR activity_status IN ('Drafted','Sent','Opened','Replied','Meeting Booked','No Response'));
+        ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS sent_date TIMESTAMPTZ;
+        ALTER TABLE campaign_activities ADD COLUMN IF NOT EXISTS response_date TIMESTAMPTZ;
+      ` 
+    })
+
+    // 4. Create density_clusters table
+    results.push({ step: 'Creating density_clusters table', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        CREATE TABLE IF NOT EXISTS density_clusters (
+          cluster_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          industry TEXT NOT NULL,
+          geography TEXT NOT NULL,
+          density_score DECIMAL DEFAULT 0,
+          status TEXT CHECK (status IN ('Watch','Emerging','Active')),
+          contact_count INTEGER DEFAULT 0,
+          signal_types TEXT[],
+          recommended_programs UUID[],
+          revenue_potential DECIMAL DEFAULT 0,
+          last_calculated TIMESTAMPTZ DEFAULT NOW(),
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW(),
+          UNIQUE(industry, geography)
+        );
+      ` 
+    })
+
+    // 5. Create programs table
+    results.push({ step: 'Creating programs table', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        CREATE TABLE IF NOT EXISTS programs (
+          program_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          type TEXT CHECK (type IN ('Webinar','Podcast','Newsletter','Roundtable','1:1 Coaching','Advisory','Market Insights')),
+          tier TEXT CHECK (tier IN ('Free','Paid')),
+          name TEXT NOT NULL,
+          description TEXT,
+          cluster_id UUID REFERENCES density_clusters(cluster_id),
+          capacity INTEGER,
+          enrolled_count INTEGER DEFAULT 0,
+          price DECIMAL DEFAULT 0,
+          status TEXT CHECK (status IN ('Planned','Inviting','Active','Completed')),
+          start_date DATE,
+          end_date DATE,
+          revenue_actual DECIMAL DEFAULT 0,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+      ` 
+    })
+
+    // 6. Create program_assignments table
+    results.push({ step: 'Creating program_assignments table', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        CREATE TABLE IF NOT EXISTS program_assignments (
+          assignment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          contact_id UUID REFERENCES vista_contacts(id),
+          program_id UUID REFERENCES programs(program_id),
+          status TEXT CHECK (status IN ('Invited','Registered','Attended','Converted','Churned')),
+          assigned_date DATE DEFAULT CURRENT_DATE,
+          conversion_date DATE,
+          revenue_attributed DECIMAL DEFAULT 0,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+      ` 
+    })
+
+    // 7. Create strategic_notes table
+    results.push({ step: 'Creating strategic_notes table', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        CREATE TABLE IF NOT EXISTS strategic_notes (
+          note_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          note_type TEXT CHECK (note_type IN ('Decision','Override','ICP Adjustment','Focus Shift','Review')),
+          description TEXT,
+          author TEXT DEFAULT 'CARL',
+          contact_id UUID REFERENCES vista_contacts(id),
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+      ` 
+    })
+
+    // 8. Create views
+    results.push({ step: 'Creating dashboard views', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        CREATE OR REPLACE VIEW v_top_7 AS
+        SELECT id, name, company, role, seniority,
+               stain_score, cluster_score, signal_score, engagement_score, priority_score,
+               engagement_tier, encirclement_level, score_delta,
+               vista_composite, last_engagement_date, decay_flag,
+               stain_group, region, country
+        FROM vista_contacts
+        WHERE priority_score >= 40
+        ORDER BY priority_score DESC, signal_score DESC
+        LIMIT 7;
+
+        CREATE OR REPLACE VIEW v_pipeline_summary AS
+        SELECT 
+          engagement_tier,
+          COUNT(*) as contact_count,
+          ROUND(AVG(priority_score)) as avg_score,
+          COUNT(CASE WHEN decay_flag THEN 1 END) as stale_count
+        FROM vista_contacts
+        GROUP BY engagement_tier
+        ORDER BY MIN(priority_score);
+
+        CREATE OR REPLACE VIEW v_encirclement AS
+        SELECT 
+          company,
+          COUNT(*) as contact_count,
+          MAX(encirclement_level) as encirclement_level,
+          ROUND(AVG(engagement_score)) as avg_engagement,
+          ROUND(AVG(priority_score)) as avg_priority,
+          ARRAY_AGG(name) as contacts
+        FROM vista_contacts
+        WHERE company IS NOT NULL
+        GROUP BY company
+        ORDER BY contact_count DESC;
+
+        CREATE OR REPLACE VIEW v_outreach_activity AS
+        SELECT 
+          activity_type,
+          COALESCE(activity_status, outcome) as activity_status,
+          COUNT(*) as count,
+          DATE_TRUNC('week', COALESCE(sent_date, activity_date)) as week
+        FROM campaign_activities
+        WHERE COALESCE(sent_date, activity_date) >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY activity_type, COALESCE(activity_status, outcome), week
+        ORDER BY week DESC;
+      ` 
+    })
+
+    // 9. Data migration
+    results.push({ step: 'Running data migration', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        UPDATE vista_contacts SET
+          stain_score = 0, cluster_score = 0, signal_score = 0,
+          engagement_score = 0, priority_score = 0,
+          score_delta = NULL, last_score_update = NOW(), decay_flag = FALSE;
+
+        UPDATE vista_contacts SET engagement_tier = 'Cold', encirclement_level = 'Scout';
+
+        UPDATE vista_contacts SET last_engagement_date = last_touch_date::DATE
+        WHERE last_touch_date IS NOT NULL AND last_touch_date != '';
+
+        UPDATE vista_contacts SET decay_flag = TRUE
+        WHERE last_engagement_date IS NULL 
+           OR last_engagement_date < CURRENT_DATE - INTERVAL '30 days';
+      ` 
+    })
+
+    // 10. Enable RLS
+    results.push({ step: 'Enabling RLS on new tables', status: 'success' })
+    await supabase.rpc('run_sql', { 
+      sql: `
+        ALTER TABLE density_clusters ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE programs ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE program_assignments ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE strategic_notes ENABLE ROW LEVEL SECURITY;
+      ` 
+    })
+
+    // Verify
+    const { count } = await supabase.from('vista_contacts').select('id', { count: 'exact', head: true })
+    const { data: pipeline } = await supabase.from('v_pipeline_summary').select('*')
+
+    return NextResponse.json({
+      status: 'success',
+      message: 'Migration completed successfully',
+      results,
+      verification: {
+        contacts_count: count,
+        pipeline_records: pipeline?.length || 0
+      }
+    })
+
+  } catch (e: any) {
+    results.push({ step: 'Migration failed', status: 'error', message: e.message })
+    return NextResponse.json({
+      status: 'error',
+      message: e.message,
+      results,
+      stack: e.stack
+    }, { status: 500 })
+  }
 }
