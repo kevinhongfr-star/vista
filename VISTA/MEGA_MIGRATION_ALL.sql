@@ -1,9 +1,16 @@
 -- ============================================================================
 -- MEGA MIGRATION — VISTA (V2 + W1.5/W1.6/W1.7) + DEX AI (66 migrations)
+-- VERSION: 2.0 (FIXED — service_type NOT NULL + category CHECK + missing cols)
 -- ============================================================================
 -- Generated: 2026-07-15
 -- Target: Supabase rnnlteyqmtxkzllbohuu
--- 
+--
+-- FIXES vs v1.0:
+--   1. Wave 1.6: Added service_type to ALL INSERT statements (was NOT NULL violation)
+--   2. Wave 1.6: Added pre-fix to DROP category CHECK constraint (tier names as categories)
+--   3. Wave 1.7: Added is_b2c + slug columns before B2C product INSERT
+--   4. Wave 1.7: Fixed tier_level → tier column reference + added service_type
+--
 -- HOW TO RUN:
 --   1. Open Supabase SQL Editor
 --   2. Paste this entire file
@@ -12,10 +19,6 @@
 -- SAFE TO RE-RUN: All statements use IF NOT EXISTS / ON CONFLICT / DO blocks
 -- ORDER: V2 foundation → Wave 1.5 RPC fix → Wave 1.6 Revenue OS → 
 --         Wave 1.7 B2C→B2B → DEX AI (chronological)
---
--- PART A: VISTA (4 files, ~93KB)
--- PART B: DEX AI / LYC Intelligence (66 files, ~633KB)
--- Total: ~726KB
 -- ============================================================================
 
 
@@ -24,7 +27,6 @@
 -- ============================================================================
 
 -- >>> FILE: run_this_v2_migration.sql (V2 Service Catalog + V4 Backend)
--- >>> 848 lines, 45528 bytes
 -- ============================================================================
 -- VISTA V2 MIGRATION — FINAL COMBINED (ALL FIXES INCLUDED)
 -- Single paste in Supabase SQL Editor. No pre-steps needed.
@@ -876,7 +878,6 @@ END $$;
 
 
 -- >>> FILE: fix_rpc_functions_wave1.5.sql (RPC Function Fixes)
--- >>> 142 lines, 3759 bytes
 -- Fix fn_funnel_summary: cast funnel_stage to match VARCHAR return type
 CREATE OR REPLACE FUNCTION fn_funnel_summary()
 RETURNS TABLE (
@@ -1021,8 +1022,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 
--- >>> FILE: run_this_wave1.6_migration.sql (Revenue Operating System)
--- >>> 453 lines, 30746 bytes
+-- >>> FILE: run_this_wave1.6_migration.sql — FIXED (service_type + category CHECK)
 -- ============================================================
 -- VISTA Wave 1.6 — Revenue Operating System Migration
 -- ============================================================
@@ -1061,74 +1061,87 @@ WHERE tier IS NULL AND name = 'Advisory Services';
 UPDATE vista_service_catalog SET tier = 5, tier_name = 'Search (Cash Engine)', is_discountable = false
 WHERE tier IS NULL AND name LIKE '%Search%' OR name LIKE '%search%';
 
+
+-- Pre-fix: Drop category CHECK constraint (Wave 1.6 uses tier names as categories)
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.constraint_column_usage
+    WHERE table_name = 'vista_service_catalog'
+    AND constraint_name = 'vista_service_catalog_category_check'
+  ) THEN
+    ALTER TABLE vista_service_catalog DROP CONSTRAINT vista_service_catalog_category_check;
+    RAISE NOTICE 'Dropped vista_service_catalog_category_check';
+  END IF;
+END $$;
+
 -- 1.3 Seed Tier 1 — FREE (Acquisition Layer)
-INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, is_discountable, tier_positioning)
+INSERT INTO vista_service_catalog (name, category, service_type, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, is_discountable, tier_positioning)
 VALUES
-    ('LinkedIn Content (3x/week)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['All ICP contacts'], false, 'The thought leader who gets cross-border talent'),
-    ('Newsletter (weekly)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['All contacts'], false, 'The thought leader who gets cross-border talent'),
-    ('Podcast (weekly)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Target guests', 'Listeners'], false, 'The thought leader who gets cross-border talent'),
-    ('Webinar (monthly, 45 min)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Nurture list', 'Workshop leads'], false, 'The thought leader who gets cross-border talent'),
-    ('Diagnostic Teaser (15 min)', 'Free Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Conversation-stage contacts'], false, 'Show them what the data looks like')
+    ('LinkedIn Content (3x/week)', 'Free Content', 'Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['All ICP contacts'], false, 'The thought leader who gets cross-border talent'),
+    ('Newsletter (weekly)', 'Free Content', 'Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['All contacts'], false, 'The thought leader who gets cross-border talent'),
+    ('Podcast (weekly)', 'Free Content', 'Content', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Target guests', 'Listeners'], false, 'The thought leader who gets cross-border talent'),
+    ('Webinar (monthly, 45 min)', 'Free Content', 'Event', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Nurture list', 'Workshop leads'], false, 'The thought leader who gets cross-border talent'),
+    ('Diagnostic Teaser (15 min)', 'Free Content', 'Diagnostic', 1, 'Free (Acquisition)', 0, 0, 'free', ARRAY['Conversation-stage contacts'], false, 'Show them what the data looks like')
 ON CONFLICT DO NOTHING;
 
 -- 1.4 Seed Tier 2 — LOW-TICKET (Validation Layer)
-INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+INSERT INTO vista_service_catalog (name, category, service_type, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
 VALUES
-    ('Workshop (online, 2-3 hours)', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 2000, 5000, 'per_session', ARRAY['HR leaders', 'L&D heads'], '2-3 hours', true, '{"max_pct": 0.15, "conditions": ["early_bird"]}', 'Practical, diagnostic-driven, not theory', '2-3x cheaper than Huthwaite/DDI'),
-    ('Workshop (half-day intensive)', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 5000, 8000, 'per_session', ARRAY['VPs', 'Directors'], 'half-day', true, '{"max_pct": 0.15, "conditions": ["early_bird"]}', 'Practical, diagnostic-driven, not theory', '2-3x cheaper than Huthwaite/DDI'),
-    ('Insights Report (single issue)', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 1500, 3000, 'per_issue', ARRAY['PE operators', 'Strategy heads'], 'one-time', true, '{"max_pct": 0.10}', 'Show intelligence quality', NULL),
-    ('Talent Market Map', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 3000, 8000, 'per_project', ARRAY['HR', 'Hiring managers'], '3-6 weeks', true, '{"max_pct": 0.15}', 'Demonstrate GRID capability', NULL),
-    ('The Council (annual membership)', 'Low-Ticket', 2, 'Low-Ticket (Validation)', 8000, 15000, 'per_year', ARRAY['Senior leaders', 'PE partners'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
-    ('DEX AI Starter Credits', 'Platform', 7, 'Platform (DEX AI)', 500, 2000, 'one_time', ARRAY['HR teams', 'Recruiters'], 'one-time', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights')
+    ('Workshop (online, 2-3 hours)', 'Event', 'Workshop', 2, 'Low-Ticket (Validation)', 2000, 5000, 'per_session', ARRAY['HR leaders', 'L&D heads'], '2-3 hours', true, '{"max_pct": 0.15, "conditions": ["early_bird"]}', 'Practical, diagnostic-driven, not theory', '2-3x cheaper than Huthwaite/DDI'),
+    ('Workshop (half-day intensive)', 'Event', 'Workshop', 2, 'Low-Ticket (Validation)', 5000, 8000, 'per_session', ARRAY['VPs', 'Directors'], 'half-day', true, '{"max_pct": 0.15, "conditions": ["early_bird"]}', 'Practical, diagnostic-driven, not theory', '2-3x cheaper than Huthwaite/DDI'),
+    ('Insights Report (single issue)', 'Content', 'Report', 2, 'Low-Ticket (Validation)', 1500, 3000, 'per_issue', ARRAY['PE operators', 'Strategy heads'], 'one-time', true, '{"max_pct": 0.10}', 'Show intelligence quality', NULL),
+    ('Talent Market Map', 'Diagnostic', 'Mapping', 2, 'Low-Ticket (Validation)', 3000, 8000, 'per_project', ARRAY['HR', 'Hiring managers'], '3-6 weeks', true, '{"max_pct": 0.15}', 'Demonstrate GRID capability', NULL),
+    ('The Council (annual membership)', 'Membership', 'Membership', 2, 'Low-Ticket (Validation)', 8000, 15000, 'per_year', ARRAY['Senior leaders', 'PE partners'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
+    ('DEX AI Starter Credits', 'Platform', 'Platform', 7, 'Platform (DEX AI)', 500, 2000, 'one_time', ARRAY['HR teams', 'Recruiters'], 'one-time', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights')
 ON CONFLICT DO NOTHING;
 
 -- 1.5 Seed Tier 3 — MID-TICKET (Revenue Layer)
-INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+INSERT INTO vista_service_catalog (name, category, service_type, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
 VALUES
-    ('Diagnostic (comprehensive)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 8000, 25000, 'per_project', ARRAY['CHROs', 'VPs', 'GMs'], '2-4 weeks', true, '{"max_pct": 0.50, "conditions": ["founding_client", "first_3"]}', 'Data-driven talent intelligence, not gut feel', 'Same price as SHL/Hogan, more actionable'),
-    ('Executive Coaching (6 sessions)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 18000, 36000, 'per_engagement', ARRAY['Senior directors', 'VPs'], '3 months', true, '{"max_pct": 0.15}', 'Boutique coaching with data backing', NULL),
-    ('Executive Coaching (12 sessions)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 30000, 60000, 'per_engagement', ARRAY['C-suite', 'Founders'], '6 months', true, '{"max_pct": 0.15}', 'Boutique coaching with data backing', NULL),
-    ('Training Program (custom, 3 sessions)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 15000, 30000, 'per_program', ARRAY['L&D', 'HR directors'], '1-2 months', true, '{"max_pct": 0.20}', 'Diagnostic-backed training', NULL),
-    ('Syndicate Intelligence Subscription', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 30000, 60000, 'per_year', ARRAY['PE firms', 'Strategy teams'], '12 months', true, '{"max_pct": 0.15, "conditions": ["annual"]}', 'Ongoing intelligence, not point-in-time', NULL),
-    ('DEX AI Pro Subscription', 'Platform', 7, 'Platform (DEX AI)', 5000, 15000, 'per_month', ARRAY['HR teams', 'Talent functions'], 'monthly', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights'),
-    ('Mapping Project (full market scan)', 'Mid-Ticket', 3, 'Mid-Ticket (Revenue)', 15000, 40000, 'per_project', ARRAY['CHROs', 'PE operating partners'], '3-6 weeks', true, '{"max_pct": 0.15}', 'Comprehensive market intelligence', NULL)
+    ('Diagnostic (comprehensive)', 'Diagnostic', 'Assessment', 3, 'Mid-Ticket (Revenue)', 8000, 25000, 'per_project', ARRAY['CHROs', 'VPs', 'GMs'], '2-4 weeks', true, '{"max_pct": 0.50, "conditions": ["founding_client", "first_3"]}', 'Data-driven talent intelligence, not gut feel', 'Same price as SHL/Hogan, more actionable'),
+    ('Executive Coaching (6 sessions)', 'Development Program', 'Coaching', 3, 'Mid-Ticket (Revenue)', 18000, 36000, 'per_engagement', ARRAY['Senior directors', 'VPs'], '3 months', true, '{"max_pct": 0.15}', 'Boutique coaching with data backing', NULL),
+    ('Executive Coaching (12 sessions)', 'Development Program', 'Coaching', 3, 'Mid-Ticket (Revenue)', 30000, 60000, 'per_engagement', ARRAY['C-suite', 'Founders'], '6 months', true, '{"max_pct": 0.15}', 'Boutique coaching with data backing', NULL),
+    ('Training Program (custom, 3 sessions)', 'Development Program', 'Training', 3, 'Mid-Ticket (Revenue)', 15000, 30000, 'per_program', ARRAY['L&D', 'HR directors'], '1-2 months', true, '{"max_pct": 0.20}', 'Diagnostic-backed training', NULL),
+    ('Syndicate Intelligence Subscription', 'Membership', 'Subscription', 3, 'Mid-Ticket (Revenue)', 30000, 60000, 'per_year', ARRAY['PE firms', 'Strategy teams'], '12 months', true, '{"max_pct": 0.15, "conditions": ["annual"]}', 'Ongoing intelligence, not point-in-time', NULL),
+    ('DEX AI Pro Subscription', 'Platform', 'Platform', 7, 'Platform (DEX AI)', 5000, 15000, 'per_month', ARRAY['HR teams', 'Talent functions'], 'monthly', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights'),
+    ('Mapping Project (full market scan)', 'Diagnostic', 'Mapping', 3, 'Mid-Ticket (Revenue)', 15000, 40000, 'per_project', ARRAY['CHROs', 'PE operating partners'], '3-6 weeks', true, '{"max_pct": 0.15}', 'Comprehensive market intelligence', NULL)
 ON CONFLICT DO NOTHING;
 
 -- 1.6 Seed Tier 4 — HIGH-TICKET (Proof Layer)
-INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+INSERT INTO vista_service_catalog (name, category, service_type, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
 VALUES
-    ('Advisory Project (single product)', 'High-Ticket', 4, 'High-Ticket (Proof)', 40000, 80000, 'per_project', ARRAY['CHROs', 'CEOs'], '2-3 months', true, '{"max_pct": 0.20, "conditions": ["founding_client", "first_3"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
-    ('Advisory Project (multi-product)', 'High-Ticket', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_project', ARRAY['CEOs', 'Boards'], '4-6 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
-    ('HQ-China Alignment Program (BRIDGE full)', 'High-Ticket', 4, 'High-Ticket (Proof)', 60000, 120000, 'per_project', ARRAY['Expats', 'China GMs', 'HQ heads'], '6 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
-    ('AI Transformation Program (SPARK full)', 'High-Ticket', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_project', ARRAY['CEOs', 'CTOs', 'CHROs'], '6-9 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
-    ('Retainer (monthly advisory)', 'High-Ticket', 4, 'High-Ticket (Proof)', 15000, 30000, 'per_month', ARRAY['CHROs', 'CEOs'], '6-12 months', true, '{"max_pct": 0.20, "conditions": ["annual_commitment", "first_3"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
-    ('PE Portfolio Talent Review (annual)', 'High-Ticket', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_year', ARRAY['PE partners'], 'ongoing', true, '{"max_pct": 0.18, "conditions": ["bundle"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
-    ('DEX AI Enterprise License', 'Platform', 7, 'Platform (DEX AI)', 15000, 30000, 'per_month', ARRAY['Large enterprises'], 'annual contract', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights')
+    ('Advisory Project (single product)', 'Advisory', 'Advisory', 4, 'High-Ticket (Proof)', 40000, 80000, 'per_project', ARRAY['CHROs', 'CEOs'], '2-3 months', true, '{"max_pct": 0.20, "conditions": ["founding_client", "first_3"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('Advisory Project (multi-product)', 'Advisory', 'Advisory', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_project', ARRAY['CEOs', 'Boards'], '4-6 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('HQ-China Alignment Program (BRIDGE full)', 'Development Program', 'Program', 4, 'High-Ticket (Proof)', 60000, 120000, 'per_project', ARRAY['Expats', 'China GMs', 'HQ heads'], '6 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('AI Transformation Program (SPARK full)', 'Development Program', 'Program', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_project', ARRAY['CEOs', 'CTOs', 'CHROs'], '6-9 months', true, '{"max_pct": 0.20}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('Retainer (monthly advisory)', 'Advisory', 'Retainer', 4, 'High-Ticket (Proof)', 15000, 30000, 'per_month', ARRAY['CHROs', 'CEOs'], '6-12 months', true, '{"max_pct": 0.20, "conditions": ["annual_commitment", "first_3"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('PE Portfolio Talent Review (annual)', 'Advisory', 'Advisory', 4, 'High-Ticket (Proof)', 80000, 150000, 'per_year', ARRAY['PE partners'], 'ongoing', true, '{"max_pct": 0.18, "conditions": ["bundle"]}', 'Boutique. Senior. Cross-border. AI-native.', '1/3 the price of McKinsey/BCG'),
+    ('DEX AI Enterprise License', 'Platform', 'Platform', 7, 'Platform (DEX AI)', 15000, 30000, 'per_month', ARRAY['Large enterprises'], 'annual contract', false, NULL, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights')
 ON CONFLICT DO NOTHING;
 
 -- 1.7 Seed Tier 5 — SEARCH (Cash Engine)
-INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+INSERT INTO vista_service_catalog (name, category, service_type, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
 VALUES
-    ('Retained Executive Search', 'Search', 5, 'Search (Cash Engine)', 75000, 200000, 'per_role', ARRAY['CHROs', 'CEOs'], '2-4 months', false, NULL, 'Search + intelligence, not just headhunting', 'Same price as Egon Zehnder/Spencer Stuart, more data'),
-    ('Contingent Search', 'Search', 5, 'Search (Cash Engine)', 50000, 150000, 'per_role', ARRAY['CHROs', 'Hiring managers'], '1-3 months', false, NULL, 'Search + intelligence, not just headhunting', 'Same price as Egon Zehnder/Spencer Stuart, more data'),
-    ('Search + Diagnostic Bundle', 'Search', 5, 'Search (Cash Engine)', 90000, 215000, 'per_role', ARRAY['CHROs', 'CEOs'], '2-4 months', true, '{"max_pct": 0.10, "conditions": ["bundle"]}', 'Search + intelligence bundled', 'Same price, more comprehensive'),
-    ('Mapping-to-Search Pipeline', 'Search', 5, 'Search (Cash Engine)', 15000, 40000, 'per_role', ARRAY['CHROs', 'PE operating partners'], '3-6 weeks then search', true, '{"max_pct": 0.10, "note": "mapping fee credited to search"}', 'Mapping converts to search', NULL)
+    ('Retained Executive Search', 'Advisory', 'Search', 5, 'Search (Cash Engine)', 75000, 200000, 'per_role', ARRAY['CHROs', 'CEOs'], '2-4 months', false, NULL, 'Search + intelligence, not just headhunting', 'Same price as Egon Zehnder/Spencer Stuart, more data'),
+    ('Contingent Search', 'Advisory', 'Search', 5, 'Search (Cash Engine)', 50000, 150000, 'per_role', ARRAY['CHROs', 'Hiring managers'], '1-3 months', false, NULL, 'Search + intelligence, not just headhunting', 'Same price as Egon Zehnder/Spencer Stuart, more data'),
+    ('Search + Diagnostic Bundle', 'Advisory', 'Search', 5, 'Search (Cash Engine)', 90000, 215000, 'per_role', ARRAY['CHROs', 'CEOs'], '2-4 months', true, '{"max_pct": 0.10, "conditions": ["bundle"]}', 'Search + intelligence bundled', 'Same price, more comprehensive'),
+    ('Mapping-to-Search Pipeline', 'Diagnostic', 'Mapping', 5, 'Search (Cash Engine)', 15000, 40000, 'per_role', ARRAY['CHROs', 'PE operating partners'], '3-6 weeks then search', true, '{"max_pct": 0.10, "note": "mapping fee credited to search"}', 'Mapping converts to search', NULL)
 ON CONFLICT DO NOTHING;
 
 -- 1.8 Seed Tier 6 — THE COUNCIL (Recurring + Exclusivity)
-INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
+INSERT INTO vista_service_catalog (name, category, service_type, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, engagement_duration, is_discountable, discount_rules, tier_positioning, competitor_anchor)
 VALUES
-    ('Council Individual Member', 'Council', 6, 'Council (Recurring)', 12000, 12000, 'per_year', ARRAY['Senior leaders'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
-    ('Council Corporate Member', 'Council', 6, 'Council (Recurring)', 30000, 30000, 'per_year', ARRAY['CHROs', 'CEOs'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
-    ('Council PE Partner Member', 'Council', 6, 'Council (Recurring)', 50000, 50000, 'per_year', ARRAY['PE partners'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage')
+    ('Council Individual Member', 'Membership', 'Membership', 6, 'Council (Recurring)', 12000, 12000, 'per_year', ARRAY['Senior leaders'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
+    ('Council Corporate Member', 'Membership', 'Membership', 6, 'Council (Recurring)', 30000, 30000, 'per_year', ARRAY['CHROs', 'CEOs'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage'),
+    ('Council PE Partner Member', 'Membership', 'Membership', 6, 'Council (Recurring)', 50000, 50000, 'per_year', ARRAY['PE partners'], '12 months', true, '{"max_pct": 0.20, "conditions": ["founding_member"]}', 'The cross-border leadership circle', '1/3 the price of YPO/EO/Vistage')
 ON CONFLICT DO NOTHING;
 
 -- 1.9 Seed Tier 7 — PLATFORM (DEX AI additional products)
-INSERT INTO vista_service_catalog (name, category, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, is_discountable, tier_positioning, competitor_anchor)
+INSERT INTO vista_service_catalog (name, category, service_type, tier, tier_name, price_min_cny, price_max_cny, price_model, target_buyer, is_discountable, tier_positioning, competitor_anchor)
 VALUES
-    ('DEX AI Credit Top-Up', 'Platform', 7, 'Platform (DEX AI)', 50, 50, 'per_unit', ARRAY['HR teams', 'Recruiters'], false, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights'),
-    ('METRIX Assessment (standalone)', 'Platform', 7, 'Platform (DEX AI)', 200, 500, 'per_assessment', ARRAY['HR teams', 'Recruiters'], true, 'Data-driven assessment, not gut feel', NULL),
-    ('Team Diagnostic (up to 10 people)', 'Platform', 7, 'Platform (DEX AI)', 3000, 8000, 'one_time', ARRAY['HR teams', 'Team leads'], true, 'Team-level intelligence', NULL)
+    ('DEX AI Credit Top-Up', 'Platform', 'Platform', 7, 'Platform (DEX AI)', 50, 50, 'per_unit', ARRAY['HR teams', 'Recruiters'], false, 'Talent intelligence as a service', '1/5 the price of LinkedIn Talent Insights'),
+    ('METRIX Assessment (standalone)', 'Platform', 'Assessment', 7, 'Platform (DEX AI)', 200, 500, 'per_assessment', ARRAY['HR teams', 'Recruiters'], true, 'Data-driven assessment, not gut feel', NULL),
+    ('Team Diagnostic (up to 10 people)', 'Platform', 'Assessment', 7, 'Platform (DEX AI)', 3000, 8000, 'one_time', ARRAY['HR teams', 'Team leads'], true, 'Team-level intelligence', NULL)
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
@@ -1478,8 +1491,7 @@ END $$;
 
 
 
--- >>> FILE: run_this_wave1.7_migration.sql (B2C→B2B Conversion Intelligence)
--- >>> 309 lines, 13468 bytes
+-- >>> FILE: run_this_wave1.7_migration.sql — FIXED (is_b2c/slug cols + service_type)
 -- ============================================================================
 -- VISTA Wave 1.7 Migration — B2C → B2B Conversion Intelligence (CORRECTED)
 -- ============================================================================
@@ -1644,33 +1656,39 @@ CREATE TABLE IF NOT EXISTS vista_b2c_conversions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+
+-- Pre-fix: Add missing columns for B2C product catalog entries
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS is_b2c BOOLEAN DEFAULT false;
+ALTER TABLE vista_service_catalog ADD COLUMN IF NOT EXISTS slug TEXT;
+-- Note: tier_level is referenced as 'tier' in Wave 1.6 schema; use tier instead
+
 -- ============================================================================
 -- SECTION 3: SEED B2C PRODUCTS IN SERVICE CATALOG
 -- ============================================================================
 -- VISTA needs to know B2C products exist for revenue tracking and attribution.
 -- These are NOT managed by VISTA — they're products of the DEX AI portal.
 
-INSERT INTO vista_service_catalog (name, category, description, pricing_model, tier_level, is_b2c, slug, target_audience)
+INSERT INTO vista_service_catalog (name, category, service_type, description, pricing_model, tier, is_b2c, slug, target_audience)
 VALUES
   -- Credit Packs
-  ('DEX AI Credit Pack Starter', 'Content', '10 credits for DEX AI career advisory assessments and tools', 'Fixed', 1, true, 'dex-ai-credits-starter', 'Individual professionals'),
-  ('DEX AI Credit Pack Professional', 'Content', '50 credits for DEX AI career advisory assessments and tools', 'Fixed', 1, true, 'dex-ai-credits-professional', 'Individual professionals'),
-  ('DEX AI Credit Pack Executive', 'Content', '150 credits for DEX AI career advisory assessments and tools', 'Fixed', 1, true, 'dex-ai-credits-executive', 'Senior professionals'),
+  ('DEX AI Credit Pack Starter', 'Content', 'Platform', '10 credits for DEX AI career advisory assessments and tools', 'Fixed', 1, true, 'dex-ai-credits-starter', 'Individual professionals'),
+  ('DEX AI Credit Pack Professional', 'Content', 'Platform', '50 credits for DEX AI career advisory assessments and tools', 'Fixed', 1, true, 'dex-ai-credits-professional', 'Individual professionals'),
+  ('DEX AI Credit Pack Executive', 'Content', 'Platform', '150 credits for DEX AI career advisory assessments and tools', 'Fixed', 1, true, 'dex-ai-credits-executive', 'Senior professionals'),
   
   -- Subscriptions
-  ('DEX AI Member', 'Membership', '30 credits/month + full assessment access', 'Subscription', 1, true, 'dex-ai-member', 'Individual professionals'),
-  ('DEX AI Pro', 'Membership', '100 credits/month + priority features + Council path', 'Subscription', 1, true, 'dex-ai-pro', 'Ambitious professionals'),
+  ('DEX AI Member', 'Membership', 'Subscription', '30 credits/month + full assessment access', 'Subscription', 1, true, 'dex-ai-member', 'Individual professionals'),
+  ('DEX AI Pro', 'Membership', 'Subscription', '100 credits/month + priority features + Council path', 'Subscription', 1, true, 'dex-ai-pro', 'Ambitious professionals'),
   
   -- Assessments (credit-gated)
-  ('PRISM Assessment', 'Diagnostic', 'Personality profile — career style, decision patterns, team fit (3 credits)', 'Fixed', 1, true, 'prism-assessment', 'B2C users'),
-  ('TRIDENT Assessment', 'Diagnostic', 'Skills gap analysis — current vs. target role competencies (5 credits)', 'Fixed', 1, true, 'trident-assessment', 'B2C users'),
-  ('CANVAS Assessment', 'Diagnostic', 'Career path mapping — 5-year trajectory visualization (8 credits)', 'Fixed', 1, true, 'canvas-assessment', 'B2C users'),
+  ('PRISM Assessment', 'Diagnostic', 'Assessment', 'Personality profile — career style, decision patterns, team fit (3 credits)', 'Fixed', 1, true, 'prism-assessment', 'B2C users'),
+  ('TRIDENT Assessment', 'Diagnostic', 'Assessment', 'Skills gap analysis — current vs. target role competencies (5 credits)', 'Fixed', 1, true, 'trident-assessment', 'B2C users'),
+  ('CANVAS Assessment', 'Diagnostic', 'Assessment', 'Career path mapping — 5-year trajectory visualization (8 credits)', 'Fixed', 1, true, 'canvas-assessment', 'B2C users'),
   
   -- Coaching (B2C entry point)
-  ('DEX AI Coaching Session', 'Development Program', '1:1 career coaching session with LYC advisor (15 credits)', 'Fixed', 1, true, 'dex-ai-coaching', 'B2C users'),
+  ('DEX AI Coaching Session', 'Development Program', 'Coaching', '1:1 career coaching session with LYC advisor (15 credits)', 'Fixed', 1, true, 'dex-ai-coaching', 'B2C users'),
   
   -- Bundle
-  ('B2C Career Accelerator', 'Development Program', '3-month Pro + PRISM + CANVAS + 1 coaching session', 'Fixed', 1, true, 'b2c-career-accelerator', 'Ambitious professionals')
+  ('B2C Career Accelerator', 'Development Program', 'Program', '3-month Pro + PRISM + CANVAS + 1 coaching session', 'Fixed', 1, true, 'b2c-career-accelerator', 'Ambitious professionals')
 ON CONFLICT DO NOTHING;
 
 -- ============================================================================
@@ -1796,7 +1814,7 @@ CREATE INDEX IF NOT EXISTS idx_b2c_conversions_contact ON vista_b2c_conversions(
 -- ============================================================================
 
 
--- >>> FILE: 20250707_nexus_chat_tables.sql (168 lines, 5930 bytes)
+-- >>> FILE: 20250707_nexus_chat_tables.sql
 -- Migration: Nexus Chat Tables
 -- Date: 2026-07-07
 -- Purpose: Create chat persistence tables for Nexus AI chatbot
@@ -1967,7 +1985,7 @@ CREATE TRIGGER update_user_credits_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- >>> FILE: 20260608_create_memories_and_share_cards_tables.sql (144 lines, 6482 bytes)
+-- >>> FILE: 20260608_create_memories_and_share_cards_tables.sql
 -- ── Memories Table ─────────────────────────────────────────────────
 -- Stores user-extracted career intelligence (goals, pain points, strengths,
 -- experiences, preferences, insights) from chat conversations or explicit
@@ -2114,7 +2132,7 @@ CREATE TRIGGER trg_share_cards_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
--- >>> FILE: 20260611_create_org_intelligence_tables.sql (516 lines, 24024 bytes)
+-- >>> FILE: 20260611_create_org_intelligence_tables.sql
 -- ── 20260611_create_org_intelligence_tables.sql ─────────────────────────
 -- Organizational Intelligence module — T1 schema migration.
 -- NEXUS direct build (Kevin override 2026-06-11 15:12 — PM/Trae LOCK lifted).
@@ -2633,7 +2651,7 @@ BEGIN
 END$$;
 
 
--- >>> FILE: 20260615_create_audit_logs.sql (82 lines, 2983 bytes)
+-- >>> FILE: 20260615_create_audit_logs.sql
 -- Audit logs table for tracking platform activity
 -- Created: 2026-06-15
 
@@ -2718,7 +2736,7 @@ CREATE POLICY "Admin read audit_logs" ON audit_logs FOR SELECT USING (
 );
 
 
--- >>> FILE: 20260622_advisory_workshops.sql (54 lines, 2286 bytes)
+-- >>> FILE: 20260622_advisory_workshops.sql
 -- Phase 3.4: Advisory Assessment Engine
 -- Workshop and participant management tables
 
@@ -2775,7 +2793,7 @@ CREATE INDEX IF NOT EXISTS idx_workshop_participants_token ON workshop_participa
 CREATE INDEX IF NOT EXISTS idx_workshop_scores_workshop ON workshop_scores(workshop_id);
 CREATE INDEX IF NOT EXISTS idx_workshop_scores_participant ON workshop_scores(participant_id);
 
--- >>> FILE: 20260622_client_notifications.sql (25 lines, 1149 bytes)
+-- >>> FILE: 20260622_client_notifications.sql
 -- Phase 3.2: Client Portal Notifications Table
 -- Migration for client feedback and notification system
 
@@ -2803,7 +2821,7 @@ ADD COLUMN IF NOT EXISTS client_feedback jsonb;
 CREATE INDEX IF NOT EXISTS idx_pipeline_client_feedback ON candidates_pipeline((client_feedback->>'decision'));
 
 
--- >>> FILE: 20260622_create_outreach_attempts.sql (45 lines, 1560 bytes)
+-- >>> FILE: 20260622_create_outreach_attempts.sql
 CREATE TABLE IF NOT EXISTS outreach_attempts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   candidate_id uuid REFERENCES contacts(id) ON DELETE CASCADE,
@@ -2851,7 +2869,7 @@ CREATE INDEX IF NOT EXISTS idx_outreach_created_by ON outreach_attempts(created_
 CREATE INDEX IF NOT EXISTS idx_outreach_date ON outreach_attempts(attempt_date);
 
 
--- >>> FILE: 20260622_create_success_profiles.sql (50 lines, 1620 bytes)
+-- >>> FILE: 20260622_create_success_profiles.sql
 -- Phase 1.2: Success Profile Builder
 -- Creates success_profiles table for defining candidate evaluation criteria
 
@@ -2904,7 +2922,7 @@ CREATE TRIGGER success_profiles_updated_at
 BEFORE UPDATE ON success_profiles
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- >>> FILE: 20260622_extend_target_companies_market_definition.sql (46 lines, 2279 bytes)
+-- >>> FILE: 20260622_extend_target_companies_market_definition.sql
 -- Phase 1.5: Market Definition Enhancement
 -- Extend target_companies with mandate linkage, AI overviews, fit scores
 
@@ -2953,7 +2971,7 @@ CREATE INDEX IF NOT EXISTS idx_target_companies_region ON target_companies(regio
 CREATE INDEX IF NOT EXISTS idx_target_companies_industry ON target_companies(industry) WHERE industry IS NOT NULL;
 
 
--- >>> FILE: 20260622_interviews.sql (98 lines, 3378 bytes)
+-- >>> FILE: 20260622_interviews.sql
 -- Phase 4.3: Interview Management Tables
 -- Created: 2026-06-22
 
@@ -3054,7 +3072,7 @@ SELECT
 FROM interviews;
 
 
--- >>> FILE: 20260622_mandate_solutions.sql (27 lines, 1255 bytes)
+-- >>> FILE: 20260622_mandate_solutions.sql
 -- Phase 3.3: Solution Definition Module
 -- Creates mandate_solutions table for HR business solutions
 
@@ -3084,7 +3102,7 @@ CREATE INDEX IF NOT EXISTS idx_mandate_solutions_status ON mandate_solutions(sta
 CREATE INDEX IF NOT EXISTS idx_mandate_solutions_type ON mandate_solutions(solution_type);
 
 
--- >>> FILE: 20260622_milestones.sql (175 lines, 5907 bytes)
+-- >>> FILE: 20260622_milestones.sql
 -- Phase 4.4: Engagement Timeline Tracker (Methodology Step 8)
 -- Add milestones JSONB column to mandates table
 
@@ -3262,7 +3280,7 @@ $$ LANGUAGE plpgsql;
 --   EXECUTE FUNCTION set_default_milestones();
 
 
--- >>> FILE: 20260622_ml_models.sql (175 lines, 5732 bytes)
+-- >>> FILE: 20260622_ml_models.sql
 -- Phase 6.1: Predictive Matching
 -- ML models table for storing trained model weights
 
@@ -3440,7 +3458,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- >>> FILE: 20260622_offers.sql (269 lines, 8193 bytes)
+-- >>> FILE: 20260622_offers.sql
 -- Phase 4.5: Offer + Onboarding + Post-Placement
 -- Create offers table for managing employment offers
 
@@ -3712,7 +3730,7 @@ FROM offers o
 LEFT JOIN contacts c ON o.candidate_id = c.id;
 
 
--- >>> FILE: 20260623_alumni_tracking.sql (142 lines, 5181 bytes)
+-- >>> FILE: 20260623_alumni_tracking.sql
 -- Phase 4.6: Post-Placement & Alumni Tracking
 -- Alumni lifecycle management system
 
@@ -3857,7 +3875,7 @@ CREATE POLICY "Users can view org alumni campaigns" ON alumni_campaigns
     org_id IN (SELECT organization_id FROM profiles WHERE id = auth.uid())
   );
 
--- >>> FILE: 20260623_approval_workflows.sql (165 lines, 5980 bytes)
+-- >>> FILE: 20260623_approval_workflows.sql
 -- Phase 3.11: Approval Workflows
 -- 012_approval_workflows.sql
 
@@ -4025,7 +4043,7 @@ FROM organizations o
 ON CONFLICT DO NOTHING;
 
 
--- >>> FILE: 20260623_background_checks.sql (38 lines, 1612 bytes)
+-- >>> FILE: 20260623_background_checks.sql
 -- Phase 7.4: Background Checks
 
 CREATE TABLE IF NOT EXISTS background_checks (
@@ -4066,7 +4084,7 @@ CREATE POLICY "Users can update background checks" ON background_checks
     organization_id IN (SELECT organization_id FROM profiles WHERE id = auth.uid())
   );
 
--- >>> FILE: 20260623_bd_pipeline.sql (167 lines, 5681 bytes)
+-- >>> FILE: 20260623_bd_pipeline.sql
 -- Phase 2.8: BD Pipeline (Business Development)
 -- Opportunities, activities, proposals, and metrics tables
 
@@ -4236,7 +4254,7 @@ CREATE POLICY "org_bd_metrics" ON bd_pipeline_metrics
   FOR ALL USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 
--- >>> FILE: 20260623_benchmark_assessment.sql (39 lines, 1666 bytes)
+-- >>> FILE: 20260623_benchmark_assessment.sql
 -- Phase 7.5: BENCHMARK Assessment
 
 CREATE TABLE IF NOT EXISTS benchmark_runs (
@@ -4278,7 +4296,7 @@ CREATE POLICY "Users can update org benchmark runs" ON benchmark_runs
     organization_id IN (SELECT organization_id FROM profiles WHERE id = auth.uid())
   );
 
--- >>> FILE: 20260623_compensation_benchmarking.sql (95 lines, 3267 bytes)
+-- >>> FILE: 20260623_compensation_benchmarking.sql
 -- Phase 3.8: Compensation Benchmarking Module
 -- Benchmarks, data points, and survey imports tables
 
@@ -4376,7 +4394,7 @@ CREATE POLICY "org_surveys" ON comp_survey_imports
   FOR ALL USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 
--- >>> FILE: 20260623_kpi_metrics.sql (50 lines, 1936 bytes)
+-- >>> FILE: 20260623_kpi_metrics.sql
 -- Phase 0.7: KPI Definitions & Success Metrics
 -- kpi_values + kpi_alerts tables
 
@@ -4429,7 +4447,7 @@ CREATE POLICY "org_manage_alerts" ON kpi_alerts
   FOR UPDATE USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 
--- >>> FILE: 20260623_notification_foundation.sql (60 lines, 2346 bytes)
+-- >>> FILE: 20260623_notification_foundation.sql
 -- Phase 7.3: Notification Foundation Migration
 -- Centralized notification system with preferences
 
@@ -4492,7 +4510,7 @@ CREATE POLICY "Users can update their preferences" ON notification_preferences
 CREATE POLICY "Users can insert their preferences" ON notification_preferences
   FOR INSERT WITH CHECK (user_id = auth.uid());
 
--- >>> FILE: 20260623_pipl_compliance.sql (117 lines, 4446 bytes)
+-- >>> FILE: 20260623_pipl_compliance.sql
 -- Phase 5.7: PIPL Compliance (China Data Privacy)
 -- Consent, residency, cross-border transfers, and data subject rights
 
@@ -4612,7 +4630,7 @@ CREATE POLICY "org_requests" ON data_subject_requests
   FOR ALL USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 
--- >>> FILE: 20260623_question_library.sql (101 lines, 3347 bytes)
+-- >>> FILE: 20260623_question_library.sql
 -- Phase 7.2: Question Library Migration
 -- Pre-built question bank organized by competency and difficulty
 
@@ -4716,7 +4734,7 @@ CREATE POLICY "Users can update own sets" ON question_sets
 CREATE POLICY "Users can delete own sets" ON question_sets
   FOR DELETE USING (created_by = auth.uid());
 
--- >>> FILE: 20260623_referee_system.sql (73 lines, 2624 bytes)
+-- >>> FILE: 20260623_referee_system.sql
 -- Phase 7.1: Referee System Migration
 -- Reference checks without friction
 
@@ -4792,7 +4810,7 @@ CREATE POLICY "Responses follow request access" ON reference_responses
   );
 
 
--- >>> FILE: 20260623_saved_searches.sql (97 lines, 3600 bytes)
+-- >>> FILE: 20260623_saved_searches.sql
 -- Phase 2.7: Saved Searches & Talent Alerts
 
 -- Saved searches
@@ -4892,7 +4910,7 @@ CREATE POLICY "Users can view their subscriptions" ON saved_search_subscriptions
     user_id = auth.uid()
   );
 
--- >>> FILE: 20260623_sla_tracking.sql (149 lines, 6412 bytes)
+-- >>> FILE: 20260623_sla_tracking.sql
 -- Phase 3.12: Client SLA & Mandate Timeline Tracking
 -- SLA monitoring system for mandate timelines
 
@@ -5044,7 +5062,7 @@ SELECT id, 'contingency',
   ]'::JSONB
 FROM organizations WHERE NOT EXISTS (SELECT 1 FROM sla_configurations WHERE mandate_type = 'contingency');
 
--- >>> FILE: 20260623_workflow_automation.sql (78 lines, 3155 bytes)
+-- >>> FILE: 20260623_workflow_automation.sql
 -- Phase 3.10: Workflow Automation Rules Engine
 -- 011_workflow_automation.sql
 
@@ -5125,7 +5143,7 @@ CREATE POLICY "org_scheduled" ON rule_scheduled_checks
   FOR ALL USING (org_id IN (SELECT organization_id FROM profiles WHERE id = auth.uid()));
 
 
--- >>> FILE: 20260624_audit_logs_enhanced.sql (89 lines, 2525 bytes)
+-- >>> FILE: 20260624_audit_logs_enhanced.sql
 -- Phase 0.5: Cross-Cutting Quality Standards
 -- Enhanced audit logs with org-scoping, change tracking, and request metadata
 
@@ -5217,7 +5235,7 @@ CREATE POLICY "Admin read audit_logs" ON audit_logs FOR SELECT USING (
 );
 
 
--- >>> FILE: 20260624_nexus_sync_contract.sql (96 lines, 3874 bytes)
+-- >>> FILE: 20260624_nexus_sync_contract.sql
 -- Phase 0.6: NEXUS ↔ DEX Sync Contract
 -- Event outbox, event log, and sync state tables
 
@@ -5316,7 +5334,7 @@ CREATE POLICY "org_read_own_commands" ON nexus_command_log
   FOR SELECT USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 
--- >>> FILE: 20260625_create_missing_core_tables.sql (750 lines, 41104 bytes)
+-- >>> FILE: 20260625_create_missing_core_tables.sql
 -- ── 20260625_create_missing_core_tables.sql ──────────────────────────────
 -- Post-audit migration: 23 tables referenced in 787 backend handler locations
 -- but never created in any prior migration.
@@ -6069,7 +6087,7 @@ END$$;
 
 
 
--- >>> FILE: 20260627_candidate_tracking.sql (496 lines, 22737 bytes)
+-- >>> FILE: 20260627_candidate_tracking.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260627_candidate_tracking.sql
 -- DEX AI Candidate Tracking — T1 Schema Migration (Technical Blueprint 01)
@@ -6568,7 +6586,7 @@ BEGIN
   RAISE NOTICE '✅ contacts table extensions verified';
 END$$;
 
--- >>> FILE: 20260627_grid_market_mapping.sql (431 lines, 20957 bytes)
+-- >>> FILE: 20260627_grid_market_mapping.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260627_grid_market_mapping.sql
 -- DEX AI GRID Market Mapping — T2 Schema Migration (Technical Blueprint 02)
@@ -7002,7 +7020,7 @@ BEGIN
   END IF;
 END$$;
 
--- >>> FILE: 20260627_mandate_management.sql (390 lines, 16220 bytes)
+-- >>> FILE: 20260627_mandate_management.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260627_mandate_management.sql
 -- DEX AI Mandate Management — T6 Schema Migration (Technical Blueprint 06)
@@ -7395,7 +7413,7 @@ BEGIN
   END IF;
 END$$;
 
--- >>> FILE: 20260627_platform_foundation.sql (248 lines, 11607 bytes)
+-- >>> FILE: 20260627_platform_foundation.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260627_platform_foundation.sql
 -- DEX AI Platform Foundation — T1 Schema Migration
@@ -7646,7 +7664,7 @@ BEGIN
 END$$;
 
 
--- >>> FILE: 20260629_ai_matching_engine.sql (400 lines, 17185 bytes)
+-- >>> FILE: 20260629_ai_matching_engine.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260629_ai_matching_engine.sql
 -- DEX AI Matching Engine — T8 Schema Migration
@@ -8049,7 +8067,7 @@ CREATE TRIGGER trg_mark_matches_stale_scorecard
   EXECUTE FUNCTION public.fn_mark_matches_stale_on_scorecard();
 
 
--- >>> FILE: 20260629_canvas_profiles.sql (159 lines, 7910 bytes)
+-- >>> FILE: 20260629_canvas_profiles.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260629_canvas_profiles.sql
 -- DEX AI CANVAS Executive Narrative Engine — T4 Schema Migration
@@ -8211,7 +8229,7 @@ AFTER INSERT OR UPDATE ON public.canvas_profiles
 FOR EACH ROW EXECUTE FUNCTION fn_update_contact_canvas();
 
 
--- >>> FILE: 20260629_career_intelligence.sql (211 lines, 9720 bytes)
+-- >>> FILE: 20260629_career_intelligence.sql
 -- Technical Blueprint 12: Career Intelligence Agent
 -- DEX-TB-012
 
@@ -8425,7 +8443,7 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 
--- >>> FILE: 20260629_client_intelligence.sql (245 lines, 9605 bytes)
+-- >>> FILE: 20260629_client_intelligence.sql
 -- Technical Blueprint 13: Client Intelligence Reports
 -- DEX-TB-013
 
@@ -8673,7 +8691,7 @@ CREATE POLICY "System inserts queries" ON intelligence_queries
   FOR INSERT TO authenticated WITH CHECK (true);
 
 
--- >>> FILE: 20260629_client_portal.sql (163 lines, 9211 bytes)
+-- >>> FILE: 20260629_client_portal.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260629_client_portal.sql
 -- DEX AI Client Visibility Portal — T5 Schema Migration
@@ -8839,7 +8857,7 @@ CREATE POLICY "Admin can create client notifications" ON public.client_notificat
   USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 
--- >>> FILE: 20260629_dashboard_analytics.sql (193 lines, 6743 bytes)
+-- >>> FILE: 20260629_dashboard_analytics.sql
 -- =====================================================================
 -- Technical Blueprint 11: Dashboard & Analytics (DEX-TB-011)
 -- Database Migration
@@ -9035,7 +9053,7 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 
--- >>> FILE: 20260629_linkedin_import_enrichment.sql (330 lines, 10610 bytes)
+-- >>> FILE: 20260629_linkedin_import_enrichment.sql
 -- =====================================================================
 -- Technical Blueprint 10: LinkedIn Auto-Import & Enrichment (DEX-TB-010)
 -- Database Migration
@@ -9368,7 +9386,7 @@ CREATE INDEX IF NOT EXISTS idx_contacts_linkedin_url ON contacts(linkedin_url)
 CREATE INDEX IF NOT EXISTS idx_contacts_import_source ON contacts(import_source);
 
 
--- >>> FILE: 20260629_rbac_notifications.sql (329 lines, 16167 bytes)
+-- >>> FILE: 20260629_rbac_notifications.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260629_rbac_notifications.sql
 -- DEX AI RBAC & Notification System — T7 Schema Migration
@@ -9700,7 +9718,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- (If profiles table exists, trigger would be added here)
 
 
--- >>> FILE: 20260629_trident_3d_scoring.sql (296 lines, 13042 bytes)
+-- >>> FILE: 20260629_trident_3d_scoring.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260629_trident_3d_scoring.sql
 -- DEX AI TRIDENT 3D Scoring Engine — T3 Schema Migration (Technical Blueprint 03)
@@ -9999,7 +10017,7 @@ BEGIN
   END IF;
 END$$;
 
--- >>> FILE: 20260629_wechat_email_integration.sql (323 lines, 16224 bytes)
+-- >>> FILE: 20260629_wechat_email_integration.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260629_wechat_email_integration.sql
 -- DEX AI WeChat & Email Integration — T9 Schema Migration
@@ -10325,7 +10343,7 @@ Interviewer: {{interviewer_name}}</p>
 ON CONFLICT DO NOTHING;
 
 
--- >>> FILE: 20260630_create_grid_mapping.sql (128 lines, 6565 bytes)
+-- >>> FILE: 20260630_create_grid_mapping.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260630_create_grid_mapping.sql
 -- TICKET T-2b: GRID Market Mapping (TECH-02)
@@ -10456,7 +10474,7 @@ BEGIN
 END$$;
 
 
--- >>> FILE: 20260709_portal_rls_policies.sql (351 lines, 14574 bytes)
+-- >>> FILE: 20260709_portal_rls_policies.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260709_portal_rls_policies.sql
 -- T1: Portal RLS Policies for Core Tables
@@ -10810,7 +10828,7 @@ END
 $$;
 
 
--- >>> FILE: 20260709_rls_gap_fixes.sql (214 lines, 9035 bytes)
+-- >>> FILE: 20260709_rls_gap_fixes.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260709_rls_gap_fixes.sql
 -- T7: RLS Gap Fixes — Documents, Credits, Sessions Scoping
@@ -11027,7 +11045,7 @@ END
 $$;
 
 
--- >>> FILE: 20260710_t16_agent_pipeline_tables.sql (278 lines, 11638 bytes)
+-- >>> FILE: 20260710_t16_agent_pipeline_tables.sql
 -- T16: Create tables for Feishu agent data pipeline
 -- Created: 2026-07-10
 -- Tables: contracts, invoices, payments, engagements, interviews, client_meetings,
@@ -11308,7 +11326,7 @@ BEGIN
 END $$;
 
 
--- >>> FILE: 20260710_t1_activity_triggers.sql (106 lines, 4842 bytes)
+-- >>> FILE: 20260710_t1_activity_triggers.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260710_t1_activity_triggers.sql
 -- T1 — Activity Log Auto-Creation Triggers
@@ -11417,7 +11435,7 @@ BEGIN
   END IF;
 END$$;
 
--- >>> FILE: 20260710_t1_core_schema.sql (517 lines, 22103 bytes)
+-- >>> FILE: 20260710_t1_core_schema.sql
 -- ════════════════════════════════════════════════════════════════════════
 -- 20260710_t1_core_schema.sql
 -- T1 — Schema & Data Layer (Phase 1)
@@ -11937,7 +11955,7 @@ BEGIN
   END IF;
 END$$;
 
--- >>> FILE: 20260710_t7_t16_phase2_schema.sql (436 lines, 19871 bytes)
+-- >>> FILE: 20260710_t7_t16_phase2_schema.sql
 -- Phase 2 Schema Migration (T7-T16)
 -- Revenue Forecast, Change Detection, Capacity, Communication, Reports, Agents, Intelligence, AI Infrastructure
 
@@ -12376,7 +12394,7 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 
--- >>> FILE: 20260713_v2_batch10_reports_invoices.sql (476 lines, 19335 bytes)
+-- >>> FILE: 20260713_v2_batch10_reports_invoices.sql
 -- ============================================================================
 -- v2 Batch 10 — Reports, Invoices, Commissions, Referrals, Settings, Feature Flags
 -- Tickets 91-100 of File 02 (Supabase Backend Architecture)
@@ -12855,7 +12873,7 @@ CREATE INDEX IF NOT EXISTS idx_mv_company_health_company ON public.mv_company_he
 --   CHECK constraints: all enum-style columns + numeric bounds
 
 
--- >>> FILE: 20260713_v2_batch11_pgcron_storage_realtime.sql (270 lines, 12755 bytes)
+-- >>> FILE: 20260713_v2_batch11_pgcron_storage_realtime.sql
 -- ============================================================================
 -- v2 Batch 11 — pg_cron Jobs, Storage, Realtime, Materialized Views
 -- Tickets 101-110 of File 02 (Supabase Backend Architecture)
@@ -13128,7 +13146,7 @@ SELECT indexrelname, relname FROM pg_indexes WHERE schemaname = 'public';
 SELECT relname, rowsecurity FROM pg_class WHERE relnamespace = 'public'::regnamespace;
 
 
--- >>> FILE: 20260713_v2_batch12_edge_functions.sql (260 lines, 11368 bytes)
+-- >>> FILE: 20260713_v2_batch12_edge_functions.sql
 -- ============================================================================
 -- v2 Batch 12 — Edge Functions, Webhook Triggers, Email Templates, Final Infrastructure
 -- Tickets 111-120 of File 02 (Supabase Backend Architecture)
@@ -13391,7 +13409,7 @@ INSERT INTO public.v2_email_templates (
 ON CONFLICT (name) DO NOTHING;
 
 
--- >>> FILE: 20260713_v2_batch13_auth_seed.sql (211 lines, 9714 bytes)
+-- >>> FILE: 20260713_v2_batch13_auth_seed.sql
 -- ============================================================================
 -- v2 Batch 13 — Auth Configuration, API Wiring, Validation, Seed Data
 -- Tickets 121-130 of File 02 (Supabase Backend Architecture)
@@ -13605,7 +13623,7 @@ ALTER SYSTEM SET pg_stat_statements.max = 10000;
 ALTER SYSTEM SET log_min_duration_statement = '500ms';
 
 
--- >>> FILE: 20260713_v2_batch14_final_verification.sql (152 lines, 5959 bytes)
+-- >>> FILE: 20260713_v2_batch14_final_verification.sql
 -- ============================================================================
 -- v2 Batch 14 — Final Migration Verification & Cleanup
 -- Tickets 131-132 of File 02 (Supabase Backend Architecture)
@@ -13760,7 +13778,7 @@ SELECT
 -- ──────────────────────────────────────────────────────────────────────────────
 
 
--- >>> FILE: 20260713_v2_batch1_shared_org.sql (408 lines, 15464 bytes)
+-- >>> FILE: 20260713_v2_batch1_shared_org.sql
 -- ============================================================================
 -- v2 Batch 1 — Shared Infrastructure + Core Org/User Tables
 -- Tickets 1-10 of File 02 (Supabase Backend Architecture)
@@ -14171,7 +14189,7 @@ CREATE TRIGGER trg_v2_profiles_updated_at
 -- using the shared set_updated_at() function defined at the top.
 
 
--- >>> FILE: 20260713_v2_batch2_client_portal.sql (366 lines, 15196 bytes)
+-- >>> FILE: 20260713_v2_batch2_client_portal.sql
 -- ============================================================================
 -- v2 Batch 2 — Client Portal Schema
 -- Tickets 11-20 of File 02 (Supabase Backend Architecture)
@@ -14540,7 +14558,7 @@ CREATE TRIGGER trg_v2_activities_updated_at
 --           trg_v2_mc_updated_at, trg_v2_activities_updated_at
 
 
--- >>> FILE: 20260713_v2_batch3_council.sql (312 lines, 13380 bytes)
+-- >>> FILE: 20260713_v2_batch3_council.sql
 -- ============================================================================
 -- v2 Batch 3 — Council Portal Schema
 -- Tickets 21-30 of File 02 (Supabase Backend Architecture)
@@ -14855,7 +14873,7 @@ CREATE TRIGGER trg_event_registrations_updated_at
 --           trg_council_events_updated_at, trg_event_registrations_updated_at
 
 
--- >>> FILE: 20260713_v2_batch4_dex_b2c.sql (249 lines, 10784 bytes)
+-- >>> FILE: 20260713_v2_batch4_dex_b2c.sql
 -- ============================================================================
 -- v2 Batch 4 — DEX AI B2C Schema
 -- Tickets 31-40 of File 02 (Supabase Backend Architecture)
@@ -15107,7 +15125,7 @@ CREATE POLICY "Admin can manage all credit consumption"
 --   trg_dex_chat_context_updated_at
 
 
--- >>> FILE: 20260713_v2_batch5_commerce.sql (287 lines, 12308 bytes)
+-- >>> FILE: 20260713_v2_batch5_commerce.sql
 -- ============================================================================
 -- v2 Batch 5 — Commerce Layer Schema
 -- Tickets 41-50 of File 02 (Supabase Backend Architecture)
@@ -15397,7 +15415,7 @@ CREATE TRIGGER trg_v2_discount_codes_updated_at
 --   trg_v2_discount_codes_updated_at
 
 
--- >>> FILE: 20260713_v2_batch6_intelligence_notifications.sql (266 lines, 11472 bytes)
+-- >>> FILE: 20260713_v2_batch6_intelligence_notifications.sql
 -- ============================================================================
 -- v2 Batch 6 — Intelligence Layer + Notifications
 -- Tickets 51-60 of File 02 (Supabase Backend Architecture)
@@ -15666,7 +15684,7 @@ CREATE POLICY "Admin can manage all notifications"
 --   trg_company_intelligence_updated_at
 
 
--- >>> FILE: 20260713_v2_batch7_crm_tasks_tags.sql (391 lines, 15601 bytes)
+-- >>> FILE: 20260713_v2_batch7_crm_tasks_tags.sql
 -- ============================================================================
 -- v2 Batch 7 — CRM Deals, Tasks, Attachments, Tags
 -- Tickets 61-70 of File 02 (Supabase Backend Architecture)
@@ -16060,7 +16078,7 @@ CREATE TRIGGER trg_v2_pipeline_updated_at
 --           trg_v2_pipeline_updated_at
 
 
--- >>> FILE: 20260713_v2_batch8_interviews_assessments.sql (371 lines, 15878 bytes)
+-- >>> FILE: 20260713_v2_batch8_interviews_assessments.sql
 -- ============================================================================
 -- v2 Batch 8 — Interviews, Assessments, Placements, Email Templates, Integrations
 -- Tickets 71-80 of File 02 (Supabase Backend Architecture)
@@ -16434,7 +16452,7 @@ CREATE TRIGGER trg_v2_integrations_updated_at
 --           trg_v2_integrations_updated_at
 
 
--- >>> FILE: 20260713_v2_batch9_infrastructure.sql (416 lines, 16085 bytes)
+-- >>> FILE: 20260713_v2_batch9_infrastructure.sql
 -- ============================================================================
 -- v2 Batch 9 — Analytics, Search, Audit, API Keys, Webhooks
 -- Tickets 81-90 of File 02 (Supabase Backend Architecture)
@@ -16854,5 +16872,5 @@ CREATE TRIGGER trg_v2_dashboards_updated_at
 
 
 -- ============================================================================
--- END OF MEGA MIGRATION
+-- END OF MEGA MIGRATION (FIXED v2.0)
 -- ============================================================================
