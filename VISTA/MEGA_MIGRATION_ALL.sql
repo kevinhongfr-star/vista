@@ -13737,7 +13737,7 @@ DROP TABLE IF EXISTS public.temp_import_buffer;
 
 -- Drop unused constraints if any exist
 ALTER TABLE IF EXISTS public.v2_mandates DROP CONSTRAINT IF EXISTS v2_mandates_org_id_fkey;
-ALTER TABLE IF EXISTS public.v2_mandates ADD CONSTRAINT IF NOT EXISTS v2_mandates_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.v2_organizations(id) ON DELETE CASCADE;
+ALTER TABLE IF EXISTS public.v2_mandates ADD CONSTRAINT v2_mandates_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.v2_organizations(id) ON DELETE CASCADE;
 
 -- Re-enable RLS on all tables just to be safe
 DO $$
