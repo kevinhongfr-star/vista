@@ -51,12 +51,16 @@ import {
   Users,
   BarChart3,
   Activity,
+  Route,
 } from "lucide-react"
 import type { EmailTemplate } from "@/lib/types"
 import { EMAIL_TEMPLATE_TYPES } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { OutreachDashboard } from "@/components/outreach/OutreachDashboard"
 import { OutreachActivityFeed } from "@/components/outreach/OutreachActivityFeed"
+import { SequenceList } from "@/components/sequences/SequenceList"
+import { NurtureRouteVisualization } from "@/components/sequences/NurtureRouteVisualization"
+import { SequencePerformanceAnalytics } from "@/components/sequences/SequencePerformanceAnalytics"
 
 interface TemplatesPageProps {
   templates: EmailTemplate[]
@@ -300,6 +304,18 @@ export function TemplatesPage({ templates: initialTemplates }: TemplatesPageProp
             <Activity className="h-4 w-4" />
             Activity Feed
           </TabsTrigger>
+          <TabsTrigger value="sequences" className="gap-2">
+            <GitBranch className="h-4 w-4" />
+            Sequences
+          </TabsTrigger>
+          <TabsTrigger value="nurture" className="gap-2">
+            <Route className="h-4 w-4" />
+            Nurture Routes
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="templates" className="space-y-6">
@@ -468,6 +484,18 @@ export function TemplatesPage({ templates: initialTemplates }: TemplatesPageProp
 
         <TabsContent value="activity">
           <OutreachActivityFeed />
+        </TabsContent>
+
+        <TabsContent value="sequences">
+          <SequenceList />
+        </TabsContent>
+
+        <TabsContent value="nurture">
+          <NurtureRouteVisualization />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <SequencePerformanceAnalytics />
         </TabsContent>
       </Tabs>
 
