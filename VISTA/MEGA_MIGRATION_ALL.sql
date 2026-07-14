@@ -3112,7 +3112,7 @@ ALTER TABLE mandates ADD COLUMN IF NOT EXISTS milestones jsonb DEFAULT '{}'::jso
 COMMENT ON COLUMN mandates.milestones IS 'JSONB object containing milestone definitions with target dates, actual dates, and status';
 
 -- Create index for querying mandates with at-risk or overdue milestones
-CREATE INDEX IF NOT EXISTS idx_mandates_has_milestones ON mandates ((milestones IS NOT NULL AND milestones != ''{}''::jsonb));
+CREATE INDEX IF NOT EXISTS idx_mandates_has_milestones ON mandates ((milestones IS NOT NULL AND milestones != '{}'::jsonb));
 
 -- milestones structure example:
 -- {
