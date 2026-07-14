@@ -609,6 +609,25 @@ export interface SendEmailRequest {
   campaign_id?: string
 }
 
+export interface OutreachAssignment {
+  id: string
+  contact_id: string
+  template_id: string | null
+  sequence_id: string | null
+  status: 'Active' | 'Paused' | 'Completed' | 'Cancelled'
+  current_step: number | null
+  start_date: string | null
+  last_touch_date: string | null
+  next_touch_date: string | null
+  touches_sent: number | null
+  touches_total: number | null
+  created_at: string | null
+  updated_at: string | null
+  contact_name?: string | null
+  contact_company?: string | null
+  template_name?: string | null
+}
+
 // ─── Wave 3: Action Engine Types ───
 
 export interface GenerateEmailRequest {
