@@ -5643,6 +5643,10 @@ CREATE TABLE IF NOT EXISTS public.mandates (
   updated_at           TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Ensure mandates has industry and location columns (may be missing from earlier runs)
+ALTER TABLE public.mandates ADD COLUMN IF NOT EXISTS industry TEXT;
+ALTER TABLE public.mandates ADD COLUMN IF NOT EXISTS location TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_mandates_org_id      ON public.mandates (organization_id);
 CREATE INDEX IF NOT EXISTS idx_mandates_client_id   ON public.mandates (client_id)
   WHERE client_id IS NOT NULL;
