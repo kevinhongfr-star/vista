@@ -636,7 +636,10 @@ DROP POLICY IF EXISTS "Authenticated read inbound" ON vista_inbound_signals;
 CREATE POLICY "Authenticated read inbound" ON vista_inbound_signals FOR SELECT TO authenticated USING (true);
 DROP POLICY IF EXISTS "Service role full inbound" ON vista_inbound_signals;
 CREATE POLICY "Service role full inbound" ON vista_inbound_signals FOR ALL TO service_role USING (true) WITH CHECK (true);
-ALTER PUBLICATION supabase_realtime ADD TABLE vista_inbound_signals;
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE vista_inbound_signals;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ============================================================================
 -- SECTION 7: TASK TRACKER & DEADLINES
