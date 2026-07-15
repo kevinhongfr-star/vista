@@ -888,6 +888,7 @@ END $$;
 
 -- >>> FILE: fix_rpc_functions_wave1.5.sql (RPC Function Fixes)
 -- Fix fn_funnel_summary: cast funnel_stage to match VARCHAR return type
+DROP FUNCTION IF EXISTS fn_funnel_summary();
 CREATE OR REPLACE FUNCTION fn_funnel_summary()
 RETURNS TABLE (
   stage VARCHAR(30),
@@ -913,6 +914,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- Fix fn_today_actions: use c.name instead of c.full_name
+DROP FUNCTION IF EXISTS fn_today_actions();
 CREATE OR REPLACE FUNCTION fn_today_actions()
 RETURNS TABLE (
   contact_id UUID,
@@ -952,6 +954,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- Fix fn_overdue_outreaches: use c.name instead of c.full_name
+DROP FUNCTION IF EXISTS fn_overdue_outreaches();
 CREATE OR REPLACE FUNCTION fn_overdue_outreaches()
 RETURNS TABLE (
   contact_id UUID,
@@ -977,6 +980,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- Fix fn_nurture_due_reengage: use c.name instead of c.full_name
+DROP FUNCTION IF EXISTS fn_nurture_due_reengage();
 CREATE OR REPLACE FUNCTION fn_nurture_due_reengage()
 RETURNS TABLE (
   contact_id UUID,
@@ -1007,6 +1011,7 @@ END;
 $$ LANGUAGE plpgsql STABLE;
 
 -- Fix fn_weekly_outreach_stats: use c.name instead of c.full_name
+DROP FUNCTION IF EXISTS fn_weekly_outreach_stats();
 CREATE OR REPLACE FUNCTION fn_weekly_outreach_stats()
 RETURNS TABLE (
   week_start DATE,
@@ -1717,6 +1722,7 @@ ON CONFLICT DO NOTHING;
 -- ============================================================================
 
 -- Auto-update updated_at on b2c_leads
+DROP FUNCTION IF EXISTS fn_b2c_leads_updated_at();
 CREATE OR REPLACE FUNCTION fn_b2c_leads_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -1731,6 +1737,7 @@ CREATE TRIGGER trg_b2c_leads_updated_at
   FOR EACH ROW EXECUTE FUNCTION fn_b2c_leads_updated_at();
 
 -- Auto-update pipeline_stage_updated_at when stage changes
+DROP FUNCTION IF EXISTS fn_b2c_pipeline_stage_updated();
 CREATE OR REPLACE FUNCTION fn_b2c_pipeline_stage_updated()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -1747,6 +1754,7 @@ CREATE TRIGGER trg_b2c_pipeline_stage_ts
   FOR EACH ROW EXECUTE FUNCTION fn_b2c_pipeline_stage_updated();
 
 -- Auto-set b2b_score_label from b2b_potential_score
+DROP FUNCTION IF EXISTS fn_b2c_score_label();
 CREATE OR REPLACE FUNCTION fn_b2c_score_label()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -1983,6 +1991,7 @@ CREATE POLICY "Users can update own credits"
   USING (auth.uid() = user_id);
 
 -- ── Trigger: Update chat_sessions.updated_at ──
+DROP FUNCTION IF EXISTS update_updated_at_column();
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -2071,6 +2080,7 @@ CREATE POLICY "Users update own memories"
   USING (auth.uid() = user_id);
 
 -- ── updated_at trigger ────────────────────────────────────────────
+DROP FUNCTION IF EXISTS set_updated_at();
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
@@ -2726,6 +2736,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at DESC)
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 
 -- Auto-trigger: log contact updates
+DROP FUNCTION IF EXISTS fn_audit_contacts();
 CREATE OR REPLACE FUNCTION fn_audit_contacts() RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO audit_logs (action, entity_type, entity_id, details)
@@ -2745,6 +2756,7 @@ CREATE TRIGGER trg_audit_contacts
   FOR EACH ROW EXECUTE FUNCTION fn_audit_contacts();
 
 -- Auto-trigger: log scoring runs
+DROP FUNCTION IF EXISTS fn_audit_scoring();
 CREATE OR REPLACE FUNCTION fn_audit_scoring() RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO audit_logs (action, entity_type, entity_id, details)
@@ -2764,6 +2776,7 @@ CREATE TRIGGER trg_audit_scoring
   FOR EACH ROW EXECUTE FUNCTION fn_audit_scoring();
 
 -- Auto-trigger: log mandate status changes
+DROP FUNCTION IF EXISTS fn_audit_mandates();
 CREATE OR REPLACE FUNCTION fn_audit_mandates() RETURNS TRIGGER AS $$
 BEGIN
   IF OLD IS NULL OR OLD.status IS DISTINCT FROM NEW.status THEN
@@ -2965,6 +2978,7 @@ CREATE INDEX IF NOT EXISTS idx_success_profiles_mandate ON success_profiles(mand
 CREATE INDEX IF NOT EXISTS idx_success_profiles_status ON success_profiles(status);
 
 -- Trigger for updated_at
+DROP FUNCTION IF EXISTS set_updated_at();
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -3088,6 +3102,7 @@ CREATE INDEX IF NOT EXISTS idx_invitation_interview ON interview_invitations(int
 CREATE INDEX IF NOT EXISTS idx_invitation_candidate ON interview_invitations(candidate_id);
 
 -- Create function to auto-update updated_at
+DROP FUNCTION IF EXISTS set_updated_at();
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -3219,6 +3234,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- Helper function to initialize milestones with default SLA targets
+DROP FUNCTION IF EXISTS initialize_milestones();
 CREATE OR REPLACE FUNCTION initialize_milestones(mandate_created_at timestamptz) RETURNS jsonb AS $$
 DECLARE
   result jsonb := '{}'::jsonb;
@@ -3319,6 +3335,7 @@ SELECT
 FROM mandates m;
 
 -- Trigger to auto-initialize milestones on mandate creation
+DROP FUNCTION IF EXISTS set_default_milestones();
 CREATE OR REPLACE FUNCTION set_default_milestones()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -3400,6 +3417,7 @@ COMMENT ON COLUMN ml_models.feature_names IS 'JSON array of feature names corres
 COMMENT ON COLUMN ml_models.feature_engineering_config IS 'Normalization params, encodings, etc.';
 
 -- Trigger for updated_at
+DROP FUNCTION IF EXISTS update_ml_models_updated_at();
 CREATE OR REPLACE FUNCTION update_ml_models_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -3456,6 +3474,7 @@ COMMENT ON COLUMN prediction_logs.features IS 'Feature vector used for predictio
 COMMENT ON COLUMN prediction_logs.actual_outcome IS 'True if candidate was ultimately placed';
 
 -- Function to check data availability (500+ placements)
+DROP FUNCTION IF EXISTS check_placement_count();
 CREATE OR REPLACE FUNCTION check_placement_count()
 RETURNS TABLE(has_sufficient_data boolean, placement_count bigint) AS $$
 BEGIN
@@ -3498,6 +3517,7 @@ FROM ml_models m
 ORDER BY m.trained_at DESC;
 
 -- Helper function to get latest active model
+DROP FUNCTION IF EXISTS get_latest_model();
 CREATE OR REPLACE FUNCTION get_latest_model(p_model_type text)
 RETURNS ml_models AS $$
 DECLARE
@@ -3609,6 +3629,7 @@ COMMENT ON COLUMN offers.onboarding_checklist IS 'JSON array: [{task, category, 
 COMMENT ON COLUMN offers.status IS 'draft -> pending_partner_approval -> pending_client_approval -> sent -> accepted/rejected -> onboarding -> active -> probation -> completed';
 
 -- Trigger for updated_at
+DROP FUNCTION IF EXISTS update_updated_at_column();
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -3623,6 +3644,7 @@ CREATE OR REPLACE TRIGGER update_offers_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- Helper function to generate default onboarding checklist
+DROP FUNCTION IF EXISTS generate_onboarding_checklist();
 CREATE OR REPLACE FUNCTION generate_onboarding_checklist()
 RETURNS jsonb AS $$
 BEGIN
@@ -5481,6 +5503,7 @@ CREATE POLICY "org_read_own_commands" ON nexus_command_log
 
 -- ═══════════════════════════════════════════════════════════════════════
 -- ── Prerequisite: trigger function ──────────────────────────────────────
+DROP FUNCTION IF EXISTS set_updated_at();
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -6540,6 +6563,7 @@ CREATE POLICY "System can create pipeline transitions"
   WITH CHECK (true);
 
 -- ── 7. S2→S3 GATE VALIDATION FUNCTION (GRID v2.0) ───────────────────────
+DROP FUNCTION IF EXISTS fn_validate_s2_to_s3_gate();
 CREATE OR REPLACE FUNCTION public.fn_validate_s2_to_s3_gate(p_contact_id UUID)
 RETURNS TABLE (
   can_proceed BOOLEAN,
@@ -6588,6 +6612,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ── 8. PIPELINE STAGE TRANSITION TRIGGER ───────────────────────────────
+DROP FUNCTION IF EXISTS fn_log_pipeline_transition();
 CREATE OR REPLACE FUNCTION public.fn_log_pipeline_transition()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -6639,6 +6664,7 @@ CREATE TRIGGER trg_pipeline_transition
   FOR EACH ROW EXECUTE FUNCTION public.fn_log_pipeline_transition();
 
 -- ── 9. OUTREACH LOG SIGNAL TRIGGER ─────────────────────────────────────
+DROP FUNCTION IF EXISTS fn_outreach_log_signal();
 CREATE OR REPLACE FUNCTION public.fn_outreach_log_signal()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -6674,6 +6700,7 @@ CREATE TRIGGER trg_outreach_log_signal
   FOR EACH ROW EXECUTE FUNCTION public.fn_outreach_log_signal();
 
 -- ── 10. CMDL STATUS SIGNAL TRIGGER ─────────────────────────────────────
+DROP FUNCTION IF EXISTS fn_cmdl_status_signal();
 CREATE OR REPLACE FUNCTION public.fn_cmdl_status_signal()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -6703,6 +6730,7 @@ CREATE TRIGGER trg_cmdl_status_signal
   FOR EACH ROW EXECUTE FUNCTION public.fn_cmdl_status_signal();
 
 -- ── 11. DATA CONFIDENCE CALCULATION ────────────────────────────────────
+DROP FUNCTION IF EXISTS fn_calculate_data_confidence();
 CREATE OR REPLACE FUNCTION public.fn_calculate_data_confidence()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -6897,6 +6925,7 @@ CREATE TRIGGER trg_grid_companies_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- Auto-compute gap
+DROP FUNCTION IF EXISTS fn_grid_company_gap();
 CREATE OR REPLACE FUNCTION public.fn_grid_company_gap()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -6993,6 +7022,7 @@ CREATE TRIGGER trg_grid_entries_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- Auto-assign priority
+DROP FUNCTION IF EXISTS fn_grid_auto_priority();
 CREATE OR REPLACE FUNCTION public.fn_grid_auto_priority()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -7074,6 +7104,7 @@ CREATE POLICY "System can update grid standards"
   USING (true);
 
 -- ── 7. COMPUTE GRID STANDARDS FUNCTION ──────────────────────────────────
+DROP FUNCTION IF EXISTS fn_compute_grid_standards();
 CREATE OR REPLACE FUNCTION public.fn_compute_grid_standards(p_mapping_id UUID)
 RETURNS VOID AS $$
 DECLARE
@@ -7352,6 +7383,7 @@ CREATE TRIGGER trg_payment_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- Auto-set status to 'due' when trigger event occurs
+DROP FUNCTION IF EXISTS fn_payment_milestone_due();
 CREATE OR REPLACE FUNCTION public.fn_payment_milestone_due()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -7412,6 +7444,7 @@ CREATE POLICY "System can create snapshots"
   WITH CHECK (true);
 
 -- ── 5. COMPUTE MANDATE ANALYTICS ──────────────────────────────────────
+DROP FUNCTION IF EXISTS fn_compute_mandate_analytics();
 CREATE OR REPLACE FUNCTION public.fn_compute_mandate_analytics()
 RETURNS VOID AS $$
 DECLARE
@@ -7522,6 +7555,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ── 6. PHASE AUTO-ADVANCE ──────────────────────────────────────────────
+DROP FUNCTION IF EXISTS fn_check_phase_advance();
 CREATE OR REPLACE FUNCTION public.fn_check_phase_advance(p_mandate_id UUID)
 RETURNS TEXT AS $$
 DECLARE
@@ -7765,6 +7799,7 @@ CREATE INDEX IF NOT EXISTS idx_contacts_signal_count ON public.contacts (signal_
 -- ── 4. TRIGGER FUNCTIONS ─────────────────────────────────────────────
 
 -- Auto-increment signal_count on contacts when signal is created
+DROP FUNCTION IF EXISTS fn_signal_after_insert();
 CREATE OR REPLACE FUNCTION public.fn_signal_after_insert()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -7784,6 +7819,7 @@ CREATE TRIGGER trg_signal_after_insert
   FOR EACH ROW EXECUTE FUNCTION public.fn_signal_after_insert();
 
 -- Auto-advance enrichment status
+DROP FUNCTION IF EXISTS fn_auto_advance_enrichment();
 CREATE OR REPLACE FUNCTION public.fn_auto_advance_enrichment(p_contact_id UUID)
 RETURNS VOID AS $$
 DECLARE
@@ -8233,6 +8269,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ── 4. STALENESS TRIGGERS ──────────────────────────────────────────────
 
 -- Contact update trigger
+DROP FUNCTION IF EXISTS fn_mark_matches_stale_on_contact_update();
 CREATE OR REPLACE FUNCTION public.fn_mark_matches_stale_on_contact_update()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -8263,6 +8300,7 @@ CREATE TRIGGER trg_mark_matches_stale_contact
   EXECUTE FUNCTION public.fn_mark_matches_stale_on_contact_update();
 
 -- Scorecard update trigger
+DROP FUNCTION IF EXISTS fn_mark_matches_stale_on_scorecard();
 CREATE OR REPLACE FUNCTION public.fn_mark_matches_stale_on_scorecard()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -8408,6 +8446,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- ── 6. HELPER FUNCTION: TRIDENT → CANVAS MAPPING ───────────────────────
+DROP FUNCTION IF EXISTS trident_to_canvas_suggest();
 CREATE OR REPLACE FUNCTION trident_to_canvas_suggest(p_scorecard_id UUID) RETURNS JSONB AS $$
 DECLARE
   v_scorecard RECORD;
@@ -8431,6 +8470,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ── 7. TRIGGER FUNCTION: UPDATE CONTACTS QUICK REFERENCE ───────────────
+DROP FUNCTION IF EXISTS fn_update_contact_canvas();
 CREATE OR REPLACE FUNCTION fn_update_contact_canvas() RETURNS TRIGGER AS $$
 BEGIN
   UPDATE contacts
@@ -9960,6 +10000,7 @@ INSERT INTO role_permissions (role, resource, action, allowed) VALUES
 ON CONFLICT (role, resource, action) DO NOTHING;
 
 -- ── 8. DEFAULT NOTIFICATION PREFERENCES (seed via function on user creation) ──
+DROP FUNCTION IF EXISTS seed_default_notification_prefs();
 CREATE OR REPLACE FUNCTION seed_default_notification_prefs() RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO notification_preferences (user_id, notification_type, in_app_enabled, email_enabled)
@@ -10237,6 +10278,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ── 5. AUTO-UPDATE CONTACTS ON SCORECARD SAVE ──────────────────────────
+DROP FUNCTION IF EXISTS fn_update_contact_trident();
 CREATE OR REPLACE FUNCTION public.fn_update_contact_trident()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -10257,6 +10299,7 @@ CREATE TRIGGER trg_trident_contact_sync
   FOR EACH ROW EXECUTE FUNCTION public.fn_update_contact_trident();
 
 -- ── 6. STALENESS FLAG (called by cron) ─────────────────────────────────
+DROP FUNCTION IF EXISTS fn_flag_stale_trident();
 CREATE OR REPLACE FUNCTION public.fn_flag_stale_trident()
 RETURNS INTEGER AS $$
 DECLARE v_count INTEGER;
@@ -11637,6 +11680,7 @@ END $$;
 -- ════════════════════════════════════════════════════════════════════════
 
 -- ── UTILITY: Set updated_at ────────────────────────────────────────────
+DROP FUNCTION IF EXISTS set_updated_at();
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -11646,6 +11690,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ── ACTIVITY LOG TRIGGER FUNCTION ──────────────────────────────────────
+DROP FUNCTION IF EXISTS fn_log_activity();
 CREATE OR REPLACE FUNCTION public.fn_log_activity()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -11748,6 +11793,7 @@ END$$;
 
 -- ── UTILITY FUNCTIONS ──────────────────────────────────────────────────
 
+DROP FUNCTION IF EXISTS set_updated_at();
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -12099,6 +12145,7 @@ CREATE POLICY "System can create activity logs"
   WITH CHECK (true);
 
 -- ── 8. ACTIVITY LOG TRIGGER FUNCTION ───────────────────────────────────
+DROP FUNCTION IF EXISTS fn_log_activity();
 CREATE OR REPLACE FUNCTION public.fn_log_activity()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -13509,6 +13556,7 @@ SELECT relname, rowsecurity FROM pg_class WHERE relnamespace = 'public'::regname
 -- ── Ticket 111: Database triggers for webhooks ──────────────────────────────
 
 -- Trigger function for webhook dispatch
+DROP FUNCTION IF EXISTS dispatch_webhook();
 CREATE OR REPLACE FUNCTION public.dispatch_webhook()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -13581,6 +13629,7 @@ CREATE TRIGGER trg_placements_webhook
 -- ── Ticket 112: Database triggers for notifications ────────────────────────
 
 -- Trigger function for notification dispatch
+DROP FUNCTION IF EXISTS dispatch_notification();
 CREATE OR REPLACE FUNCTION public.dispatch_notification()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -13630,6 +13679,7 @@ CREATE TRIGGER trg_deals_notification
 -- ── Ticket 113: Database triggers for credit consumption ───────────────────
 
 -- Trigger function to update credit balance
+DROP FUNCTION IF EXISTS update_credit_balance();
 CREATE OR REPLACE FUNCTION public.update_credit_balance()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -14142,6 +14192,7 @@ SELECT
 
 -- ── Ticket 10: Utility function ─────────────────────────────────────────────
 
+DROP FUNCTION IF EXISTS set_updated_at();
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
