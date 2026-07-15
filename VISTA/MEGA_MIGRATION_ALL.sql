@@ -3203,6 +3203,7 @@ CREATE INDEX IF NOT EXISTS idx_mandates_has_milestones ON mandates ((milestones 
 -- pending, on_track, at_risk, overdue, completed, completed_late
 
 -- Helper function to get milestone status
+DROP FUNCTION IF EXISTS get_milestone_status(timestamptz, timestamptz, timestamptz);
 CREATE OR REPLACE FUNCTION get_milestone_status(
   target_date timestamptz,
   actual_date timestamptz,
@@ -3234,7 +3235,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- Helper function to initialize milestones with default SLA targets
-DROP FUNCTION IF EXISTS initialize_milestones();
+DROP FUNCTION IF EXISTS initialize_milestones(timestamptz);
 CREATE OR REPLACE FUNCTION initialize_milestones(mandate_created_at timestamptz) RETURNS jsonb AS $$
 DECLARE
   result jsonb := '{}'::jsonb;
@@ -3517,7 +3518,7 @@ FROM ml_models m
 ORDER BY m.trained_at DESC;
 
 -- Helper function to get latest active model
-DROP FUNCTION IF EXISTS get_latest_model();
+DROP FUNCTION IF EXISTS get_latest_model(text);
 CREATE OR REPLACE FUNCTION get_latest_model(p_model_type text)
 RETURNS ml_models AS $$
 DECLARE
@@ -6563,7 +6564,7 @@ CREATE POLICY "System can create pipeline transitions"
   WITH CHECK (true);
 
 -- ── 7. S2→S3 GATE VALIDATION FUNCTION (GRID v2.0) ───────────────────────
-DROP FUNCTION IF EXISTS fn_validate_s2_to_s3_gate();
+DROP FUNCTION IF EXISTS fn_validate_s2_to_s3_gate(UUID);
 CREATE OR REPLACE FUNCTION public.fn_validate_s2_to_s3_gate(p_contact_id UUID)
 RETURNS TABLE (
   can_proceed BOOLEAN,
@@ -7104,7 +7105,7 @@ CREATE POLICY "System can update grid standards"
   USING (true);
 
 -- ── 7. COMPUTE GRID STANDARDS FUNCTION ──────────────────────────────────
-DROP FUNCTION IF EXISTS fn_compute_grid_standards();
+DROP FUNCTION IF EXISTS fn_compute_grid_standards(UUID);
 CREATE OR REPLACE FUNCTION public.fn_compute_grid_standards(p_mapping_id UUID)
 RETURNS VOID AS $$
 DECLARE
@@ -7555,7 +7556,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ── 6. PHASE AUTO-ADVANCE ──────────────────────────────────────────────
-DROP FUNCTION IF EXISTS fn_check_phase_advance();
+DROP FUNCTION IF EXISTS fn_check_phase_advance(UUID);
 CREATE OR REPLACE FUNCTION public.fn_check_phase_advance(p_mandate_id UUID)
 RETURNS TEXT AS $$
 DECLARE
@@ -7819,7 +7820,7 @@ CREATE TRIGGER trg_signal_after_insert
   FOR EACH ROW EXECUTE FUNCTION public.fn_signal_after_insert();
 
 -- Auto-advance enrichment status
-DROP FUNCTION IF EXISTS fn_auto_advance_enrichment();
+DROP FUNCTION IF EXISTS fn_auto_advance_enrichment(UUID);
 CREATE OR REPLACE FUNCTION public.fn_auto_advance_enrichment(p_contact_id UUID)
 RETURNS VOID AS $$
 DECLARE
@@ -8027,6 +8028,7 @@ CREATE POLICY "Team can update match runs" ON public.match_runs
   FOR UPDATE TO authenticated USING (true);
 
 -- ── 3. COMPUTE_MATCH_SCORE() FUNCTION ──────────────────────────────────
+DROP FUNCTION IF EXISTS compute_match_score(UUID, UUID);
 CREATE OR REPLACE FUNCTION public.compute_match_score(
   p_contact_id UUID,
   p_mandate_id UUID
@@ -8416,6 +8418,7 @@ ALTER TABLE IF EXISTS public.contacts
   ADD COLUMN IF NOT EXISTS canvas_pdf_url TEXT;
 
 -- ── 5. HELPER FUNCTION: COMPUTE CANVAS COMPOSITE ───────────────────────
+DROP FUNCTION IF EXISTS compute_canvas_composite(NUMERIC, NUMERIC, NUMERIC, NUMERIC, NUMERIC, NUMERIC);
 CREATE OR REPLACE FUNCTION compute_canvas_composite(
   p_strategic NUMERIC,
   p_communication NUMERIC,
@@ -8446,7 +8449,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- ── 6. HELPER FUNCTION: TRIDENT → CANVAS MAPPING ───────────────────────
-DROP FUNCTION IF EXISTS trident_to_canvas_suggest();
+DROP FUNCTION IF EXISTS trident_to_canvas_suggest(UUID);
 CREATE OR REPLACE FUNCTION trident_to_canvas_suggest(p_scorecard_id UUID) RETURNS JSONB AS $$
 DECLARE
   v_scorecard RECORD;
@@ -10139,6 +10142,7 @@ EXCEPTION WHEN OTHERS THEN
 END$$;
 
 -- ── 3. HELPER FUNCTION: COMPOSITE & VERDICT ──────────────────────────
+DROP FUNCTION IF EXISTS compute_trident_composite(NUMERIC, NUMERIC, NUMERIC);
 CREATE OR REPLACE FUNCTION public.compute_trident_composite(
   p_d1 NUMERIC,
   p_d2 NUMERIC,
@@ -10175,6 +10179,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- ── 4. HELPER FUNCTION: PRE-FLIGHT CHECKS ─────────────────────────────
+DROP FUNCTION IF EXISTS trident_preflight(UUID, UUID);
 CREATE OR REPLACE FUNCTION public.trident_preflight(
   p_contact_id UUID,
   p_mandate_id UUID DEFAULT NULL
