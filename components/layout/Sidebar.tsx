@@ -19,6 +19,8 @@ import {
   Cpu,
   GitBranch,
   ClipboardList,
+  UserPlus,
+  BarChart3,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -36,6 +38,8 @@ const navItems = [
   { href: "/conversions", label: "Conversions", icon: TrendingUp, tooltip: "Track conversion metrics" },
   { href: "/automation", label: "Automation", icon: Cpu, tooltip: "Configure automations" },
   { href: "/strategy", label: "Strategy", icon: Lightbulb, tooltip: "Strategic notes and priorities" },
+  { href: "/b2c-pipeline", label: "B2C Pipeline", icon: UserPlus, tooltip: "B2C to B2B conversion pipeline" },
+  { href: "/b2c-analytics", label: "B2C Analytics", icon: BarChart3, tooltip: "B2C conversion analytics" },
 ]
 
 const bottomItems = [
