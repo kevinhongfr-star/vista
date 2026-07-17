@@ -320,7 +320,7 @@ export function CampaignWizard({ isOpen, onClose, contactIds, clusterId }: Campa
                 <h3 className="text-lg font-semibold">Generating Campaign</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   AI is crafting a {touches}-touch sequence across {channels.length} channels
-                  for "{objective.slice(0, 60)}..."
+                  for &quot;{objective.slice(0, 60)}...&quot;
                 </p>
               </div>
               <div className="max-w-xs mx-auto space-y-2">
