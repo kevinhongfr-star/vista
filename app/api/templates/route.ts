@@ -1,57 +1,34 @@
 import { NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase/server"
-import type { EmailTemplate } from "@/lib/types"
 
 export async function GET() {
   try {
     const supabase = createServerClient()
 
     const { data, error } = await supabase
-      .from("email_templates")
+      .from("vista_outreach_templates")
       .select("*")
-      .order("template_type")
+      .eq("is_active", true)
+      .order("bucket")
+      .order("touch_number")
 
     if (error) {
-      // If table doesn't exist, return default templates
-      return NextResponse.json({
-        templates: [
-          {
-            id: "default-1",
-            template_name: "Executive Brief Invitation",
-            template_type: "Executive Brief",
-            subject_template: "Exclusive Executive Brief: {program_name}",
-            body_template: "Dear {contact_name},\n\nI would like to invite you to our exclusive executive brief on {program_name}.\n\nBest regards,\nKevin Hong",
-            variables: ["{contact_name}", "{program_name}"],
-          },
-          {
-            id: "default-2",
-            template_name: "Webinar Invitation",
-            template_type: "Webinar Invite",
-            subject_template: "You're Invited: {webinar_title}",
-            body_template: "Dear {contact_name},\n\nJoin us for an exclusive webinar: {webinar_title}\n\nDate: {webinar_date}\n\nBest regards,\nKevin Hong",
-            variables: ["{contact_name}", "{webinar_title}", "{webinar_date}"],
-          },
-          {
-            id: "default-3",
-            template_name: "Follow-up After Meeting",
-            template_type: "Follow-up",
-            subject_template: "Following Up: Our Conversation",
-            body_template: "Dear {contact_name},\n\nThank you for meeting with me. As discussed...\n\nBest regards,\nKevin Hong",
-            variables: ["{contact_name}"],
-          },
-          {
-            id: "default-4",
-            template_name: "Re-engagement",
-            template_type: "Re-engagement",
-            subject_template: "Catching Up",
-            body_template: "Dear {contact_name},\n\nIt has been a while since we last connected. I wanted to reach out and...\n\nBest regards,\nKevin Hong",
-            variables: ["{contact_name}"],
-          },
-        ],
-      })
+      return NextResponse.json({ templates: [], error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ templates: data || [] })
+    const templates = (data || []).map((t: any) => ({
+      id: t.id,
+      template_name: t.name,
+      template_type: t.bucket,
+      subject_template: t.subject_line,
+      body_template: t.body_template,
+      variables: t.variables || {},
+      channel: t.channel,
+      touch_number: t.touch_number,
+      description: t.description,
+    }))
+
+    return NextResponse.json({ templates })
   } catch (error) {
     return NextResponse.json({ templates: [], error: String(error) }, { status: 500 })
   }
@@ -63,13 +40,16 @@ export async function POST(request: Request) {
     const body = await request.json()
 
     const { data, error } = await supabase
-      .from("email_templates")
+      .from("vista_outreach_templates")
       .insert({
-        template_name: body.template_name,
-        template_type: body.template_type,
-        subject_template: body.subject_template,
+        name: body.template_name,
+        bucket: body.template_type || "universal",
+        subject_line: body.subject_template,
         body_template: body.body_template,
-        variables: body.variables || [],
+        variables: body.variables || {},
+        channel: body.channel || "any",
+        touch_number: body.touch_number || 1,
+        description: body.description || "",
       })
       .select()
       .single()
@@ -78,7 +58,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, template: data })
+    const template = {
+      id: data.id,
+      template_name: data.name,
+      template_type: data.bucket,
+      subject_template: data.subject_line,
+      body_template: data.body_template,
+      variables: data.variables,
+    }
+
+    return NextResponse.json({ success: true, template })
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 })
   }

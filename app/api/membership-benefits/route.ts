@@ -10,15 +10,13 @@ export async function GET(request: Request) {
 
     const tier = searchParams.get("tier")
     if (tier) {
-      query.eq("tier", parseInt(tier, 10))
+      query.eq("tier_required", parseInt(tier, 10))
     }
 
-    const category = searchParams.get("category")
-    if (category) {
-      query.eq("category", category)
-    }
-
-    const { data, error } = await query.order("tier").order("benefit_name")
+    const { data, error } = await query
+      .eq("is_active", true)
+      .order("tier_required")
+      .order("benefit_name")
 
     if (error) {
       return NextResponse.json({ benefits: [], error: error.message }, { status: 500 })

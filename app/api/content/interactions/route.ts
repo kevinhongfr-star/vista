@@ -6,7 +6,9 @@ export async function GET(request: Request) {
     const supabase = createServerClient()
     const { searchParams } = new URL(request.url)
 
-    const query = supabase.from("vista_content_interactions").select("*, vista_content_assets(content_title)")
+    const query = supabase
+      .from("vista_content_contact_interactions")
+      .select("*, vista_content_attribution(content_title, content_type)")
 
     const contentId = searchParams.get("content_id")
     if (contentId) {
@@ -24,7 +26,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ interactions: [], error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ interactions: data || [] })
+    const interactions = (data || []).map((item: any) => ({
+      ...item,
+      content_title: item.vista_content_attribution?.content_title,
+      content_type: item.vista_content_attribution?.content_type,
+    }))
+
+    return NextResponse.json({ interactions })
   } catch (error) {
     return NextResponse.json({ interactions: [], error: String(error) }, { status: 500 })
   }
@@ -36,12 +44,13 @@ export async function POST(request: Request) {
     const body = await request.json()
 
     const { data, error } = await supabase
-      .from("vista_content_interactions")
+      .from("vista_content_contact_interactions")
       .insert({
         content_id: body.content_id,
         contact_id: body.contact_id,
         interaction_type: body.interaction_type,
-        interaction_date: body.interaction_date || new Date().toISOString().split("T")[0],
+        interaction_date: body.interaction_date || new Date().toISOString(),
+        resulted_in_conversation: body.resulted_in_conversation || false,
       })
       .select()
       .single()

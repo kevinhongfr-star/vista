@@ -9,8 +9,8 @@ export async function GET(request: Request) {
     const period = searchParams.get("period") || "30d"
 
     const { data: memberships, error: mError } = await supabase
-      .from("vista_memberships")
-      .select("status, membership_tier")
+      .from("vista_council_members")
+      .select("status, member_type")
 
     if (mError) {
       return NextResponse.json({ metrics: {}, error: mError.message }, { status: 500 })
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
     const { data: engagements, error: eError } = await supabase
       .from("vista_contact_service_engagements")
-      .select("status, tier_at_engagement")
+      .select("status, tier_at_engagement, satisfaction_score")
 
     if (eError) {
       return NextResponse.json({ metrics: {}, error: eError.message }, { status: 500 })
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     const tierDistribution: Record<string, number> = {}
 
     for (const m of memberships || []) {
-      const tier = m.membership_tier || "unknown"
+      const tier = m.member_type || "unknown"
       tierDistribution[tier] = (tierDistribution[tier] || 0) + 1
     }
 
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       inactive_memberships: memberships?.filter((m: { status: string }) => m.status !== "active").length || 0,
       tier_distribution: tierDistribution,
       total_engagements: engagements?.length || 0,
-      completed_engagements,
+      completed_engagements: completedEngagements,
       avg_satisfaction_score: avgSatisfaction,
       engagement_completion_rate: engagements?.length > 0
         ? Math.round((completedEngagements / engagements.length) * 100)

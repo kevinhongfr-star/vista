@@ -53,7 +53,7 @@ export function CrossSellCard({ contactId }: CrossSellCardProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ converted: true }),
       })
-      setConverted((prev) => new Set([...prev, ruleId]))
+      setConverted((prev) => new Set(prev).add(ruleId))
     } catch {
       // ignore
     }

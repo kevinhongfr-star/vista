@@ -6,9 +6,10 @@ export async function GET() {
     const supabase = createServerClient()
 
     const { data: settings, error: sError } = await supabase
-      .from("vista_platform_settings")
+      .from("platform_settings")
       .select("*")
-      .single()
+      .limit(1)
+      .maybeSingle()
 
     if (sError && sError.code !== "PGRST116") {
       return NextResponse.json({ platform: {}, error: sError.message }, { status: 500 })

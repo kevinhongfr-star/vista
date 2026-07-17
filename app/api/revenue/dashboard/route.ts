@@ -17,9 +17,27 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get("period") || "monthly"
 
+    const now = new Date()
+    let startDate: Date
+    switch (period) {
+      case "weekly":
+        startDate = new Date(now.getTime() - 7 * 86400000)
+        break
+      case "quarterly":
+        startDate = new Date(now.getTime() - 90 * 86400000)
+        break
+      case "yearly":
+        startDate = new Date(now.getTime() - 365 * 86400000)
+        break
+      default:
+        startDate = new Date(now.getTime() - 30 * 86400000)
+    }
+    const startDateStr = startDate.toISOString()
+
     const { data: engagements, error: engError } = await supabase
       .from("vista_contact_service_engagements")
       .select("*, vista_service_catalog(tier, tier_name, name)")
+      .gte("created_at", startDateStr)
 
     if (engError) {
       return NextResponse.json({ error: engError.message }, { status: 500 })
@@ -34,7 +52,6 @@ export async function GET(request: Request) {
 
     const revenueByServiceMap: Record<string, { service_name: string; total_cny: number; count: number }> = {}
 
-    let bundleCount = 0
     let totalDeals = 0
     let dealsWithDiscount = 0
     let totalDiscountPct = 0
@@ -44,7 +61,6 @@ export async function GET(request: Request) {
     for (const eng of completedEngagements) {
       const svc = eng.vista_service_catalog
       const tier = svc?.tier || 1
-      const tierName = svc?.tier_name || "Free"
       const serviceName = svc?.name || "Unknown"
       const price = eng.price_paid_cny || 0
       const wasDiscounted = eng.was_discounted || false
@@ -87,6 +103,7 @@ export async function GET(request: Request) {
     const { data: proposals, error: propError } = await supabase
       .from("vista_proposals")
       .select("status, total_value_cny, bundle_id")
+      .gte("created_at", startDateStr)
 
     if (propError) {
       return NextResponse.json({ error: propError.message }, { status: 500 })
@@ -113,6 +130,7 @@ export async function GET(request: Request) {
     const { data: progressions, error: progError } = await supabase
       .from("vista_tier_progressions")
       .select("from_tier, to_tier")
+      .gte("created_at", startDateStr)
 
     if (progError) {
       return NextResponse.json({ error: progError.message }, { status: 500 })

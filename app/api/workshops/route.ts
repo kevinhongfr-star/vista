@@ -13,7 +13,7 @@ export async function GET(request: Request) {
       query.eq("status", status)
     }
 
-    const { data, error } = await query.order("workshop_date", { ascending: false })
+    const { data, error } = await query.order("scheduled_date", { ascending: false })
 
     if (error) {
       return NextResponse.json({ workshops: [], error: error.message }, { status: 500 })
@@ -33,14 +33,13 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from("vista_workshops")
       .insert({
-        workshop_name: body.workshop_name,
-        workshop_date: body.workshop_date,
-        workshop_time: body.workshop_time,
-        location: body.location,
-        max_attendees: body.max_attendees || 20,
-        description: body.description || "",
-        tier_access: body.tier_access || [],
+        title: body.workshop_name || body.title,
+        scheduled_date: body.workshop_date || body.scheduled_date,
+        duration_minutes: body.duration_minutes || 180,
+        max_capacity: body.max_attendees || body.max_capacity || 20,
         status: body.status || "scheduled",
+        workshop_type: body.workshop_type || "general",
+        price_cny: body.price_cny || 0,
       })
       .select()
       .single()

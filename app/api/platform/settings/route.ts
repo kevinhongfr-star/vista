@@ -6,9 +6,10 @@ export async function GET() {
     const supabase = createServerClient()
 
     const { data, error } = await supabase
-      .from("vista_platform_settings")
+      .from("platform_settings")
       .select("*")
-      .single()
+      .limit(1)
+      .maybeSingle()
 
     if (error && error.code !== "PGRST116") {
       return NextResponse.json({ settings: {}, error: error.message }, { status: 500 })
@@ -26,9 +27,10 @@ export async function PUT(request: Request) {
     const body = await request.json()
 
     const { data: existing, error: existsError } = await supabase
-      .from("vista_platform_settings")
+      .from("platform_settings")
       .select("id")
-      .single()
+      .limit(1)
+      .maybeSingle()
 
     if (existsError && existsError.code !== "PGRST116") {
       return NextResponse.json({ success: false, error: existsError.message }, { status: 500 })
@@ -36,12 +38,13 @@ export async function PUT(request: Request) {
 
     if (existing) {
       const { data, error } = await supabase
-        .from("vista_platform_settings")
+        .from("platform_settings")
         .update({
           platform_name: body.platform_name,
           current_version: body.current_version,
           status: body.status,
           maintenance_mode: body.maintenance_mode || false,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", existing.id)
         .select()
@@ -54,7 +57,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: true, settings: data })
     } else {
       const { data, error } = await supabase
-        .from("vista_platform_settings")
+        .from("platform_settings")
         .insert({
           platform_name: body.platform_name || "VISTA Platform",
           current_version: body.current_version || "1.0.0",

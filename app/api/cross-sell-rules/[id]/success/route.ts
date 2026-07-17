@@ -12,7 +12,7 @@ export async function PUT(
 
     const { data: rule, error: fetchError } = await supabase
       .from("vista_cross_sell_rules")
-      .select("success_rate, attempt_count")
+      .select("success_rate")
       .eq("id", params.id)
       .single()
 
@@ -22,13 +22,11 @@ export async function PUT(
 
     const currentRate = rule.success_rate || 0
     const newRate = currentRate * 0.9 + (converted ? 100 : 0) * 0.1
-    const newAttempts = (rule.attempt_count || 0) + 1
 
     const { data, error } = await supabase
       .from("vista_cross_sell_rules")
       .update({
         success_rate: Math.round(newRate * 10) / 10,
-        attempt_count: newAttempts,
       })
       .eq("id", params.id)
       .select()

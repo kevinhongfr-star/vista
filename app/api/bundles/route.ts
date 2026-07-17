@@ -7,7 +7,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from("vista_service_bundles")
       .select("*")
-      .eq("status", "active")
+      .eq("is_active", true)
       .order("bundle_name")
 
     if (error) {
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const { data: bundles, error: bundleError } = await supabase
       .from("vista_service_bundles")
       .select("*")
-      .eq("status", "active")
+      .eq("is_active", true)
 
     if (bundleError) {
       return NextResponse.json({ success: false, error: bundleError.message }, { status: 500 })
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     let bestSavings = 0
     let bundlePrice = 0
 
-    const serviceIdSet = new Set(service_ids)
+    const serviceNames = (services || []).map((s: { name: string }) => s.name)
 
     for (const bundle of bundles || []) {
       const bundleServiceNames: string[] = Array.isArray(bundle.component_service_names)
@@ -72,8 +72,8 @@ export async function POST(request: Request) {
         : []
 
       const bundleServicesMatch = bundleServiceNames.length > 0 &&
-        service_ids.length === bundleServiceNames.length &&
-        service_ids.every((id: string) => bundleServiceNames.includes(id))
+        serviceNames.length === bundleServiceNames.length &&
+        serviceNames.every((name: string) => bundleServiceNames.includes(name))
 
       if (bundleServicesMatch) {
         const price = (bundle.bundle_price_min_cny + bundle.bundle_price_max_cny) / 2

@@ -9,27 +9,26 @@ export async function GET(request: Request) {
     const period = searchParams.get("period") || "30d"
 
     const { data: memberships, error } = await supabase
-      .from("vista_memberships")
-      .select("*, contacts(contact_name, company)")
-      .order("membership_start_date", { ascending: false })
+      .from("vista_council_members")
+      .select("*, vista_contacts(contact_name, company)")
+      .order("membership_date", { ascending: false })
 
     if (error) {
       return NextResponse.json({ memberships: [], error: error.message }, { status: 500 })
     }
 
-    const result = (memberships || []).map((m) => {
+    const result = (memberships || []).map((m: any) => {
       const now = new Date()
-      const start = new Date(m.membership_start_date)
-      const end = new Date(m.membership_end_date)
-      const daysTotal = Math.max(1, (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+      const start = m.membership_date ? new Date(m.membership_date) : now
       const daysUsed = Math.max(0, (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-      const daysRemaining = Math.max(0, (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
       return {
         ...m,
+        contact_name: m.vista_contacts?.contact_name,
+        company: m.vista_contacts?.company,
         days_used: Math.round(daysUsed),
-        days_remaining: Math.round(daysRemaining),
-        pct_used: Math.round((daysUsed / daysTotal) * 100),
+        days_remaining: null,
+        pct_used: null,
       }
     })
 

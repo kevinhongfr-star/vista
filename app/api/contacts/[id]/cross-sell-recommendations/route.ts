@@ -31,7 +31,7 @@ export async function GET(
     const { data: services, error: svcError } = await supabase
       .from("vista_service_catalog")
       .select("id, name, price_min_cny, price_max_cny, tier")
-      .in("id", [...new Set([...completedServiceIds, ...allServiceIds])])
+      .in("id", Array.from(new Set([...completedServiceIds, ...allServiceIds])))
 
     if (svcError) {
       return NextResponse.json({ recommendations: [], error: svcError.message }, { status: 500 })
