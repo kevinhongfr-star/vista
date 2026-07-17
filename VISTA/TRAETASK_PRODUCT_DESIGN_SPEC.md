@@ -812,3 +812,186 @@ Activity Feed (last 24h):
 - Week 5-6: PD-W3 + FIX-B3 (44h) — IA restructure
 - Week 7-8: PD-W4 + PD-W5 (51h) — company entity
 - Week 9-10: PD-W6 (44h) — reports + collaboration
+
+---
+
+## 🎯 PRIORITY 14: Dead/Decorative Features (Built but Not Wired)
+
+### PD-36: Notification Bell — Actually Make It Work
+**What:** Bell icon in Header renders with badge count but has NO click handler.
+**Current state:**
+- `<Bell />` icon renders in header
+- `notifications.length > 0` shows a badge count
+- But NO onClick, NO dropdown, NO popover — it's decorative
+- Zustand store has `notifications: []` but nothing ever calls `addNotification()`
+- No API endpoint pushes notifications
+**Fix:**
+1. Add Popover/Dropdown to bell icon showing notification list
+2. Wire API: `/api/notifications` — returns unread notifications
+3. Sources: threshold crossings, signal detections, campaign completions, stale contacts
+4. Mark-as-read on click, "Clear all" button
+5. Realtime subscription for live notifications
+**Files:**
+- `components/layout/Header.tsx` (add popover)
+- `app/api/notifications/route.ts` (new)
+- `components/notifications/NotificationPanel.tsx` (new)
+**Effort:** 4 hours
+
+### PD-37: AlertFeed Component — Wire It Up
+**What:** `components/dashboard/AlertFeed.tsx` exists — well-designed component showing stale contacts, threshold crossings, new signals. But it's NEVER imported anywhere.
+**Fix:** Import into Dashboard.tsx and pass the required props (staleContacts, thresholdCrossings, newSignals). These queries already exist in the priority-actions API.
+**Files:**
+- `app/dashboard/Dashboard.tsx` (import + render AlertFeed)
+- `app/api/dashboard/alerts/route.ts` (new — aggregate the 3 alert types)
+**Effort:** 2 hours
+
+### PD-38: Header Search Bar — Wire It Up or Remove It
+**What:** Search input in Header stores value in Zustand `searchQuery` but NOTHING reads it. It's decorative.
+**Options:**
+- Option A: Wire it to global search (connect to PD-30 Command Palette search)
+- Option B: Remove it and rely on Cmd+K only (cleaner)
+**Recommendation:** Option A — make the search bar the visible entry point, Cmd+K as the power-user shortcut. Typing in header search → opens command palette with pre-filled query.
+**Files:**
+- `components/layout/Header.tsx` (on focus/typing → open CommandPalette)
+- `components/CommandPalette.tsx` (accept external query prop)
+**Effort:** 1 hour
+
+---
+
+## 🎯 PRIORITY 15: UX Polish
+
+### PD-39: Form Validation System
+**What:** No form library in use. All forms are hand-rolled with `useState` — no validation, no error messages, no consistent UX.
+**Impact:** Create Contact (FIX-22), Campaign Wizard, Settings forms — all lack validation. Users can submit empty forms, get no feedback on invalid emails, etc.
+**Fix:**
+1. Install `react-hook-form` + `zod` (already in project? check)
+2. Create shared form patterns: `Form`, `FormField`, `FormError` components
+3. Apply to: Create Contact, Create Campaign, Settings, Log Activity, Create Note
+**Validation rules:**
+- Email: valid format
+- Name: required, min 2 chars
+- Score: 0-100
+- Phone: valid format (optional)
+- Pipeline stage: must be valid enum
+**Files:**
+- `components/ui/form.tsx` (new — reusable form components)
+- All form components (refactor to use react-hook-form)
+**Effort:** 6 hours
+
+### PD-40: Optimistic UI Updates
+**What:** When you change a pipeline stage or toggle a filter, the UI waits for server response. Feels slow.
+**Fix:**
+- Pipeline stage change: update UI immediately, roll back on error
+- Contact scoring: update badge immediately, sync in background
+- Stage transitions in kanban: animate immediately, persist async
+**Implementation:** React state management pattern: set local state → fire API → on error, revert local state + show toast.
+**Files:** All pages with write operations (ContactDetail, PipelinePage, ContactsTable)
+**Effort:** 4 hours
+
+### PD-41: Error Boundary — Don't Expose Stack Traces
+**What:** `app/error.tsx` renders `error.stack` in a `<pre>` tag. In production, this exposes internal code structure.
+**Fix:**
+- Show user-friendly message: "Something went wrong. Our team has been notified."
+- Log error to monitoring service (Sentry from FIX-29)
+- Keep stack trace only in development mode
+- Add "Report this issue" button
+**Files:** `app/error.tsx`
+**Effort:** 30 min
+
+### PD-42: "Last Updated" Indicator on Every Page
+**What:** No page shows when its data was last refreshed. User doesn't know if they're looking at stale data.
+**Design:** Small text in page header: "Last updated: 3 minutes ago ↻" with refresh button.
+**Implementation:**
+- Track `lastFetchTime` per page in local state
+- Display relative time (just now / 2m ago / 1h ago)
+- Refresh button clears cache + refetches
+- Dashboard already has `realtimeUnsubscribeRef` — use similar pattern elsewhere
+**Files:** All page components (add to page header)
+**Effort:** 3 hours
+
+### PD-43: Contextual Help System
+**What:** No help text, no tooltips explaining features, no "?" icons. A new user sees "Density Cluster #23" and has no idea what that means.
+**Design:**
+- Help icon (ⓘ) next to complex features
+- Click → tooltip/popover explaining what it is and why it matters
+- Examples:
+  - Score: "Composite score based on 4 factors: pain cluster match, persona fit, product alignment, deal size."
+  - Pipeline stage: "Contacts in 'Proposal Sent' should be followed up within 3-5 days."
+  - Cluster: "Clusters are AI-generated groups of contacts with similar profiles and needs."
+- First-visit tooltip per page (once per user)
+**Implementation:**
+- `HelpTooltip` component wrapping feature labels
+- Help content as a JSON config (so it's editable without code changes)
+- Store `seen_tooltips[]` in user preferences
+**Files:**
+- `components/ui/HelpTooltip.tsx` (new)
+- `lib/help-content.ts` (new — all help text)
+- Apply to ~15 key features across pages
+**Effort:** 6 hours
+
+### PD-44: Print Styles
+**What:** Only `report-viewer.tsx` has print styles. No other page is printable.
+**Fix:**
+- Add `@media print` styles for:
+  - Contact detail (clean single-page profile)
+  - Pipeline summary (one-page overview)
+  - Account/company brief
+- Hide: sidebar, header, buttons, navigation
+- Show: data tables, key metrics
+- Page breaks before major sections
+**Files:** `app/globals.css` or per-page `print.css`
+**Effort:** 3 hours
+
+### PD-45: Accessibility (a11y) Audit
+**What:** Minimal accessibility support. No skip-to-content link, no focus traps in modals, limited ARIA labels.
+**Issues found:**
+- No "Skip to main content" link
+- Modals don't trap focus (Tab key escapes modal)
+- No `aria-live` regions for dynamic content
+- Score badges have no text alternative for screen readers
+- Color-only indicators (score dots) without text labels
+- Tables missing `scope` attributes on headers
+**Fix:**
+1. Add skip-to-content link in layout
+2. Add focus trap to all Dialog/Modal components
+3. Add `aria-label` to all icon-only buttons
+4. Add `sr-only` text to color indicators
+5. Audit withaxe-core or Lighthouse
+**Files:** Layout, all modal/dialog components, all icon buttons
+**Effort:** 6 hours
+
+---
+
+## 📋 FINAL Master Ticket Count
+
+| Category | Tickets | Hours |
+|----------|---------|-------|
+| **FIX (bugs)** | FIX-19 to FIX-43 (24) | 27h |
+| **PD Quick Wins** | PD-01 to PD-06, PD-10, PD-18 (8) | 16h |
+| **PD Dashboard** | PD-02, PD-03, PD-04 (3) | 11h |
+| **PD Contacts** | PD-05 to PD-09 (5) | 15h |
+| **PD Contact Detail** | PD-10 to PD-12 (3) | 13h |
+| **PD Signals** | PD-13 to PD-15 (3) | 10h |
+| **PD Pipeline** | PD-16 to PD-18 (3) | 6h |
+| **PD Clusters** | PD-19, PD-20 (2) | 7h |
+| **PD Design System** | PD-21, PD-22 (2) | 5h |
+| **PD IA / Nav** | PD-23 (1) | 3h |
+| **PD Company Entity** | PD-24 to PD-26 (3) | 22h |
+| **PD Mobile** | PD-27, PD-28 (2) | 12h |
+| **PD Onboarding** | PD-29, PD-30 (2) | 14h |
+| **PD Reports** | PD-31, PD-32 (2) | 18h |
+| **PD Collaboration** | PD-33 to PD-35 (3) | 18h |
+| **PD Dead Features** | PD-36 to PD-38 (3) | 7h |
+| **PD UX Polish** | PD-39 to PD-45 (7) | 26h |
+| **TOTAL** | **FIX: 24 + PD: 45 = 69 tickets** | **~245h** |
+
+**Realistic timeline: ~12-14 weeks for one engineer working full-time.**
+
+**Recommended phasing:**
+- **Phase 1 (Week 1-2, 20h):** FIX-B1 + PD-36/37/38/41 — Security + email + wire up dead features + error fix
+- **Phase 2 (Week 3-4, 30h):** PD-01 to PD-10 — Dashboard action center + contact improvements
+- **Phase 3 (Week 5-6, 30h):** FIX-B2 + PD-11 to PD-18 — Timeline, signals, pipeline polish
+- **Phase 4 (Week 7-8, 35h):** PD-23 to PD-28 — IA restructure + company entity + mobile
+- **Phase 5 (Week 9-10, 40h):** PD-29 to PD-35 — Onboarding, search, reports, collaboration
+- **Phase 6 (Week 11-12, 40h):** PD-39 to PD-45 + FIX-B3 — Forms, a11y, polish
+- **Phase 7 (Week 13-14, 50h):** Remaining + integration testing + QA
