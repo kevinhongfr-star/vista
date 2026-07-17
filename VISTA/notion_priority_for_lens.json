@@ -1,0 +1,1578 @@
+{
+  "Sales Playbook": [
+    {
+      "title": "Cross-Sell & Expansion Playbook",
+      "status": "Kevin Review",
+      "id": "a4df2aff-a4cf-46fc-b79d-57e2988243d3"
+    },
+    {
+      "title": "Objection Handling Playbook (15 objections)",
+      "status": "Kevin Review",
+      "id": "a759d899-59ba-4fb6-8f49-6bc6ecc824b4"
+    },
+    {
+      "title": "P7.3 \u2014 Diagnostic Debrief Call Guide & Template",
+      "status": "Not Started",
+      "id": "54d8b0a8-88b7-4b79-b668-c52a9c479d87"
+    },
+    {
+      "title": "P7.1 \u2014 Cross-Sell & Expansion Playbook",
+      "status": "Not Started",
+      "id": "2fa4afac-d8f8-4c98-a315-f03fd5dc6c5e"
+    },
+    {
+      "title": "P5.5 \u2014 Objection Handling Playbook",
+      "status": "Not Started",
+      "id": "631c99d0-925c-4950-b4c4-c73537fc03a2"
+    },
+    {
+      "title": "#346 \u2014 LYC Partners \u2014 Business School Partnership Deck",
+      "status": "Kevin Review",
+      "id": "3d29b3a0-f021-4ab7-bd4b-639f6f62da95"
+    },
+    {
+      "title": "#347 \u2014 LYC Partners \u2014 Client Referral Programme Guide",
+      "status": "Kevin Review",
+      "id": "c6eef7ea-ef5f-4301-bd77-211ab0d0659b"
+    },
+    {
+      "title": "#346 \u2014 LYC Partners \u2014 Business School Partnership Deck",
+      "status": "Kevin Review",
+      "id": "dd40ae7b-9c8c-430e-aab0-79266ee12abf"
+    },
+    {
+      "title": "#339 \u2014 LYC Partners \u2014 CRM Pipeline Tracker Template",
+      "status": "Kevin Review",
+      "id": "d595a1ad-a639-407f-9608-136527f1b762"
+    },
+    {
+      "title": "#337 \u2014 LYC Partners \u2014 Discovery Call Script",
+      "status": "Kevin Review",
+      "id": "feedb082-8d2c-4d64-bdf9-d38b75253fb2"
+    },
+    {
+      "title": "#307 \u2014 B2B Discovery Call Script \u2014 HR & L&D Sponsor",
+      "status": "Kevin Review",
+      "id": "25719a87-9139-4981-9601-6c2fd6564f22"
+    },
+    {
+      "title": "#306 \u2014 B2C Discovery Call Script \u2014 Qualified Senior Leader",
+      "status": "Kevin Review",
+      "id": "34c0b8de-7e62-480a-96ff-6ea4de03b2f2"
+    },
+    {
+      "title": "#256 \u2014 B2B Partnership Deck Template (Consultant / Coach Referral Partners)",
+      "status": "Kevin Review",
+      "id": "5145a003-fedf-439d-8cd5-c97d9c7f7de5"
+    },
+    {
+      "title": "#251 \u2014 CRM Pipeline Tracker \u2014 Template & Guide",
+      "status": "Kevin Review",
+      "id": "68989265-07d9-4ab1-abe1-783746e3bd6a"
+    },
+    {
+      "title": "#248 \u2014 Discovery Conversation Script (B2B)",
+      "status": "Kevin Review",
+      "id": "2477499e-dab8-430a-ab71-e8da94c79f9f"
+    },
+    {
+      "title": "#238 \u2014 B2B Client Proposal Template \u2014 SHIFT Cohort Deployment",
+      "status": "Kevin Review",
+      "id": "66bbba10-b8a6-43dd-bfc4-9f51ed8da539"
+    },
+    {
+      "title": "#218 \u2014 B2B Objection Handling Playbook",
+      "status": "Kevin Review",
+      "id": "9031f577-273a-4f83-abb2-7d89beda4485"
+    },
+    {
+      "title": "#201 \u2014 Discovery Call Script (B2C)",
+      "status": "Kevin Review",
+      "id": "12c814a9-c7ee-44b4-bad1-c11c869d0469"
+    },
+    {
+      "title": "#194 \u2014 Client Success & Retention Playbook",
+      "status": "Kevin Review",
+      "id": "24c22011-c239-4a20-8e51-2a5e0df9c4b4"
+    },
+    {
+      "title": "#193 \u2014 CRM Pipeline Stages & Lead Qualification Framework",
+      "status": "Kevin Review",
+      "id": "dc5c6c3b-941b-4e2f-aaf1-951abec1ee07"
+    },
+    {
+      "title": "#189 \u2014 Referral Programme Framework",
+      "status": "Kevin Review",
+      "id": "0576c158-887c-4b50-a954-8642a1c121f4"
+    },
+    {
+      "title": "#158 \u2014 B2B Discovery Call Script & Qualification Framework",
+      "status": "Kevin Review",
+      "id": "23984e6c-fce7-4705-9801-d6a0cc12f060"
+    },
+    {
+      "title": "#137 \u2014 Testimonials & Social Proof Framework",
+      "status": "Kevin Review",
+      "id": "237a3fb5-4845-415b-b3f8-3ed1022f7314"
+    },
+    {
+      "title": "SHIFT Programs Sales Deck (Slide-by-Slide Brief)",
+      "status": "Kevin Review",
+      "id": "74ec2aec-262f-4eec-885c-b363014d985b"
+    },
+    {
+      "title": "Competitor Battle Cards (5 Profiles)",
+      "status": "Kevin Review",
+      "id": "1014ddcc-f1af-4884-be6a-dff7818fd838"
+    }
+  ],
+  "Sales Infrastructure": [
+    {
+      "title": "Master Proposal & Engagement Letter Template",
+      "status": "Kevin Review",
+      "id": "b135d571-23f5-4cbd-95e3-a521744f44a2"
+    },
+    {
+      "title": "Diagnostic Debrief Call Guide",
+      "status": "Kevin Review",
+      "id": "4d757991-743c-41c5-bc75-994dea9c63d8"
+    },
+    {
+      "title": "ICP Pain Point \u2192 Solution Mapper",
+      "status": "Kevin Review",
+      "id": "b3a1b918-43d8-4ed1-be42-59708ed20b10"
+    },
+    {
+      "title": "P5.6 \u2014 ROI Calculator Template",
+      "status": "Not Started",
+      "id": "996b10cf-b8d5-4b79-a06a-1dcba47fb6d2"
+    },
+    {
+      "title": "P5.4 \u2014 ICP Pain Point \u2192 Solution Mapper",
+      "status": "Not Started",
+      "id": "6e2e5f74-6817-4ab7-b988-98429e252590"
+    },
+    {
+      "title": "Competitor Comparison Sheet",
+      "status": "Kevin Review",
+      "id": "2f5f9b63-5386-4033-938e-8940e1380077"
+    },
+    {
+      "title": "ROI Calculator Framework (BRIDGE + FORGE)",
+      "status": "Kevin Review",
+      "id": "14933e61-28bc-42ea-9071-224a4b190cba"
+    },
+    {
+      "title": "Cross-Sell Pathway Map",
+      "status": "Kevin Review",
+      "id": "3411e090-3a70-4c73-b2dc-a6e37b681632"
+    },
+    {
+      "title": "Objection Handling Guide (Universal)",
+      "status": "Kevin Review",
+      "id": "aa10975f-6143-401a-8207-68734e3b9d66"
+    },
+    {
+      "title": "B2B Discovery Call Framework",
+      "status": "Kevin Review",
+      "id": "664d2354-5972-4c1c-a55d-b72741cc2213"
+    },
+    {
+      "title": "Proposal Template \u2014 B2B Corporate",
+      "status": "Kevin Review",
+      "id": "bb006a3f-34f9-4bff-bb71-37c8ad2912e1"
+    }
+  ],
+  "Report Template": [
+    {
+      "title": "Podcast \u2014 Track D: \"Careers in Motion\" (10 Episodes)",
+      "status": "Kevin Review",
+      "id": "66b15271-3e32-467e-a6bd-ddfcbe341335"
+    },
+    {
+      "title": "Podcast \u2014 Track C: \"The AI Leader\" (10 Episodes)",
+      "status": "Kevin Review",
+      "id": "8a53d818-5ec1-415d-a0ab-81587985cd05"
+    },
+    {
+      "title": "Podcast \u2014 Track B: \"Bridging the Divide\" (10 Episodes)",
+      "status": "Kevin Review",
+      "id": "e2b28376-5997-4d77-bb4b-91204a3126ee"
+    },
+    {
+      "title": "Podcast \u2014 Track A: \"The Governance Shift\" (12 Episodes)",
+      "status": "Kevin Review",
+      "id": "b334e68f-9a06-4d4a-9fbc-abfce0ab8f12"
+    },
+    {
+      "title": "Podcast \u2014 \"Leaders in Motion\" Series Architecture & Format Guide",
+      "status": "Kevin Review",
+      "id": "ee526115-4d7c-4b8d-9aa7-6d27bdea1118"
+    },
+    {
+      "title": "Cross-Border Alignment Scorecard \u2014 BRIDGE+MOSAIC Integration (12-15pp)",
+      "status": "Kevin Review",
+      "id": "0578604b-bdc5-41b3-aa85-597af8e93d0b"
+    },
+    {
+      "title": "Governance Scorecard \u2014 BRIDGE Client Report (12-15pp)",
+      "status": "Kevin Review",
+      "id": "79fb98f6-0655-4790-9220-ddaa76d43a08"
+    },
+    {
+      "title": "#424 \u2014 LYC Partners \u2014 LinkedIn Posts \u2014 Kevin Hong (Posts 51\u201355)",
+      "status": "Kevin Review",
+      "id": "c39f1087-4e47-42db-bfb3-97f19ef71ab0"
+    },
+    {
+      "title": "#403 \u2014 LinkedIn Posts \u2014 Kevin Hong (Posts 46\u201350)",
+      "status": "Kevin Review",
+      "id": "3363e66a-4252-4619-bf60-65d8d2a8ff67"
+    },
+    {
+      "title": "#396 \u2014 LinkedIn Posts \u2014 Kevin Hong (Posts 41\u201345)",
+      "status": "Kevin Review",
+      "id": "537371be-00b1-4d96-8e92-6d1e009bb26e"
+    },
+    {
+      "title": "#396 \u2014 LinkedIn Posts \u2014 Kevin Hong (Posts 41\u201345)",
+      "status": "Kevin Review",
+      "id": "2fa90cc7-82f0-4853-baf0-beeda920c3d3"
+    },
+    {
+      "title": "#353 \u2014 Signal Council Monthly Intelligence Briefing Template",
+      "status": "Kevin Review",
+      "id": "a982cfae-4643-492b-b981-871a6fcdb4aa"
+    },
+    {
+      "title": "#351 \u2014 LinkedIn Articles \u2014 Kevin Hong (Posts 31\u201335)",
+      "status": "Kevin Review",
+      "id": "102200fd-8fb0-42aa-92d8-05a1ed0d2565"
+    },
+    {
+      "title": "#353 \u2014 Signal Council Monthly Intelligence Briefing Template v2",
+      "status": "Kevin Review",
+      "id": "1d82295d-aa7d-4cb0-90f4-bdf93fd55ad5"
+    },
+    {
+      "title": "#345 \u2014 LYC Partners \u2014 APAC Leadership Trends White Paper Template",
+      "status": "Kevin Review",
+      "id": "9503b081-9f05-4a18-81f6-7cc421f9ed91"
+    },
+    {
+      "title": "#345 \u2014 LYC Partners \u2014 APAC Leadership Trends White Paper Template",
+      "status": "Kevin Review",
+      "id": "64693441-a97f-458a-923d-0fdd72fa92af"
+    },
+    {
+      "title": "#329 \u2014 France-Chine \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "ac3b81a4-30e0-4ff5-b44b-b34baa545919"
+    },
+    {
+      "title": "#338 \u2014 LYC Partners \u2014 LinkedIn Posts 26\u201330 (Kevin Hong)",
+      "status": "Kevin Review",
+      "id": "edc66de2-0f2f-470b-a103-22ad822cb50a"
+    },
+    {
+      "title": "#329 \u2014 France-Chine \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "4d335835-46d2-4eb7-bea7-23ef0b0ae4f7"
+    },
+    {
+      "title": "#325 \u2014 LinkedIn Thought Leadership Series \u2014 Kevin Hong (Posts 21\u201325)",
+      "status": "Kevin Review",
+      "id": "e5b3d6b6-5ebb-44c9-b019-ba12f2bc2c8e"
+    },
+    {
+      "title": "#303 \u2014 AI & Technology Disruption \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "d321b426-74e0-40f4-816b-978449d0829e"
+    },
+    {
+      "title": "#315 \u2014 LinkedIn Articles \u2014 Vanjulla (Global South Gravitas Shift, 5 Posts)",
+      "status": "Kevin Review",
+      "id": "72d77841-a45c-4bda-8ee1-2aa649312f06"
+    },
+    {
+      "title": "#317 \u2014 LinkedIn Articles \u2014 Ava (France-Chine, 5 Posts)",
+      "status": "Kevin Review",
+      "id": "71887c27-537a-4df2-bac8-fe62ce6303a1"
+    },
+    {
+      "title": "#316 \u2014 LinkedIn Articles \u2014 Harisha (AI & Technology Disruption, 5 Posts)",
+      "status": "Kevin Review",
+      "id": "74df7b98-8a55-4f5e-af25-07096766a90c"
+    },
+    {
+      "title": "#303 \u2014 AI & Technology Disruption \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "78a63e14-6bdc-4a16-aa99-d4887c74a94c"
+    },
+    {
+      "title": "#314 \u2014 LinkedIn Articles \u2014 Sumaya (Leaders in Motion, 5 Posts)",
+      "status": "Kevin Review",
+      "id": "00797309-73c6-4ce8-b220-125c2ccb23dc"
+    },
+    {
+      "title": "#301 \u2014 France-Chine Podcast \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "cf836713-de88-4dfe-8c67-07c24c174e3e"
+    },
+    {
+      "title": "#304 \u2014 Leaders in Motion Career Track \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "3eebe605-e5e3-4aa8-a035-7b4b9b948457"
+    },
+    {
+      "title": "#302 \u2014 Global South Gravitas Shift \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "a80f4580-f3f5-47b1-a4b7-e133b8415451"
+    },
+    {
+      "title": "#305 \u2014 Leaders in Motion (Sumaya Main Show) \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "0d25cca2-bae8-47a8-9c89-8d737c82bb9f"
+    },
+    {
+      "title": "#303 \u2014 AI & Technology Disruption \u2014 Episode Briefs (Eps 51\u201360)",
+      "status": "Kevin Review",
+      "id": "e7b8e698-0537-4b09-b07f-50bab791927f"
+    },
+    {
+      "title": "#297 \u2014 Signal Council \u2014 Monthly Intelligence Briefing Template",
+      "status": "Kevin Review",
+      "id": "f2ea0cd1-62f9-462c-a040-57938133edc7"
+    },
+    {
+      "title": "#296 \u2014 LinkedIn Thought Leadership Series \u2014 Kevin Hong (Posts 16\u201320)",
+      "status": "Kevin Review",
+      "id": "eae8052f-52ba-4bde-a88b-401de5117d4f"
+    },
+    {
+      "title": "#293 \u2014 AI & Technology Disruption \u2014 Episode Briefs (Eps 41\u201350)",
+      "status": "Kevin Review",
+      "id": "814b5637-a9f5-4ffd-aef6-157cd06d51ac"
+    },
+    {
+      "title": "#294 \u2014 Leaders in Motion Career Track \u2014 Episode Briefs (Eps 41\u201350)",
+      "status": "Kevin Review",
+      "id": "39f10caf-f048-4cb9-8ecb-80134efb1777"
+    },
+    {
+      "title": "#291 \u2014 France-Chine Podcast \u2014 Episode Briefs (Eps 41\u201350)",
+      "status": "Kevin Review",
+      "id": "ba76a094-0335-43f2-bcbc-fe0878dee0c9"
+    },
+    {
+      "title": "#292 \u2014 Global South Gravitas Shift \u2014 Episode Briefs (Eps 41\u201350)",
+      "status": "Kevin Review",
+      "id": "19516f77-801d-44d5-9bca-d3015a9ca81e"
+    },
+    {
+      "title": "#295 \u2014 Leaders in Motion (Sumaya Main Show) \u2014 Episode Briefs (Eps 41\u201350)",
+      "status": "Kevin Review",
+      "id": "60b8ead7-aebc-4382-901a-a33bd6edd88f"
+    },
+    {
+      "title": "#289 \u2014 Leaders in Motion Career Track \u2014 Episode Briefs (Eps 31\u201340)",
+      "status": "Kevin Review",
+      "id": "302e2877-1dd7-4bbf-9470-0b2bcfbcddd3"
+    },
+    {
+      "title": "#281 \u2014 LinkedIn Thought Leadership Series \u2014 Kevin Hong (Posts 11\u201315)",
+      "status": "Kevin Review",
+      "id": "d586d918-5308-4a0d-a6c7-306f64afb459"
+    },
+    {
+      "title": "#290 \u2014 Leaders in Motion (Sumaya Main Show) \u2014 Episode Briefs (Eps 31\u201340)",
+      "status": "Kevin Review",
+      "id": "25b212c2-7301-4437-9a19-1f726080b8db"
+    },
+    {
+      "title": "#288 \u2014 AI & Technology Disruption \u2014 Episode Briefs (Eps 31\u201340)",
+      "status": "Kevin Review",
+      "id": "c40d9d0e-09c7-485b-ac43-ce3d654fb77a"
+    },
+    {
+      "title": "#287 \u2014 Global South Gravitas Shift \u2014 Episode Briefs (Eps 31\u201340)",
+      "status": "Kevin Review",
+      "id": "030834aa-2ef8-478a-ba18-a8a9240cb6e2"
+    },
+    {
+      "title": "#286 \u2014 France-Chine Podcast \u2014 Episode Briefs (Eps 31\u201340)",
+      "status": "Kevin Review",
+      "id": "9d0d2541-ab26-4fd9-a2bc-00cb4e241b0a"
+    },
+    {
+      "title": "#281 \u2014 LinkedIn Thought Leadership Series \u2014 Kevin Hong (Posts 11\u201315)",
+      "status": "Kevin Review",
+      "id": "2637dc71-bbfa-4454-8725-c66bc5f7d7d2"
+    },
+    {
+      "title": "#271 \u2014 APAC Leadership Trends Report \u2014 Template",
+      "status": "Kevin Review",
+      "id": "13b691d9-a3f7-4ea4-80ef-51f819aaf5f3"
+    },
+    {
+      "title": "#272 \u2014 LinkedIn Thought Leadership Series \u2014 Kevin Hong (Posts 6\u201310)",
+      "status": "Kevin Review",
+      "id": "92b9145f-19ae-4cdd-8b1f-3aaa720add21"
+    },
+    {
+      "title": "#271 \u2014 APAC Leadership Trends Report \u2014 Template",
+      "status": "Kevin Review",
+      "id": "d411e5d7-0dbc-4c0f-895c-ca1900b5a144"
+    },
+    {
+      "title": "#270 \u2014 Quarterly Business Review Template (B2B Client)",
+      "status": "Kevin Review",
+      "id": "4f5ce80f-c56e-42a5-9b90-4a70ebb527ff"
+    },
+    {
+      "title": "#268 \u2014 Client Testimonial / Case Study Template",
+      "status": "Kevin Review",
+      "id": "b487db67-53c7-46f1-902f-e1ed614da865"
+    },
+    {
+      "title": "#246 \u2014 Leaders in Motion (Sumaya Main Show) \u2014 Episode Briefs (Eps 21\u201330)",
+      "status": "Kevin Review",
+      "id": "a6991090-fd43-4ebc-88db-1c8dc1168950"
+    },
+    {
+      "title": "#249 \u2014 Annual APAC Leadership Intelligence Report \u2014 Template",
+      "status": "Kevin Review",
+      "id": "9291e157-117e-475d-bafe-026be37fd325"
+    },
+    {
+      "title": "#241 \u2014 France-Chine Podcast \u2014 Episode Briefs (Eps 21\u201330)",
+      "status": "Kevin Review",
+      "id": "dd52f0ae-98c9-4683-9a44-c79f287f98a8"
+    },
+    {
+      "title": "#243 \u2014 AI & Technology Disruption \u2014 Episode Briefs (Eps 21\u201330)",
+      "status": "Kevin Review",
+      "id": "0cebbd70-3298-4646-82e3-bf8625fd73a6"
+    },
+    {
+      "title": "#244 \u2014 Leaders in Motion (Career Track) \u2014 Episode Briefs (Eps 21\u201330)",
+      "status": "Kevin Review",
+      "id": "b1084fb6-f5cb-4752-afc0-e275d2ff6f46"
+    },
+    {
+      "title": "#245 \u2014 Leaders in Motion (Sumaya Main Show) \u2014 Episode Briefs (Eps 11\u201320)",
+      "status": "Kevin Review",
+      "id": "b27a6845-3981-465e-a3e8-92f4c6437277"
+    },
+    {
+      "title": "#242 \u2014 Global South Gravitas Shift \u2014 Episode Briefs (Eps 21\u201330)",
+      "status": "Kevin Review",
+      "id": "064813c1-f31e-4955-81c6-0660c02b732d"
+    },
+    {
+      "title": "#239 \u2014 LinkedIn Content Calendar Template \u2014 Monthly (Kevin Hong)",
+      "status": "Kevin Review",
+      "id": "0281e7b6-c3ce-40a8-9f5f-98d5232843e8"
+    },
+    {
+      "title": "#237 \u2014 Leaders in Motion (Sumaya) \u2014 Episode Briefs (Eps 1\u201310)",
+      "status": "Kevin Review",
+      "id": "090cf262-1c58-4bb9-8123-48cfcb22f61d"
+    },
+    {
+      "title": "#236 \u2014 Leaders in Motion (Career Track) \u2014 Episode Briefs (Eps 11\u201320)",
+      "status": "Kevin Review",
+      "id": "661e518e-84b8-4c41-8f8d-73d03eb0e277"
+    },
+    {
+      "title": "#235 \u2014 AI & Technology Disruption \u2014 Episode Briefs (Eps 11\u201320)",
+      "status": "Kevin Review",
+      "id": "5ebc4d2b-c651-4e0b-b5ec-a95e4d25093e"
+    },
+    {
+      "title": "#234 \u2014 Global South Gravitas Shift \u2014 Episode Briefs (Eps 11\u201320)",
+      "status": "Kevin Review",
+      "id": "1a168ccd-bafb-4dcc-b6d9-6196482820ac"
+    },
+    {
+      "title": "#233 \u2014 France-Chine Podcast \u2014 Show Brief & Episode Briefs (Eps 11\u201320)",
+      "status": "Kevin Review",
+      "id": "53df62e3-64c7-44aa-808f-fe3769fdf747"
+    },
+    {
+      "title": "#219 \u2014 Signal Council Monthly Intelligence Briefing Template",
+      "status": "Kevin Review",
+      "id": "a791cd39-b0a3-4fa6-ab5d-e34dee88d977"
+    },
+    {
+      "title": "#211 \u2014 AI & Technology Disruption \u2014 Episode Briefs (Episodes 1\u201310)",
+      "status": "Kevin Review",
+      "id": "facba618-82cd-49df-aabd-58cc43e65d21"
+    },
+    {
+      "title": "#212 \u2014 Leaders in Motion Career Track \u2014 Episode Briefs (Episodes 1\u201310)",
+      "status": "Kevin Review",
+      "id": "0af3806b-6d06-49f8-ad0b-d961962747ea"
+    },
+    {
+      "title": "#209 \u2014 Podcast Episode Briefs \u2014 France-Chine (Episodes 1\u201310)",
+      "status": "Kevin Review",
+      "id": "4cfd249f-4700-44ff-81d1-9bd2b1142238"
+    },
+    {
+      "title": "#210 \u2014 Global South Gravitas Shift \u2014 Episode Briefs (Episodes 1\u201310)",
+      "status": "Kevin Review",
+      "id": "1718d6e9-a24e-4393-ad5e-509b3393072a"
+    },
+    {
+      "title": "#203 \u2014 Podcast Show Notes Template (All Shows)",
+      "status": "Kevin Review",
+      "id": "01837e97-7abf-4d2c-a103-23e2ba87b6e2"
+    },
+    {
+      "title": "#202 \u2014 Cohort Intelligence Report Template",
+      "status": "Kevin Review",
+      "id": "954ea55f-a49c-4ea2-9393-3b56e704fc79"
+    },
+    {
+      "title": "#197 \u2014 LinkedIn Long-Form Articles \u2014 Kevin Hong (5 Articles)",
+      "status": "Kevin Review",
+      "id": "1c4ea7f9-02ff-4a70-b7b8-17c75ffbd0e7"
+    },
+    {
+      "title": "#195 \u2014 Podcast Episode Brief Template (Master)",
+      "status": "Kevin Review",
+      "id": "4325b79d-a87f-4262-b1b4-8316029cfb66"
+    },
+    {
+      "title": "#191 \u2014 APAC Leadership Trends Report Template (Annual)",
+      "status": "Kevin Review",
+      "id": "8aff97a2-492f-432d-aa40-b9e351f96d48"
+    },
+    {
+      "title": "#185 \u2014 Podcast Show One-Pagers (All 5 Shows)",
+      "status": "Kevin Review",
+      "id": "03667d44-cf1d-4bc7-8514-33821033b772"
+    },
+    {
+      "title": "#178 \u2014 LinkedIn Posts \u2014 Q3 Batch (25 Posts, All Hosts)",
+      "status": "Kevin Review",
+      "id": "c24fe571-eba9-4b3b-94e8-6cbc127b1478"
+    },
+    {
+      "title": "#179 \u2014 LinkedIn Posts \u2014 Q4 Batch (25 Posts, All Hosts)",
+      "status": "Kevin Review",
+      "id": "109128bd-a708-4925-a9a3-152e2ff9eb28"
+    },
+    {
+      "title": "#163 \u2014 Podcast Episode Brief Template (All Shows)",
+      "status": "Kevin Review",
+      "id": "54b8406b-ef40-46ec-bb0a-2e38f28afa5e"
+    },
+    {
+      "title": "#159 \u2014 Podcast Guest Outreach Templates (All 5 Shows)",
+      "status": "Kevin Review",
+      "id": "d5d2b04c-50d4-44f3-a80c-bb55bf1d924f"
+    },
+    {
+      "title": "#152 \u2014 Email Newsletter Template: Monthly Intelligence Digest",
+      "status": "Kevin Review",
+      "id": "f0eb651c-5448-4712-83db-86e16b9c9d12"
+    },
+    {
+      "title": "#153 \u2014 APAC Executive Intelligence Report Template (Q2)",
+      "status": "Kevin Review",
+      "id": "194d3812-451d-46e3-acbc-4dd1c8d88eb2"
+    },
+    {
+      "title": "#151 \u2014 LinkedIn Posts \u2014 Q2 Batch (25 Posts, All Hosts)",
+      "status": "Kevin Review",
+      "id": "49e8721b-7e9d-4880-b4ab-3979eb8b639b"
+    },
+    {
+      "title": "#149 \u2014 Assessment Methodology White Paper",
+      "status": "Kevin Review",
+      "id": "273309bd-ee31-4679-bdb4-dbaf70d48467"
+    },
+    {
+      "title": "#150 \u2014 LinkedIn Posts \u2014 Q1 Batch (25 Posts, All Hosts)",
+      "status": "Kevin Review",
+      "id": "b0a428bc-39e5-4e3e-bd00-748e41ab15fd"
+    },
+    {
+      "title": "#132 \u2014 LinkedIn Long-Form Articles: Podcast Hosts (5 Articles, 1 per Host)",
+      "status": "Kevin Review",
+      "id": "9ee4ff30-f39b-448f-81cc-47f2561afe32"
+    },
+    {
+      "title": "#131 \u2014 LinkedIn Long-Form Articles: Kevin Hong (5 Articles)",
+      "status": "Kevin Review",
+      "id": "913b29dc-ed5b-4106-a971-3ef47216b652"
+    },
+    {
+      "title": "#135 \u2014 Quarterly Business Review Template (B2B Client)",
+      "status": "Kevin Review",
+      "id": "e7b33cc4-b7e3-4d0b-99c3-602319083007"
+    },
+    {
+      "title": "AI & Technology Disruption (Harisha) \u2014 10 Additional Episode Briefs (EN)",
+      "status": "Kevin Review",
+      "id": "5bb11f85-ec98-41b4-8d1b-6f8a03bf700f"
+    },
+    {
+      "title": "Global South Gravitas Shift (Vanjulla) \u2014 10 Additional Episode Briefs (EN)",
+      "status": "Kevin Review",
+      "id": "76dd8b96-82ee-43d4-a9c7-7f9c164bd6cd"
+    },
+    {
+      "title": "France-Chine (Ava) \u2014 10 Additional Episode Briefs (FR)",
+      "status": "Kevin Review",
+      "id": "f9909ee2-30d7-477e-aaa5-2686f10fcc4b"
+    },
+    {
+      "title": "LinkedIn Content Calendar \u2014 Q4 (Kevin Hong, 12 Weeks)",
+      "status": "Kevin Review",
+      "id": "a69fe375-3779-4650-a88a-41a6851d4901"
+    },
+    {
+      "title": "Leaders in Motion (Sumaya) \u2014 10 Additional Episode Briefs (EN)",
+      "status": "Kevin Review",
+      "id": "9c54a106-9882-4922-947c-4f9ba73d6373"
+    },
+    {
+      "title": "Leaders in Motion \u2014 Career Track: 10 Episode Briefs (EN)",
+      "status": "Kevin Review",
+      "id": "31805553-c1d7-4970-907a-4e36bc4d2a3e"
+    },
+    {
+      "title": "AI & Technology Disruption \u2014 10 Episode Briefs (EN)",
+      "status": "Kevin Review",
+      "id": "32c1d2b8-b8c2-4654-a2e6-865ca8174834"
+    },
+    {
+      "title": "Global South Gravitas Shift \u2014 10 Episode Briefs (EN)",
+      "status": "Kevin Review",
+      "id": "fc635163-f47d-4d28-8667-707ef698a5b8"
+    },
+    {
+      "title": "France-Chine Podcast \u2014 Episode Framework & 10 Episode Briefs (FR)",
+      "status": "Kevin Review",
+      "id": "e674ae81-b067-4f02-b31b-89f6aeb0db76"
+    },
+    {
+      "title": "LinkedIn Posts \u2014 Q3 Batch 2 (25 Posts)",
+      "status": "Kevin Review",
+      "id": "aabe6dc1-bd5b-47c5-b9a4-013de743bceb"
+    },
+    {
+      "title": "Case Study \u2014 SHIFT Composite (Anonymised)",
+      "status": "Kevin Review",
+      "id": "5e4f302b-bf2d-403c-b242-c3dcf226b7c2"
+    },
+    {
+      "title": "Case Study \u2014 BRIDGE (Anonymised)",
+      "status": "Kevin Review",
+      "id": "9de6c076-05a1-4d62-a421-1912ba5cc092"
+    },
+    {
+      "title": "Case Study \u2014 FORGE (Anonymised)",
+      "status": "Kevin Review",
+      "id": "09e8b5ac-f353-4dd6-a2a8-10f6e5b923a6"
+    },
+    {
+      "title": "LinkedIn Content Calendar + 65 Posts",
+      "status": "Kevin Review",
+      "id": "212cd32e-005e-414b-8463-795d5aa6cb22"
+    }
+  ],
+  "Pricing Document": [
+    {
+      "title": "P6.2 \u2014 Master Proposal & Engagement Letter Template",
+      "status": "Not Started",
+      "id": "805e6a10-117c-4061-88ff-4f5ed437fb00"
+    },
+    {
+      "title": "P6.1 \u2014 Bundle Pricing & Packaging Guide",
+      "status": "Not Started",
+      "id": "e53671fd-897a-4737-8bc4-b833b07f034b"
+    }
+  ],
+  "Pricing": [
+    {
+      "title": "Pricing & Packaging Sheet",
+      "status": "Kevin Review",
+      "id": "78e6f41e-3c3c-44f6-b323-dbc08d929d77"
+    }
+  ],
+  "Product Brochure": [
+    {
+      "title": "#378 \u2014 LYC Partners \u2014 COACH Product Sheet (Standalone)",
+      "status": "Kevin Review",
+      "id": "8d011b86-57ac-43b0-bec3-11fe214856fc"
+    },
+    {
+      "title": "#377 \u2014 LYC Partners \u2014 QUEST Product Sheet (Standalone)",
+      "status": "Kevin Review",
+      "id": "245a64e1-98db-49fd-96a7-d9396c0bf7aa"
+    },
+    {
+      "title": "#362 \u2014 LEAP \u2014 Future Readiness Product Sheet",
+      "status": "Kevin Review",
+      "id": "36088ef7-9cd3-4681-892d-6c8b9b581f30"
+    },
+    {
+      "title": "#361 \u2014 IMPACT \u2014 Boardroom Effectiveness Product Sheet",
+      "status": "Kevin Review",
+      "id": "84670dca-80be-4b11-a16a-673ed51edd8d"
+    },
+    {
+      "title": "#357 \u2014 MOSAIC \u2014 Cultural Intelligence Instrument Product Sheet",
+      "status": "Kevin Review",
+      "id": "af891027-9ed8-44bb-8feb-9dee9faf8c2d"
+    },
+    {
+      "title": "#363 \u2014 LYC Partners \u2014 DRIVE Product Sheet (Standalone)",
+      "status": "Kevin Review",
+      "id": "f27ccd55-cdf7-46ca-8ac8-b181bd253d2b"
+    },
+    {
+      "title": "#356 \u2014 LYC Partners \u2014 FORGE Product Sheet",
+      "status": "Kevin Review",
+      "id": "c78da6f3-8940-41ac-893d-202a3ea7f053"
+    },
+    {
+      "title": "#357 \u2014 LYC Partners \u2014 MOSAIC Product Sheet",
+      "status": "Kevin Review",
+      "id": "5a9c8fc0-9231-4775-8a44-5be6873efe69"
+    },
+    {
+      "title": "#311 \u2014 SPARK Board Edition \u2014 Product Sheet",
+      "status": "Kevin Review",
+      "id": "6b6715e1-4e47-48ff-93b2-b4127c5d8c60"
+    },
+    {
+      "title": "#313 \u2014 LYC Partners \u2014 Press & Media Kit (Full)",
+      "status": "Kevin Review",
+      "id": "51941744-adce-4441-a97a-d71b5773c467"
+    },
+    {
+      "title": "#311 \u2014 SPARK Board Edition \u2014 Product Sheet (Full)",
+      "status": "Kevin Review",
+      "id": "e344830a-9f82-45e3-a7dc-eda3a59ad84a"
+    },
+    {
+      "title": "#269 \u2014 LYC Partners Media Kit",
+      "status": "Kevin Review",
+      "id": "0adc0d42-d254-43e2-81f9-f399c35c690a"
+    },
+    {
+      "title": "#253 \u2014 FORGE Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "1ffb6c41-12b9-4a48-80b6-b2d9c02c0cac"
+    },
+    {
+      "title": "#252 \u2014 MOSAIC Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "a848e1f4-89df-44e7-af5b-a372c743830b"
+    },
+    {
+      "title": "#255 \u2014 SPARK Instrument \u2014 Full Product Sheet (Extended)",
+      "status": "Kevin Review",
+      "id": "26b80b34-b7c5-4804-b085-2736850dd6fb"
+    },
+    {
+      "title": "#254 \u2014 PRISM Instrument \u2014 Full Product Sheet (Extended)",
+      "status": "Kevin Review",
+      "id": "95366a79-23c0-41d1-9398-3f1ae3db14a2"
+    },
+    {
+      "title": "#226 \u2014 BRIDGE Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "ca62c2d4-c907-434c-806a-1eeeb48339a8"
+    },
+    {
+      "title": "#221 \u2014 LEAP Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "4faf9adf-470e-42ad-b91a-25d16792a1d1"
+    },
+    {
+      "title": "#222 \u2014 QUEST Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "fed16ed2-4629-4257-b9bc-4bf83d7823e7"
+    },
+    {
+      "title": "#224 \u2014 DRIVE Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "3da50b41-314f-40ad-a466-030b45d7088f"
+    },
+    {
+      "title": "#223 \u2014 COACH Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "793244e5-fc40-4a2d-a7c5-27f03d5d5aad"
+    },
+    {
+      "title": "#225 \u2014 IMPACT Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "2ecdb42e-045e-46a1-89c2-bff4a205b5ef"
+    },
+    {
+      "title": "#220 \u2014 Kevin Hong Speaker One-Pager (Updated)",
+      "status": "Kevin Review",
+      "id": "6296bdc3-ecbe-4c8d-848b-e0ad80fcaf03"
+    },
+    {
+      "title": "#216 \u2014 SPARK Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "8d519c60-411e-45a4-a33a-8eb7ff18ff6a"
+    },
+    {
+      "title": "#213 \u2014 FORGE Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "888ef771-e2e8-476c-b384-276ec37480a8"
+    },
+    {
+      "title": "#214 \u2014 PRISM Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "59ef6496-0c7b-4e35-8f91-2cc03b56a8c6"
+    },
+    {
+      "title": "#208 \u2014 MOSAIC Instrument \u2014 Full Product Sheet",
+      "status": "Kevin Review",
+      "id": "5f24f3c4-10c1-490d-a9d4-cd8113b1af7a"
+    },
+    {
+      "title": "#188 \u2014 Advisory Coaching Retainer Service Overview",
+      "status": "Kevin Review",
+      "id": "1184dbe7-2f8c-493a-9882-4501aa992419"
+    },
+    {
+      "title": "#176 \u2014 SHIFT Composite Product Sheet",
+      "status": "Kevin Review",
+      "id": "fbfa7869-2ad3-4477-be16-f3eb7bf3c4da"
+    },
+    {
+      "title": "#177 \u2014 Signal Council Membership Brochure",
+      "status": "Kevin Review",
+      "id": "04b9c0a5-5b72-4d40-b863-fc3e4c5eaffe"
+    },
+    {
+      "title": "#165 \u2014 Advisory Coaching Retainer Product Sheet",
+      "status": "Kevin Review",
+      "id": "429ab9c7-1b83-45ad-b200-cee57fa7000c"
+    },
+    {
+      "title": "#145 \u2014 Executive Speaker One-Pager Suite (Kevin + 5 Hosts)",
+      "status": "Kevin Review",
+      "id": "f2aba06a-89d4-4814-9501-5652edac5da2"
+    },
+    {
+      "title": "SHIFT-LEAP Program Brochure",
+      "status": "Kevin Review",
+      "id": "cb5f5869-f8ac-4540-9fb2-708b1363c6a0"
+    },
+    {
+      "title": "SHIFT-DRIVE Program Brochure",
+      "status": "Kevin Review",
+      "id": "c76176e9-8c7b-40e3-bfad-4982e88cba8d"
+    },
+    {
+      "title": "SHIFT-QUEST Program Brochure",
+      "status": "Kevin Review",
+      "id": "28d82384-804d-4c62-98cf-b6b6b2062bdb"
+    },
+    {
+      "title": "Advisory & Coaching Services Brochure",
+      "status": "Kevin Review",
+      "id": "09d2c79b-b45b-48e6-afc6-806d027f07d1"
+    },
+    {
+      "title": "PRISM Product Brochure",
+      "status": "Kevin Review",
+      "id": "19369e8f-6acc-4f00-bc3f-c38116cd68a0"
+    },
+    {
+      "title": "SPARK Product Brochure",
+      "status": "Kevin Review",
+      "id": "f0019245-15e4-4ec5-b124-63a6ca9f9b29"
+    },
+    {
+      "title": "SHIFT Programs Overview Brochure",
+      "status": "Kevin Review",
+      "id": "3b9c1ded-2b22-4d3e-9447-911f5dc30ee2"
+    },
+    {
+      "title": "QUEST Product Brochure",
+      "status": "Kevin Review",
+      "id": "d33a7e54-762a-4f9a-9b45-02c8cd9c7e6a"
+    },
+    {
+      "title": "IMPACT Product Brochure",
+      "status": "Kevin Review",
+      "id": "5f0016f0-d377-4638-aa61-55a91d88ed45"
+    },
+    {
+      "title": "DRIVE Product Brochure",
+      "status": "Kevin Review",
+      "id": "6cd4ce46-d8ba-42e4-924b-69c23dc25cfe"
+    },
+    {
+      "title": "COACH Product Brochure",
+      "status": "Kevin Review",
+      "id": "3cc97d7b-57ad-4d8d-af48-2b99e1510bcd"
+    },
+    {
+      "title": "SHIFT Composite Overview",
+      "status": "Kevin Review",
+      "id": "2f7bfa89-cb91-4fe4-9a1d-45f933c857fb"
+    },
+    {
+      "title": "FORGE Product Brochure",
+      "status": "Kevin Review",
+      "id": "bdff5214-07b5-4051-8046-235dfb748f6a"
+    },
+    {
+      "title": "MOSAIC Product Brochure",
+      "status": "Kevin Review",
+      "id": "74c4f3cb-41b4-4477-979d-525b0a989087"
+    },
+    {
+      "title": "LEAP Product Brochure",
+      "status": "Kevin Review",
+      "id": "1a6b6e09-df21-453a-b84b-a9286348c01a"
+    },
+    {
+      "title": "BRIDGE Product Brochure",
+      "status": "Kevin Review",
+      "id": "b82428c2-cd1e-46e6-bc87-d5ab4c91a4bb"
+    }
+  ],
+  "Program Deliverable": [
+    {
+      "title": "SHIFT Cross-Border Track \u2014 Capstone Brief & Rubric",
+      "status": "Kevin Review",
+      "id": "236abcc0-0be4-45a3-97a9-a428450cdf77"
+    },
+    {
+      "title": "SHIFT Governance Track \u2014 Capstone Brief & Rubric",
+      "status": "Kevin Review",
+      "id": "37751577-37c1-4cc5-a780-02062c7aa37c"
+    },
+    {
+      "title": "SHIFT AI Track \u2014 Capstone Brief & Rubric",
+      "status": "Kevin Review",
+      "id": "8b1f3d34-188c-442a-a195-4a926a94a991"
+    },
+    {
+      "title": "Training Module T1.3 \u2014 MOSAIC Diagnostic Mastery (2-Hour Guide)",
+      "status": "Kevin Review",
+      "id": "013de920-f633-44cb-8b35-22526e993fe2"
+    },
+    {
+      "title": "Training Module T1.5 \u2014 SHIFT Program Facilitation Guide (Full-Day)",
+      "status": "Kevin Review",
+      "id": "9df94550-178d-4e2e-aa60-e7b5e7095e77"
+    },
+    {
+      "title": "Training Module T1.4 \u2014 FORGE Diagnostic Mastery (2-Hour Guide)",
+      "status": "Kevin Review",
+      "id": "5c70c3a6-2799-474e-a2c9-7d6d4f02f6ac"
+    },
+    {
+      "title": "Training Module T1.2 \u2014 BRIDGE Diagnostic Mastery (2-Hour Guide)",
+      "status": "Kevin Review",
+      "id": "f6d7a2ac-adbc-49a3-9005-12e2a3c2480d"
+    },
+    {
+      "title": "Training Module T1.6 \u2014 Advisory Retainer Delivery Guide (3-Hour)",
+      "status": "Kevin Review",
+      "id": "b53f1d6f-d0d1-4755-b7ed-7e005c537bb9"
+    },
+    {
+      "title": "Training Module T1.9 \u2014 B2C Platform Operations (2-Hour)",
+      "status": "Kevin Review",
+      "id": "af9d9b0c-165b-4883-8205-4ba7d4f4b29e"
+    },
+    {
+      "title": "Training Module T1.8 \u2014 Sales Conversations Mastery (2-Hour)",
+      "status": "Kevin Review",
+      "id": "82a80df2-e824-4030-8dc6-76dcd734956a"
+    },
+    {
+      "title": "Training Module T1.7 \u2014 Pricing, Bundling & Negotiation (2-Hour)",
+      "status": "Kevin Review",
+      "id": "47bd1661-7096-4999-b8d7-261610cf210a"
+    },
+    {
+      "title": "Training Module T1.1 \u2014 SPARK Diagnostic Mastery (2-Hour Guide)",
+      "status": "Kevin Review",
+      "id": "59b538ab-39b2-4657-ace9-b71b4e5baac1"
+    },
+    {
+      "title": "Cross-Border Discovery Workshop Deck \u2014 Partnership Dynamics (Force 2)",
+      "status": "Kevin Review",
+      "id": "d320f556-331e-4164-abb4-afeeb8231ce4"
+    },
+    {
+      "title": "Advisory Discovery Workshop Deck \u2014 Governance Architecture (Force 1)",
+      "status": "Kevin Review",
+      "id": "a296a7cb-67f2-489e-a6de-dc64c91eae97"
+    },
+    {
+      "title": "Team Development Roadmap Template",
+      "status": "Not Started",
+      "id": "2f8d3a0b-a87f-4e69-ad37-a178ea177c1e"
+    },
+    {
+      "title": "Team Coaching Session Template: Group Format",
+      "status": "Not Started",
+      "id": "ddb7e954-439c-4546-b7bc-d8509de5c616"
+    },
+    {
+      "title": "Session Summary & Action Items Template",
+      "status": "Not Started",
+      "id": "980044f1-1526-4992-bee7-3ac189307f13"
+    },
+    {
+      "title": "Coaching Progress Tracker: Client View",
+      "status": "Not Started",
+      "id": "058489e4-ea07-46b3-b186-b51e52747e6a"
+    },
+    {
+      "title": "C8.5 \u2014 Capstone Project Brief & Assessment Rubric: AI Track",
+      "status": "Not Started",
+      "id": "7db3fcc6-1115-45df-b401-1a85439c8d58"
+    },
+    {
+      "title": "Leadership Assessment Intake Form",
+      "status": "Not Started",
+      "id": "00bd5eb3-6296-41a2-9f9c-3ab2aab0037e"
+    },
+    {
+      "title": "Coaching Session Template: Individual (12-Session Arc)",
+      "status": "Not Started",
+      "id": "0a8093ef-682b-477f-8663-9e37bf16a42a"
+    },
+    {
+      "title": "Development Plan Recommendations Deck: Force 3 (Succession Illusion)",
+      "status": "Not Started",
+      "id": "8479a24d-61ed-44e8-9262-3c607b953fbc"
+    },
+    {
+      "title": "C7.5 \u2014 Capstone Project Brief & Assessment Rubric: Cross-Border Track",
+      "status": "Not Started",
+      "id": "f84eca0a-5f5c-46db-b67a-42d6f88b9f41"
+    },
+    {
+      "title": "Career/Succession Discovery Workshop Deck: Personal Resilience",
+      "status": "Not Started",
+      "id": "3efbd513-eb0d-43b6-ac1f-f9874cb8dd32"
+    },
+    {
+      "title": "Trust Architecture Recommendations Deck: Force 2 (Partnership Deficit)",
+      "status": "Not Started",
+      "id": "71aa8a8a-4852-4a3d-8fd4-7c02d08df04d"
+    },
+    {
+      "title": "C6.6 \u2014 Capstone Project Brief & Assessment Rubric: Governance Track",
+      "status": "Not Started",
+      "id": "e21ebc6f-a0f5-4937-9954-d2e3688f5f3b"
+    },
+    {
+      "title": "Cross-Border Discovery Workshop Deck: Partnership Dynamics",
+      "status": "Not Started",
+      "id": "c426c8c8-7cd8-47fe-82fc-2e71d51349c2"
+    },
+    {
+      "title": "Implementation Roadmap Template",
+      "status": "Not Started",
+      "id": "4e39fb49-b85f-4161-8800-b76881b7d5a1"
+    },
+    {
+      "title": "Strategic Recommendations Deck: Force 1 (China Realignment)",
+      "status": "Not Started",
+      "id": "ae236c4b-b3a0-4a9e-a993-b3dcf0198e56"
+    },
+    {
+      "title": "Advisory Discovery Workshop Deck: Governance Architecture",
+      "status": "Not Started",
+      "id": "bd6de73e-2ec0-4624-94ad-86fb078cebc2"
+    },
+    {
+      "title": "#416 \u2014 LYC Partners \u2014 SPARK Board Edition Session Guide",
+      "status": "Kevin Review",
+      "id": "8049e815-0059-4fa7-8e14-876aabbab864"
+    },
+    {
+      "title": "#415 \u2014 LYC Partners \u2014 BRIDGE Programme Session Guide",
+      "status": "Kevin Review",
+      "id": "434456f4-0c24-4adb-a798-c4e66a30fde9"
+    },
+    {
+      "title": "#414 \u2014 LYC Partners \u2014 SHIFT-DRIVE Programme Session Guide",
+      "status": "Kevin Review",
+      "id": "cb82b03b-2af9-486d-bf59-d3021a283ea7"
+    },
+    {
+      "title": "#380 \u2014 New Client Welcome Pack (B2C)",
+      "status": "Kevin Review",
+      "id": "7aa2cfb2-68a1-4548-8c1e-800d45d4bb11"
+    },
+    {
+      "title": "#380 \u2014 New Client Welcome Pack (B2C)",
+      "status": "Kevin Review",
+      "id": "89d733cc-5a25-45c8-b877-5f92ff6477b0"
+    },
+    {
+      "title": "#386 \u2014 SHIFT-LEAP Programme Session Guide",
+      "status": "Kevin Review",
+      "id": "29e81407-293c-4e97-9cbe-ef5259494dd8"
+    },
+    {
+      "title": "#380 \u2014 New Client Welcome Pack (B2C)",
+      "status": "Kevin Review",
+      "id": "e37427ab-7d15-43c8-9e10-5c8eb0f8e267"
+    },
+    {
+      "title": "#384 \u2014 SHIFT-QUEST Programme Session Guide",
+      "status": "Kevin Review",
+      "id": "0a5262bd-6d69-4fae-ad9b-fb420842c4c4"
+    },
+    {
+      "title": "#386 \u2014 SHIFT-LEAP Programme Session Guide",
+      "status": "Kevin Review",
+      "id": "848c3cc7-3ee9-4e81-ae7e-2761feb2db85"
+    },
+    {
+      "title": "#380 \u2014 New Client Welcome Pack (B2C)",
+      "status": "Kevin Review",
+      "id": "ef2ba301-6770-48a1-8627-bfca70a6e79a"
+    },
+    {
+      "title": "#383 \u2014 SHIFT-IMPACT Programme Session Guide",
+      "status": "Kevin Review",
+      "id": "0a028329-be78-4c46-80c6-89ee31493444"
+    },
+    {
+      "title": "#385 \u2014 LYC Partners \u2014 SHIFT-COACH Programme Session Guide",
+      "status": "Kevin Review",
+      "id": "4f05a5b1-d682-4794-af99-bd119da6b37f"
+    },
+    {
+      "title": "#342 \u2014 PRISM \u2014 Facilitation Guide",
+      "status": "Kevin Review",
+      "id": "78a0814c-c967-46c6-95a6-163ffe1e9421"
+    },
+    {
+      "title": "#322 \u2014 SHIFT-DRIVE Session Guide",
+      "status": "Kevin Review",
+      "id": "e3612dbd-2274-4320-b55d-a79bae962ae7"
+    },
+    {
+      "title": "#336 \u2014 BRIDGE \u2014 Facilitation Guide",
+      "status": "Kevin Review",
+      "id": "868de877-bf25-4715-88ef-d8f61c65a81c"
+    },
+    {
+      "title": "#336 \u2014 BRIDGE \u2014 Facilitation Guide",
+      "status": "Kevin Review",
+      "id": "dc4d0b19-1693-4202-a7ab-ac6eba736069"
+    },
+    {
+      "title": "#322 \u2014 SHIFT-DRIVE Session Guide",
+      "status": "Kevin Review",
+      "id": "8c788901-2308-463e-92d1-49692b0efcc1"
+    },
+    {
+      "title": "#326 \u2014 LYC Partners \u2014 Salon Event Run Sheet",
+      "status": "Kevin Review",
+      "id": "77d93ca1-7af6-4d2b-bcf0-fbf6431759d5"
+    },
+    {
+      "title": "#324 \u2014 SHIFT-COACH Session Guide",
+      "status": "Kevin Review",
+      "id": "c4d5848e-695b-4f73-96be-bb46d6e4ca03"
+    },
+    {
+      "title": "#322 \u2014 SHIFT-DRIVE Session Guide",
+      "status": "Kevin Review",
+      "id": "ab6eaccf-918a-4fd8-ac34-17cd09b9c5e5"
+    },
+    {
+      "title": "#323 \u2014 SHIFT-IMPACT Session Guide",
+      "status": "Kevin Review",
+      "id": "7329b637-05bf-4108-935e-4588d2b42558"
+    },
+    {
+      "title": "#312 \u2014 Post-Programme Renewal / Continuation Offer Template",
+      "status": "Kevin Review",
+      "id": "82c8eaa6-bb06-46b7-b33a-bc8addd2bce2"
+    },
+    {
+      "title": "#312 \u2014 Post-Programme Renewal / Continuation Offer Template",
+      "status": "Kevin Review",
+      "id": "0c2a1883-b7c3-485f-ad9a-7798501ca697"
+    },
+    {
+      "title": "#277 \u2014 SHIFT-DRIVE Programme \u2014 Session Guide (All Sessions)",
+      "status": "Kevin Review",
+      "id": "78bd4878-a419-4837-bbc5-7c7126674a28"
+    },
+    {
+      "title": "#282 \u2014 Advisory Retainer \u2014 Engagement Scope Template",
+      "status": "Kevin Review",
+      "id": "bf201bf9-d116-4642-8ec3-769ed059dcf8"
+    },
+    {
+      "title": "#278 \u2014 New Client Welcome Pack \u2014 B2C",
+      "status": "Kevin Review",
+      "id": "102b1092-0c79-47f1-8f07-71140aa44274"
+    },
+    {
+      "title": "#278 \u2014 New Client Welcome Pack \u2014 B2C",
+      "status": "Kevin Review",
+      "id": "3b0365e1-28c9-4e09-a16c-f27713137822"
+    },
+    {
+      "title": "#277 \u2014 SHIFT-DRIVE Programme \u2014 Session Guide (All Sessions)",
+      "status": "Kevin Review",
+      "id": "8b047f0f-b475-4f80-97e1-197ae010cced"
+    },
+    {
+      "title": "#275 \u2014 SHIFT-LEAP Programme \u2014 Session Guide (All Sessions)",
+      "status": "Kevin Review",
+      "id": "1cbd5518-c7e1-459a-8b57-86c881a68fd0"
+    },
+    {
+      "title": "#276 \u2014 SHIFT-QUEST Programme \u2014 Session Guide (All Sessions)",
+      "status": "Kevin Review",
+      "id": "96393256-0998-4578-b6bb-747105ed6af3"
+    },
+    {
+      "title": "#274 \u2014 Signal Council \u2014 Annual Programme Outline",
+      "status": "Kevin Review",
+      "id": "d4dabbe2-591f-43c7-8cd0-a190e00d1681"
+    },
+    {
+      "title": "#247 \u2014 SHIFT Composite \u2014 Sample Debrief Script (B2C)",
+      "status": "Kevin Review",
+      "id": "95eeb9ce-f130-4932-bc25-1e56f14e073a"
+    },
+    {
+      "title": "#250 \u2014 Signal Council \u2014 Member Welcome Kit",
+      "status": "Kevin Review",
+      "id": "c6f2b24f-ed24-4e71-a182-1a3422c7b48c"
+    },
+    {
+      "title": "#207 \u2014 Debrief Facilitation Guide (SHIFT Composite)",
+      "status": "Kevin Review",
+      "id": "a984a086-02f1-4b5e-99e5-2ee89f34f9f5"
+    },
+    {
+      "title": "#199 \u2014 Event Run Sheet Template (Signal Council Salon)",
+      "status": "Kevin Review",
+      "id": "7426ef3d-7c56-4f6a-8333-efa821153fb4"
+    },
+    {
+      "title": "#187 \u2014 Board AI Governance Readiness Workshop Facilitation Guide",
+      "status": "Kevin Review",
+      "id": "71e89fce-bdfd-40b9-9589-a3eeece4b14f"
+    },
+    {
+      "title": "#183 \u2014 Signal Council Membership Application & Onboarding Flow",
+      "status": "Kevin Review",
+      "id": "18947348-cf54-480a-af87-df9462705a57"
+    },
+    {
+      "title": "#182 \u2014 SHIFT-LEAP Programme Brochure (B2B)",
+      "status": "Kevin Review",
+      "id": "0a76378c-7d51-4adb-a88a-ece892dc44fa"
+    },
+    {
+      "title": "#181 \u2014 SHIFT-DRIVE Programme Brochure (B2B)",
+      "status": "Kevin Review",
+      "id": "5cfd711d-bc87-4708-b99e-999936498f53"
+    },
+    {
+      "title": "#180 \u2014 SHIFT-QUEST Programme Brochure (B2B)",
+      "status": "Kevin Review",
+      "id": "ab92e6fc-8a79-4fa0-91bc-8e35d9597751"
+    },
+    {
+      "title": "#172 \u2014 IMPACT Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "1892c1fc-6cf8-43ca-b23b-256263960901"
+    },
+    {
+      "title": "#171 \u2014 DRIVE Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "c8057417-fdf7-4d7a-ba12-68d4e6717d8f"
+    },
+    {
+      "title": "#174 \u2014 QUEST Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "e76355d9-a64f-481b-a5b7-c8b200c4fee1"
+    },
+    {
+      "title": "#175 \u2014 COACH Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "f76a0a3d-699d-4a4e-bc22-eb2e5b7b7711"
+    },
+    {
+      "title": "#173 \u2014 LEAP Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "574d0023-0a67-44e5-bea2-2e4a21d6087b"
+    },
+    {
+      "title": "#169 \u2014 FORGE Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "0c81d96a-4ff3-48c1-a888-b8ba32a51574"
+    },
+    {
+      "title": "#168 \u2014 BRIDGE Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "edd64a37-a7c6-4394-b07b-8d940a78d21a"
+    },
+    {
+      "title": "#166 \u2014 SPARK Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "fd9f96cf-d112-4ed4-93f2-cbb37263ba37"
+    },
+    {
+      "title": "#167 \u2014 MOSAIC Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "668cf7fe-b7d9-4dc7-84af-40399800b8cb"
+    },
+    {
+      "title": "#170 \u2014 PRISM Diagnostic Product Sheet",
+      "status": "Kevin Review",
+      "id": "646d8c3c-fac1-468e-8e18-fc8f3fd8b1f7"
+    },
+    {
+      "title": "#134 \u2014 Signal Council Community Guidelines",
+      "status": "Kevin Review",
+      "id": "1e3ece81-fa2e-4ac4-82b0-76c371fe3f3b"
+    },
+    {
+      "title": "#133 \u2014 B2C Diagnostic Purchase Flow Copy (Checkout & Onboarding)",
+      "status": "Kevin Review",
+      "id": "11cca515-6c5a-49d2-add3-58554afc8710"
+    },
+    {
+      "title": "Brand Voice Guidelines (Writing Reference)",
+      "status": "Kevin Review",
+      "id": "d8b0384c-6951-49e3-8cc9-28b25c28a0b6"
+    },
+    {
+      "title": "SEO Keyword Map \u2014 LYC Partners Website",
+      "status": "Kevin Review",
+      "id": "ad2037ad-108c-4b3f-aab7-a274729a9534"
+    },
+    {
+      "title": "Invoice & Payment Terms Template",
+      "status": "Kevin Review",
+      "id": "76b189b9-e2c0-473f-b25a-0c164632bfd6"
+    },
+    {
+      "title": "Client Onboarding Checklist (B2C & B2B)",
+      "status": "Kevin Review",
+      "id": "aad093de-4a36-4607-bd11-6d220cc12a67"
+    },
+    {
+      "title": "Podcast Guest Invitation Templates (5 Versions)",
+      "status": "Kevin Review",
+      "id": "b50a0f87-45bc-4384-9cae-e99a45866c46"
+    },
+    {
+      "title": "Engagement Letter Template (Advisory Retainer)",
+      "status": "Kevin Review",
+      "id": "2895e632-3de9-455c-b571-940556a7302b"
+    },
+    {
+      "title": "Pricing Architecture Document (Internal)",
+      "status": "Kevin Review",
+      "id": "c95d04fc-1546-4434-9fb6-abf9f5fb6021"
+    },
+    {
+      "title": "Signal Council Application Form & Review Brief",
+      "status": "Kevin Review",
+      "id": "e8c8a2c1-170c-40b7-b6f5-0e5f95a07ce5"
+    },
+    {
+      "title": "Referral Introduction Email Templates (5 Versions)",
+      "status": "Kevin Review",
+      "id": "9dd92b66-23a8-46a7-92d6-fdfffd154d22"
+    },
+    {
+      "title": "Post-Meeting Follow-Up Email Templates (6 Situations)",
+      "status": "Kevin Review",
+      "id": "c7ba3aaa-3767-42cf-9f11-a560d2d83579"
+    },
+    {
+      "title": "APAC Executive Intelligence Report Template (Monthly)",
+      "status": "Kevin Review",
+      "id": "3da34192-8cc7-4502-bd6b-e7570699d95a"
+    },
+    {
+      "title": "Signal Council Annual Report Template",
+      "status": "Kevin Review",
+      "id": "54902b5c-2d8f-45fd-aa75-2ccf1bb5fab6"
+    },
+    {
+      "title": "Assessment Consent Form Template (B2B Participant)",
+      "status": "Kevin Review",
+      "id": "257ea701-14fb-42d5-93e1-0763e5a008cc"
+    },
+    {
+      "title": "Channel Partner Onboarding Brief",
+      "status": "Kevin Review",
+      "id": "8ffd9847-91ff-4804-acc5-c1b869f259a1"
+    },
+    {
+      "title": "Podcast Season Planning Template (All 5 Shows)",
+      "status": "Kevin Review",
+      "id": "86a0baaa-8981-4d71-b496-ac6bc0b50b83"
+    },
+    {
+      "title": "CRM & Sales Infrastructure Brief (Setup Guide)",
+      "status": "Kevin Review",
+      "id": "384893e4-87e3-4a2d-94f6-1b1fae929bff"
+    },
+    {
+      "title": "Signal Council Monthly Intelligence Briefing Template",
+      "status": "Kevin Review",
+      "id": "6fb96b1e-f2ef-458b-ba4b-26539052e543"
+    },
+    {
+      "title": "Executive Advisory Retainer Proposal Template",
+      "status": "Kevin Review",
+      "id": "cc88c0c7-05f9-4c05-aa2c-eca0f16b5c8b"
+    },
+    {
+      "title": "Privacy Policy (Legal Brief)",
+      "status": "Kevin Review",
+      "id": "6bfe2902-c5cc-466e-bb88-fc79002238d3"
+    },
+    {
+      "title": "Post-Event Follow-Up Email Templates (3 Formats)",
+      "status": "Kevin Review",
+      "id": "6c42e126-0f4f-4022-baa1-689b11206b5b"
+    },
+    {
+      "title": "Intern Onboarding Brief",
+      "status": "Kevin Review",
+      "id": "3936ef2d-cec9-4295-a8a1-8383c6cd0ebb"
+    },
+    {
+      "title": "Data Handling Policy (Full)",
+      "status": "Kevin Review",
+      "id": "7abfded4-6935-4903-896f-a1e62aa77760"
+    },
+    {
+      "title": "Debrief Session Framework (Post-Assessment Advisory)",
+      "status": "Kevin Review",
+      "id": "ed5f22d0-2b8d-43cd-988c-07af8b44f0e1"
+    },
+    {
+      "title": "Event Invitation Templates (5 Formats)",
+      "status": "Kevin Review",
+      "id": "e9d4c536-57c7-471a-92b0-a75d858859d9"
+    },
+    {
+      "title": "Webinar Landing Page Copy (Universal Template)",
+      "status": "Kevin Review",
+      "id": "22378b0d-2002-405d-b03c-3a77c8a298b6"
+    },
+    {
+      "title": "Assessment Delivery SLA Document",
+      "status": "Kevin Review",
+      "id": "a1a13f07-de86-4b30-b38d-9d9c471b205c"
+    },
+    {
+      "title": "Podcast Episode Production Template (Universal)",
+      "status": "Kevin Review",
+      "id": "859b88ea-3ec8-4733-8b9d-bdeb252c089d"
+    },
+    {
+      "title": "Discovery Call Prep Pack (Client-Facing)",
+      "status": "Kevin Review",
+      "id": "ba24b5de-31d9-4702-a774-ee6365c2a448"
+    },
+    {
+      "title": "365 Build \u2014 Master Deliverable Index (Tracker Summary)",
+      "status": "Kevin Review",
+      "id": "90653dd4-a85b-4fb0-b500-d0bbd7bc8154"
+    },
+    {
+      "title": "Diagnostic IP Licensing Framework",
+      "status": "Kevin Review",
+      "id": "3f00273c-e7a5-4503-890f-e5165ac51d5b"
+    },
+    {
+      "title": "B2C Terms of Service Brief",
+      "status": "Kevin Review",
+      "id": "276cdfd6-6702-429d-ac20-2a70968e74a8"
+    },
+    {
+      "title": "Workshop Facilitator Checklist (Carl)",
+      "status": "Kevin Review",
+      "id": "28f0dbc9-ff23-411f-9282-58ee3882beb6"
+    },
+    {
+      "title": "Brand & Product Training Guide (Internal)",
+      "status": "Kevin Review",
+      "id": "9f96326e-eb45-4d84-9214-b86ef487dbd6"
+    },
+    {
+      "title": "Partnership Agreement Template",
+      "status": "Kevin Review",
+      "id": "712edae5-0b24-496f-9265-2353c9ba3b55"
+    },
+    {
+      "title": "Podcast Production Stack \u2014 Leaders in Motion Career Track (Sumaya)",
+      "status": "Kevin Review",
+      "id": "09e2248f-e053-42a8-887d-a30cbfa47163"
+    },
+    {
+      "title": "Podcast Production Stack \u2014 AI & Technology Disruption (Harisha)",
+      "status": "Kevin Review",
+      "id": "c6c9ab32-7daf-4091-b6a7-9c6aae36a457"
+    },
+    {
+      "title": "Podcast Production Stack \u2014 France-Chine (Ava)",
+      "status": "Kevin Review",
+      "id": "296a8ce0-67e1-40c5-8102-3df27b47e7de"
+    },
+    {
+      "title": "Workshop Run-of-Show Template",
+      "status": "Kevin Review",
+      "id": "c55c466b-5eb4-4159-b416-371fcb094905"
+    },
+    {
+      "title": "Webinar Framework (Universal)",
+      "status": "Kevin Review",
+      "id": "c3995f4b-a3f5-4d49-95f7-8e05b16f70f3"
+    },
+    {
+      "title": "Podcast Production Stack \u2014 Leaders in Motion (Sumaya)",
+      "status": "Kevin Review",
+      "id": "32e37f88-b55e-4369-bcef-2031caccd81f"
+    },
+    {
+      "title": "Podcast Production Stack \u2014 Global South Gravitas Shift (Vanjulla)",
+      "status": "Kevin Review",
+      "id": "f77f1371-b560-4ee1-acc0-0d7a322533e5"
+    },
+    {
+      "title": "Case Study Template (Universal)",
+      "status": "Kevin Review",
+      "id": "fa5cbab7-e377-4bfb-9cc1-e74bb9aecc7b"
+    }
+  ],
+  "ROI Calculator": [
+    {
+      "title": "ROI Calculator Template",
+      "status": "Kevin Review",
+      "id": "848d67dc-97b8-451d-b4c8-b91c575b8647"
+    }
+  ]
+}
