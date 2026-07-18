@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { cn, formatDate } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -572,7 +572,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground mt-2">
-                          {new Date(activity.activity_date).toLocaleDateString()}
+                          {formatDate(activity.activity_date)}
                           {activity.duration_minutes && (
                             <span className="ml-2">• {activity.duration_minutes} min</span>
                           )}
@@ -638,7 +638,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground mt-2">
-                          {signal.detected_date ? new Date(signal.detected_date).toLocaleDateString() : "-"}
+                          {formatDate(signal.detected_date) || "-"}
                         </p>
                       </div>
                       <Badge variant="outline">{signal.status}</Badge>
@@ -686,7 +686,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                         </p>
                         {campaign.sent_date && (
                           <p className="text-xs text-muted-foreground mt-2">
-                            Sent: {new Date(campaign.sent_date).toLocaleDateString()}
+                            Sent: {formatDate(campaign.sent_date)}
                           </p>
                         )}
                       </div>
@@ -731,7 +731,7 @@ export function ContactDetail({ contact }: ContactDetailProps) {
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">{note.note_type}</Badge>
                           <span className="text-xs text-muted-foreground">
-                            {note.created_at ? new Date(note.created_at).toLocaleDateString() : "-"}
+                            {formatDate(note.created_at) || "-"}
                           </span>
                         </div>
                         {note.description && (

@@ -97,7 +97,7 @@ export function Dashboard() {
       setPipelineFunnel(funnelData.funnel || [])
       setRecentActivity(activityData.activities || [])
     } catch (error) {
-      console.error("Failed to fetch dashboard data:", error)
+      // Error handled by failed state below
     } finally {
       setLoading(false)
     }

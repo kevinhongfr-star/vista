@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { formatDate } from "@/lib/utils" from "next/server"
 import { createServerClient } from "@/lib/supabase/server"
 
 export async function GET(request: Request) {
@@ -139,9 +140,6 @@ function generateSchedule(
   return schedules
 }
 
-function formatDate(date: Date): string {
-  return date.toISOString().split("T")[0]
-}
 
 function addDays(date: Date, days: number): Date {
   const result = new Date(date)

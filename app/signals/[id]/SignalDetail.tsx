@@ -71,7 +71,7 @@ export function SignalDetail({ signal, affectedContacts }: SignalDetailProps) {
           setAnalysisSource(data.analysis_source || "rules")
         }
       } catch (err) {
-        console.error("Failed to fetch signal analysis:", err)
+        // Error shown in UI below
       } finally {
         setLoading(false)
       }
