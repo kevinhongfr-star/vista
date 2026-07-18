@@ -12,6 +12,7 @@ export default async function AutomationPageWrapper() {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
+  // Real data from Supabase
   const { count: signals24h } = await supabase
     .from('signals')
     .select('*', { count: 'exact', head: true })
@@ -44,38 +45,9 @@ export default async function AutomationPageWrapper() {
     next_scheduled_run: null,
   }
 
-  const recentRuns: PipelineRunLog[] = [
-    {
-      id: '1',
-      pipeline: 'PROBE',
-      status: 'success',
-      started_at: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
-      completed_at: new Date(now.getTime() - 1.5 * 60 * 60 * 1000).toISOString(),
-      duration_seconds: 1800,
-      records_processed: 234,
-      error_message: null,
-    },
-    {
-      id: '2',
-      pipeline: 'LENS',
-      status: 'success',
-      started_at: new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString(),
-      completed_at: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
-      duration_seconds: 3600,
-      records_processed: 1500,
-      error_message: null,
-    },
-    {
-      id: '3',
-      pipeline: 'CARL',
-      status: 'success',
-      started_at: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(),
-      completed_at: new Date(now.getTime() - 7 * 60 * 60 * 1000).toISOString(),
-      duration_seconds: 3600,
-      records_processed: 42,
-      error_message: null,
-    },
-  ]
+  // No fake data — empty runs list until pipeline_run_logs table is created
+  // TODO: Create pipeline_run_logs table and wire LENS/PROBE/CARL execution results to it
+  const recentRuns: PipelineRunLog[] = []
 
   const dashboardData: AutomationDashboardData = {
     config,
