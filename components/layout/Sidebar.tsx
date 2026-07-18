@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useAppStore } from "@/lib/store"
 import {
+  DollarSign,
   LayoutDashboard,
   Users,
   Activity,
@@ -19,6 +20,7 @@ import {
   Cpu,
   GitBranch,
   ClipboardList,
+  DollarSign,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -36,6 +38,8 @@ const navItems = [
   { href: "/conversions", label: "Conversions", icon: TrendingUp, tooltip: "Track conversion metrics" },
   { href: "/automation", label: "Automation", icon: Cpu, tooltip: "Configure automations" },
   { href: "/strategy", label: "Strategy", icon: Lightbulb, tooltip: "Strategic notes and priorities" },
+  { href: "/templates", label: "Templates", icon: Mail, tooltip: "Email and outreach templates" },
+  { href: "/revenue", label: "Revenue", icon: DollarSign, tooltip: "Revenue dashboard and analytics" },
 ]
 
 const bottomItems = [
@@ -51,7 +55,8 @@ export function Sidebar() {
       <aside
         className={cn(
           "fixed left-0 top-0 z-40 h-screen bg-primary-navy text-white border-t-[3px] border-accent transition-all duration-300",
-          sidebarCollapsed ? "w-16" : "w-64"
+          "hidden md:block",
+          sidebarCollapsed ? "md:w-16" : "md:w-64"
         )}
       >
         {/* Header */}

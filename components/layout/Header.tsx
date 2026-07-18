@@ -58,7 +58,7 @@ export function Header({ onQuickActions }: HeaderProps) {
       <header
         className={cn(
           "fixed top-0 z-50 h-16 border-t-[3px] border-accent border-b border-border transition-all duration-300 bg-white/90 backdrop-blur-xl",
-          sidebarCollapsed ? "left-16" : "left-64",
+          sidebarCollapsed ? "md:left-16" : "md:left-64",
           "right-0"
         )}
       >
