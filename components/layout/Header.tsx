@@ -4,6 +4,7 @@ import { useAppStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import { signOut } from "@/lib/supabase/auth"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { Bell, Search, Moon, Sun, LogOut, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,22 @@ interface HeaderProps {
 export function Header({ onQuickActions }: HeaderProps) {
   const { theme, setTheme, searchQuery, setSearchQuery, notifications, sidebarCollapsed } = useAppStore()
   const router = useRouter()
+  const [userName, setUserName] = useState('User')
+  const [userInitial, setUserInitial] = useState('U')
+
+  useEffect(() => {
+    // Fetch user from Supabase auth
+    import("@/lib/supabase/auth").then(({ getCurrentUser }) => {
+      getCurrentUser().then(({ user }) => {
+        if (user) {
+          const email = user.email || ''
+          const name = user.user_metadata?.full_name || email.split('@')[0] || 'User'
+          setUserName(name)
+          setUserInitial(name.charAt(0).toUpperCase())
+        }
+      })
+    })
+  }, [])
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
@@ -124,9 +141,9 @@ export function Header({ onQuickActions }: HeaderProps) {
             {/* User info + logout */}
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-primary-navy flex items-center justify-center text-white text-sm font-medium">
-                K
+                {userInitial}
               </div>
-              <span className="text-sm font-medium hidden sm:inline">Kevin</span>
+              <span className="text-sm font-medium hidden sm:inline">{userName}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" onClick={handleLogout}>
