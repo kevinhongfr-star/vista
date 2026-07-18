@@ -3,11 +3,18 @@
 import { useAppStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import { signOut } from "@/lib/supabase/auth"
+import { useRouter } from "next/navigation"
 import { Bell, Search, Moon, Sun, LogOut, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface HeaderProps {
@@ -16,6 +23,13 @@ interface HeaderProps {
 
 export function Header({ onQuickActions }: HeaderProps) {
   const { theme, setTheme, searchQuery, setSearchQuery, notifications, sidebarCollapsed } = useAppStore()
+  const router = useRouter()
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      router.push(`/contacts?search=${encodeURIComponent(searchQuery.trim())}`)
+    }
+  }
 
   const handleLogout = async () => {
     await signOut()
@@ -40,6 +54,7 @@ export function Header({ onQuickActions }: HeaderProps) {
                 placeholder="Search VISTA contacts..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
                 className="pl-9"
               />
             </div>
@@ -56,8 +71,8 @@ export function Header({ onQuickActions }: HeaderProps) {
             )}
 
             {/* Notifications */}
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell className="h-5 w-5" />
                   {notifications.length > 0 && (
@@ -69,11 +84,24 @@ export function Header({ onQuickActions }: HeaderProps) {
                     </Badge>
                   )}
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Notifications ({notifications.length} unread)</p>
-              </TooltipContent>
-            </Tooltip>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                {notifications.length === 0 ? (
+                  <DropdownMenuItem disabled className="text-center text-muted-foreground text-sm py-4">
+                    No notifications yet
+                  </DropdownMenuItem>
+                ) : (
+                  notifications.map((n) => (
+                    <DropdownMenuItem key={n.id}>
+                      <div>
+                        <p className="text-sm font-medium">{n.title}</p>
+                        <p className="text-xs text-muted-foreground">{n.message}</p>
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Theme toggle */}
             <Tooltip>
