@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { formatDate } from "@/lib/utils" from "next/server"
+import { formatDate } from "@/lib/utils"
 import { createServerClient } from "@/lib/supabase/server"
 
 export async function GET(request: Request) {
