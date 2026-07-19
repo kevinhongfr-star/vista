@@ -12,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToasts, Toaster } from "@/components/ui/toast"
-import { createServerClient } from "@/lib/supabase/server"
 import { useRouter } from "next/navigation"
 
 export function CreateContactButton() {
