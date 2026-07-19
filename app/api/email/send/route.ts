@@ -4,7 +4,7 @@ import { Resend } from "resend"
 import type { SendEmailRequest } from "@/lib/types"
 
 // Initialize Resend — requires RESEND_API_KEY env var
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY || "re_no_key_set")
 
 export async function POST(request: Request) {
   try {
