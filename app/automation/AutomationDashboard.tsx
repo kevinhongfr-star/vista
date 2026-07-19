@@ -216,7 +216,7 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
                   <TableCell>{formatDuration(run.duration_seconds)}</TableCell>
                   <TableCell>{(run.records_processed || 0).toLocaleString()}</TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </CardContent>
