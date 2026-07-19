@@ -1,32 +1,48 @@
 "use client"
 
 import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { signInWithEmail } from "@/lib/supabase/auth"
 import { Mail, AlertCircle, Loader2 } from "lucide-react"
 
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+})
+
+type LoginFormValues = z.infer<typeof loginSchema>
+
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [sentEmail, setSentEmail] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = async (data: LoginFormValues) => {
     setLoading(true)
     setError('')
     setSuccess(false)
 
-    const { error: authError } = await signInWithEmail(email)
+    const { error: authError } = await signInWithEmail(data.email)
 
     if (authError) {
       setError(authError.message)
     } else {
       setSuccess(true)
+      setSentEmail(data.email)
     }
 
     setLoading(false)
@@ -51,22 +67,27 @@ export default function LoginPage() {
             </div>
             <h3 className="text-lg font-medium mb-2">Check your email</h3>
             <p className="text-sm text-muted-foreground">
-              A login link has been sent to {email}
+              A login link has been sent to {sentEmail}
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <label htmlFor="email" className="text-sm font-medium">Email</label>
               <Input
                 id="email"
                 type="email"
                 placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 className="h-12"
                 disabled={loading}
+                {...register("email")}
               />
+              {errors.email && (
+                <div className="flex items-center gap-2 text-sm text-error">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.email.message}
+                </div>
+              )}
             </div>
 
             {error && (

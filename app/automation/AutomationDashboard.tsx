@@ -184,7 +184,17 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.recent_runs.map((run) => (
+              {data.recent_runs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    <div className="flex flex-col items-center gap-2">
+                      <Activity className="h-8 w-8 opacity-50" />
+                      <p className="text-sm">No pipeline runs yet</p>
+                      <p className="text-xs">Pipeline executions will appear here once LENS, PROBE, or CARL are triggered</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : data.recent_runs.map((run) => (
                 <TableRow key={run.id}>
                   <TableCell>
                     <Tooltip>
@@ -206,7 +216,7 @@ export function AutomationDashboard({ initialData }: AutomationDashboardProps) {
                   <TableCell>{formatDuration(run.duration_seconds)}</TableCell>
                   <TableCell>{(run.records_processed || 0).toLocaleString()}</TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>
