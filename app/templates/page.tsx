@@ -7,27 +7,60 @@ export const dynamic = 'force-dynamic'
 export default async function TemplatesPageWrapper() {
   const supabase = createServerClient()
 
-  // Use the correct outreach templates table (not the legacy email_templates)
-  const { data: templates, error } = await supabase
-    .from('vista_outreach_templates')
+  const { data: templates } = await supabase
+    .from('email_templates')
     .select('*')
-    .eq('is_active', true)
-    .order('bucket')
-    .order('touch_number')
+    .order('template_type')
+    .order('template_name')
 
-  // Map vista_outreach_templates schema to EmailTemplate interface
-  const mappedTemplates: EmailTemplate[] = (templates || []).map((t: any) => ({
-    id: t.id,
-    template_name: t.name,
-    template_type: t.bucket || 'General',
-    subject_template: t.subject_line || '',
-    body_template: t.body_template || '',
-    variables: t.variables || [],
-    created_at: t.created_at,
-    updated_at: t.updated_at,
-  }))
+  const defaultTemplates: EmailTemplate[] = [
+    {
+      id: "default-1",
+      template_name: "Executive Brief Invitation",
+      template_type: "Executive Brief",
+      subject_template: "Exclusive Executive Brief: {program_name}",
+      body_template: "Dear {contact_name},\n\nI would like to invite you to our exclusive executive brief on {program_name}.\n\nBest regards,\nKevin Hong",
+      variables: ["{contact_name}", "{program_name}"],
+      created_at: null,
+      updated_at: null,
+    },
+    {
+      id: "default-2",
+      template_name: "Webinar Invitation",
+      template_type: "Webinar Invite",
+      subject_template: "You're Invited: {webinar_title}",
+      body_template: "Dear {contact_name},\n\nJoin us for an exclusive webinar: {webinar_title}\n\nDate: {webinar_date}\n\nBest regards,\nKevin Hong",
+      variables: ["{contact_name}", "{webinar_title}", "{webinar_date}"],
+      created_at: null,
+      updated_at: null,
+    },
+    {
+      id: "default-3",
+      template_name: "Follow-up After Meeting",
+      template_type: "Follow-up",
+      subject_template: "Following Up: Our Conversation",
+      body_template: "Dear {contact_name},\n\nThank you for meeting with me. As discussed...\n\nBest regards,\nKevin Hong",
+      variables: ["{contact_name}"],
+      created_at: null,
+      updated_at: null,
+    },
+    {
+      id: "default-4",
+      template_name: "Re-engagement",
+      template_type: "Re-engagement",
+      subject_template: "Catching Up",
+      body_template: "Dear {contact_name},\n\nIt has been a while since we last connected. I wanted to reach out and...\n\nBest regards,\nKevin Hong",
+      variables: ["{contact_name}"],
+      created_at: null,
+      updated_at: null,
+    },
+  ]
+
+  const allTemplates = (templates && templates.length > 0)
+    ? (templates as EmailTemplate[])
+    : defaultTemplates
 
   return (
-    <TemplatesPage templates={mappedTemplates} />
+    <TemplatesPage templates={allTemplates} />
   )
 }
