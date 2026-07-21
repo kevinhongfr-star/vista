@@ -1,6 +1,6 @@
 # VISTA Universal Data Grid Engine — Complete Spec Library
 
-> **Version**: 1.0 | **Date**: 2026-07-20 | **Author**: James/AI (PM) → Trae (Engineer)
+> **Version**: 1.1 | **Date**: 2026-07-21 | **Author**: James/AI (PM) → Trae (Engineer)
 > **Decision**: Option A — Full rebuild as Notion-class data platform (~4 weeks)
 > **Architecture**: Config-driven. One UniversalDataGrid component + per-entity config files.
 
@@ -124,6 +124,19 @@
 
 ---
 
+## Phase 5: Council Revenue Architecture — "Commercial Intelligence" (Week 5)
+
+> Added 2026-07-21 per CD-11 (Council Pricing & Membership Architecture)
+> Depends on: Phase 0 (E-01) + Wave 1.6 (Revenue OS schema)
+
+| Ticket | File | Description | Effort |
+|--------|------|-------------|--------|
+| **CR-01** | `CR-01-council-pricing-architecture.md` | Council revenue streams, dual pricing (Council/public rate), membership schema, credit ledger | 3 days |
+| **CR-02** | `CR-02-council-pipeline-funnel.md` | Council membership pipeline (parallel to BD pipeline), 8-stage funnel, capacity tracking | 2 days |
+| **CR-03** | `CR-03-forecast-engine-analytics.md` | Revenue forecast engine, MRR calculation, 6-month projection, CD-11 target comparison | 2 days |
+
+---
+
 ## Risk Register
 
 | Risk | Impact | Mitigation |
@@ -133,10 +146,13 @@
 | DeepSeek query translation accuracy | Medium | Cache common queries, show preview before applying |
 | Supabase realtime conflicts with bulk edits | Low | Optimistic UI, debounce during bulk ops |
 | Migration breaks existing Contacts features | High | Feature parity checklist in M-01, visual regression test |
+| CD-11 pricing numbers not confirmed | High | Kevin must confirm final prices before CR-01 seed data is locked |
+| Council capacity limits (60/10/5) hit too fast | Medium | Waitlist stage in CR-02 handles overflow; monitor monthly |
+| Forecast model accuracy (no historical data) | Medium | Start with conservative estimates; recalibrate after 3 months of actuals |
 
 ---
 
-## File Index (21 files)
+## File Index (24 files)
 
 | # | Path | Size | Content |
 |---|------|------|---------|
@@ -161,3 +177,6 @@
 | 19 | `phase-3-ai/A-04-agent-integration.md` | ~6.2KB | Agents wired to UI |
 | 20 | `phase-3-ai/A-05-through-A-07.md` | ~7.4KB | Signal classification + Priority engine |
 | 21 | `phase-4-dashboard/D-01-through-D-05.md` | ~11.4KB | Widget system + Dashboard builder |
+| 22 | `phase-5-council-revenue/CR-01-council-pricing-architecture.md` | ~10KB | Council pricing, dual rate, membership schema, credit ledger |
+| 23 | `phase-5-council-revenue/CR-02-council-pipeline-funnel.md` | ~12KB | Council pipeline, 8-stage funnel, capacity tracking |
+| 24 | `phase-5-council-revenue/CR-03-forecast-engine-analytics.md` | ~14KB | Forecast engine, MRR, 6-month projection, CD-11 target |
