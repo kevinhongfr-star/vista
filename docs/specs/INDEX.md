@@ -72,7 +72,9 @@
 | **2** | Relations & Navigation | 6 | 5 | Week 3 | 🔴 Not started |
 | **3** | AI Layer | 7 | 5 | Week 3-4 | 🔴 Not started |
 | **4** | Dashboard Builder | 5 | 1 | Week 4 | 🔴 Not started |
-| | **TOTAL** | **34** | **21** | **~4 weeks** | |
+| **5** | Council Revenue Architecture | 3 | 3 | Week 5 | 🔴 Not started |
+| **6** | ECHO Communication Compliance | 7 | 8 | Week 5-6 | 🔴 Not started |
+| | **TOTAL** | **44** | **32** | **~5-6 weeks** | |
 
 ---
 
@@ -152,7 +154,7 @@
 
 ---
 
-## File Index (24 files)
+## File Index (32 files)
 
 | # | Path | Size | Content |
 |---|------|------|---------|
@@ -180,3 +182,29 @@
 | 22 | `phase-5-council-revenue/CR-01-council-pricing-architecture.md` | ~10KB | Council pricing, dual rate, membership schema, credit ledger |
 | 23 | `phase-5-council-revenue/CR-02-council-pipeline-funnel.md` | ~12KB | Council pipeline, 8-stage funnel, capacity tracking |
 | 24 | `phase-5-council-revenue/CR-03-forecast-engine-analytics.md` | ~14KB | Forecast engine, MRR, 6-month projection, CD-11 target |
+
+---
+
+## Phase 6: ECHO Communication Compliance — "Brand Voice Enforcement" (Week 5-6)
+
+> Added 2026-07-23 per communication audit of all 7 touchpoints
+> Depends on: None (standalone phase, can run in parallel with Phase 5)
+
+| Ticket | File | Description | Effort |
+|--------|------|-------------|--------|
+| **ECHO-01** | `ECHO-01-echo-rules-engine.md` | Centralized ECHO rules module (banned patterns, tone map, structural rules, positioning rules) | 1 day |
+| **ECHO-02** | `ECHO-02-ai-prompt-rewrite.md` | Rewrite DeepSeek prompt with ECHO constraints, temperature 0.7→0.4, post-gen validation | 1 day |
+| **ECHO-03** | `ECHO-03-template-library-overhaul.md` | Replace all 8 default templates with ECHO-compliant versions | 1 day |
+| **ECHO-04** | `ECHO-04-email-composer-compliance-ui.md` | Real-time compliance badge, voice profile selector, word count, auto-fix | 1 day |
+| **ECHO-05** | `ECHO-05-maria-echo-injection.md` | Inject ECHO rules into all MARIA agent trigger messages | 0.5 day |
+| **ECHO-06** | `ECHO-06-resend-compliance-pipeline.md` | Pre-send validation, compliance headers, activity logging | 0.5 day |
+| **ECHO-07** | `ECHO-07-batch-compliance-audit.md` | Batch audit API for templates, campaigns, and sent emails | 1 day |
+
+| 25 | `phase-6-echo-comms/ECHO_Comms_Spec_v1.md` | ~7.9KB | Phase 6 master spec, architecture, compliance matrix |
+| 26 | `phase-6-echo-comms/ECHO-01-echo-rules-engine.md` | ~10.5KB | Rules engine: banned patterns, tone map, validator |
+| 27 | `phase-6-echo-comms/ECHO-02-ai-prompt-rewrite.md` | ~6.6KB | DeepSeek prompt rewrite with ECHO constraints |
+| 28 | `phase-6-echo-comms/ECHO-03-template-library-overhaul.md` | ~6.2KB | 8 ECHO-compliant email templates |
+| 29 | `phase-6-echo-comms/ECHO-04-email-composer-compliance-ui.md` | ~4.0KB | Compliance badge, voice selector, auto-fix UI |
+| 30 | `phase-6-echo-comms/ECHO-05-maria-echo-injection.md` | ~3.0KB | MARIA trigger ECHO rule injection |
+| 31 | `phase-6-echo-comms/ECHO-06-resend-compliance-pipeline.md` | ~2.1KB | Pre-send validation pipeline |
+| 32 | `phase-6-echo-comms/ECHO-07-batch-compliance-audit.md` | ~4.2KB | Batch compliance audit API |
